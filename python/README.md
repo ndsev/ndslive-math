@@ -1,10 +1,3 @@
 # ndsmath
 
-Math utilities for NDS.Live
-
-## Installation
-
-You can install `ndsmath` using pip:
-
-```bash
-pip install ndsmath
+Python version of ndsmath, math utilities for NDS.Live.
