@@ -111,8 +111,8 @@ public:
                Wgs84AABB<T>{sw_,                                        {widthBeforeAM, size_.y}},
                Wgs84AABB<T>{Wgs84<T>{Wgs84<T>::lonMin, sw_.latitude()}, {widthAfterAM,  size_.y}},
             };
-        } else
-            NDSAFW_WARNING("Attempt to split AABB over anti-meridian which does not contain it.");
+        } //else
+          //  NDSAFW_WARNING("Attempt to split AABB over anti-meridian which does not contain it.");
         return {};
     }
 
