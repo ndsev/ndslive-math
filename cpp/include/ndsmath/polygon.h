@@ -82,7 +82,7 @@ public:
     //! Const array subscript operator.
     const Position& operator[](const int index) const
     {
-        NDSAFW_MATH_ASSERT(index < vertices_.size());
+        NDSAFW_ASSERT(index < vertices_.size());
         return vertices_[index];
     }
 
