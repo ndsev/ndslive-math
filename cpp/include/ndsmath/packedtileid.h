@@ -7,8 +7,6 @@
 #include <cstdint>
 #include <vector>
 
-#include <mapget/model/tileid.h>
-
 namespace ndsmath
 {
 
