@@ -76,12 +76,6 @@ public:
     //! position in counter-clockwise radians.
     double penalty(int32_t const& lon, int32_t const& lat, double const& orientation) const;
 
-    //! Converts the packed tile id to a mapget::TileId.
-    mapget::TileId toMapgetTileId() const;
-
-    //! Create a packed tile id from a mapget::TileId.
-    static PackedTileId fromMapgetTileId(mapget::TileId const& tileId);
-
 private:
     //! The packed tile id.
     uint32_t value_;

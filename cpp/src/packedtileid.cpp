@@ -256,20 +256,4 @@ double PackedTileId::penalty(int32_t const& lon, int32_t const& lat, double cons
     return distance + angle * distance;
 }
 
-
-mapget::TileId PackedTileId::toMapgetTileId() const
-{
-    int32_t x = 0, y = 0;
-    this->center(x,y);
-    auto wgs84 = HighPrecWgs84::fromNdsCoordinates(x, y);
-    return mapget::TileId::fromWgs84(wgs84.longitude(), wgs84.latitude(), this->level());
-}
-
-PackedTileId PackedTileId::fromMapgetTileId(mapget::TileId const& tileId)
-{
-    const auto p = tileId.center();
-    const auto morton = ndsmath::MortonCode::fromWgs84Coordinates({p.x, p.y});
-    return ndsmath::PackedTileId(morton, tileId.z());
-}
-
 } // namespace ndsmath

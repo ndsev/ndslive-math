@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.14.0)
 project(ndsmath)
 
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_library(ndsmath SHARED
   src/mortoncode.cpp
@@ -20,5 +22,4 @@ target_include_directories(ndsmath
 
 target_link_libraries(ndsmath
   PUBLIC
-    mapget-model
     glm::glm)
