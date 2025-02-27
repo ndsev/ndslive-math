@@ -23,3 +23,7 @@ target_include_directories(ndsmath
 target_link_libraries(ndsmath
   PUBLIC
     glm::glm)
+
+# Tests
+enable_testing()
+add_subdirectory(tests)

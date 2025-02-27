@@ -12,13 +12,7 @@
 
 namespace ndsmath {
 
-/// Function which returns a priority penalty value for a tile
-using TilePriorityFn = std::function<double(PackedTileId const&)>;
-
-/**
- * @brief Wgs84AABB Wgs84 axis-aligned bounding box.
- *
- */
+//! Template class representing a WGS84 axis-aligned bounding box.
 template<typename T>
 class Wgs84AABB
 {
