@@ -16,8 +16,8 @@
 namespace ndsmath
 {
 
-/** Representation of a polygon, expects to be used with Wgs84<T> based template param. */
-
+//! Representation of a polygon with the use of the `Polygon` class and the high precision version of `Wgs84<T>`.
+//! Introduces additional methods for collision and bounding box handling.
 struct HighPrecWgs84Polygon : public Polygon<std::vector<HighPrecWgs84>>
 {
     using PolyBase = Polygon<std::vector<HighPrecWgs84>>;

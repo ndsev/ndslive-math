@@ -199,8 +199,6 @@ int PackedTileId::level() const
 {
     int level = 0;
 
-    // TODO: Check if the compiler converts the loop to a
-    // single MSB instruction. Otherwise use intrinsics.
     auto tID = value_ >> 16u;
     for (; tID > 1u; level++)
     {
@@ -233,27 +231,6 @@ uint32_t PackedTileId::value() const
 PackedTileId::operator uint32_t() const
 {
     return value();
-}
-
-double PackedTileId::penalty(int32_t const& lon, int32_t const& lat, double const& orientation) const
-{
-    constexpr auto TWO_PI = glm::two_pi<double>();
-    constexpr auto HALF_PI = glm::half_pi<double>();
-
-    int32_t tileCenterX, tileCenterY;
-    center(tileCenterX, tileCenterY);
-
-    double yDiff = tileCenterY - lat;
-    double xDiff = tileCenterX - lon;
-
-    auto angle = glm::atan(yDiff, xDiff); // Angle to east (x axis) direction. glm::atan is atan2.
-    angle -= orientation + HALF_PI; // Difference w/ compass direction normalized from North to East
-    angle = glm::abs(glm::mod(angle, TWO_PI)); // Map angle to circle
-    if (angle > glm::pi<double>())
-        angle = TWO_PI - angle;
-
-    auto distance = glm::sqrt(yDiff*yDiff + xDiff*xDiff); // eventually use manhattan distance to avoid comp overhead?
-    return distance + angle * distance;
 }
 
 } // namespace ndsmath

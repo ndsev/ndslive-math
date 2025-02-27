@@ -7,6 +7,9 @@
 namespace ndsmath
 {
 
+//! The `Polygon` template class manages a set of vertices and supports different polygon types,
+//! such as simple polygons, triangle lists, and triangle structures. It provides methods
+//! for adding vertices, checking the orientation, and validating the polygon.
 template<class Vector>
 class Polygon
 {

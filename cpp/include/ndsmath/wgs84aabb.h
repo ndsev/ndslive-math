@@ -30,7 +30,6 @@ public:
 
     /// Construct an AABB from a position and a size.
     Wgs84AABB(Wgs84<T> const &sw, vec2_t size) : sw_(sw), size_(size) {
-        /* FIXME: Replace with: NDSAFW_COND_WARNING_AND_RETURN(..., "Attempt to construct Wgs84 AABB with invalid size %1*%2") */
         if (!valid())
             return;
 
@@ -102,7 +101,7 @@ public:
 
     /// Note: Only call if containsAntiMeridian() is true.
     /// If this bounding rect crosses the anti-meridian, obtain two normalized bounding
-    ///  rects, one to the right and one to the left.
+    /// rects, one to the right and one to the left.
     std::pair<Wgs84AABB<T>, Wgs84AABB<T>> splitOverAntiMeridian() const {
         auto widthAfterAM = sw_.longitude() + size_.x - Wgs84<T>::lonMax;
         if (widthAfterAM > 0) {
@@ -111,8 +110,7 @@ public:
                Wgs84AABB<T>{sw_,                                        {widthBeforeAM, size_.y}},
                Wgs84AABB<T>{Wgs84<T>{Wgs84<T>::lonMin, sw_.latitude()}, {widthAfterAM,  size_.y}},
             };
-        } //else
-          //  NDSAFW_WARNING("Attempt to split AABB over anti-meridian which does not contain it.");
+        }
         return {};
     }
 
@@ -159,92 +157,6 @@ public:
             contains(other.sw()) || contains(other.ne()) ||
             contains(other.se()) || contains(other.nw()) ||
             other.intersects(*this);
-    }
-
-    /// Obtain all TileIds for a given tile level. Note: The tiles will be sorted
-    ///  by the given penalty distribution function ().
-    std::list<std::pair<PackedTileId, double>> tileIdsWithPriority(
-        uint32_t const& level,
-        std::function<double(PackedTileId const&)> const& tilePenaltyFun = {},
-        uint32_t limit = 0) const
-    {
-        std::list<std::pair<PackedTileId, double>> result;
-
-        if (containsAntiMeridian()) {
-            auto normalizedViewports = splitOverAntiMeridian();
-            NDSAFW_ASSERT(
-                !normalizedViewports.first.containsAntiMeridian() &&
-                !normalizedViewports.second.containsAntiMeridian());
-            auto right = normalizedViewports.first.tileIdsWithPriority(level, tilePenaltyFun, limit);
-            auto left = normalizedViewports.second.tileIdsWithPriority(level, tilePenaltyFun, limit);
-
-            // Merge left/right result sets
-            auto rit = right.begin(), lit = left.begin();
-            while (result.size() < limit) {
-                if (rit != right.end() && lit != left.end()) {
-                    if (rit->second < lit->second)
-                        result.push_back(*(rit++));
-                    else
-                        result.push_back(*(lit++));
-                }
-                else if (rit != right.end())
-                    result.push_back(*(rit++));
-                else if (lit != left.end())
-                    result.push_back(*(lit++));
-                else
-                    break;
-            }
-
-            return result;
-        }
-
-        const int64_t tileWidth = 1u << (31 - level);
-        int32_t minX, minY, maxX, maxY;
-        sw_.toNdsCoordinates(minX, minY);
-        ne().toNdsCoordinates(maxX, maxY);
-        if ((minX % tileWidth) == 0)
-            minX += 1;
-        if ((minY % tileWidth) == 0)
-            minY += 1;
-
-        int64_t x = minX;
-        while (x <= maxX && x < std::numeric_limits<int32_t>::max()) {
-            int64_t y = minY;
-            while (y <= maxY && y < std::numeric_limits<int32_t>::max()) {
-                auto tid = PackedTileId(MortonCode::fromNdsCoordinates(x, y), (int)level);
-                auto penalty = tilePenaltyFun ? tilePenaltyFun(tid) : .0;
-                auto it = std::lower_bound(
-                    result.begin(),
-                    result.end(),
-                    penalty,
-                    [](auto const& lhs, auto const& rhs) {
-                        return lhs.second < rhs;
-                    });
-                if (it == result.end() || it->first != tid)
-                    result.insert(it, {tid, penalty});
-                if (limit && result.size() > limit)
-                    result.pop_back();
-                y += glm::min(tileWidth,  glm::max(static_cast<int64_t>(maxY) - y, static_cast<int64_t>(1)));
-            }
-            x += glm::min(tileWidth, glm::max(static_cast<int64_t>(maxX) - x, static_cast<int64_t>(1)));
-        }
-
-        return result;
-    }
-
-    /// Same as tileIdsWithPriority, but strips the priority values
-    ///  and converts the linked list to a vector.
-    PackedTileIds tileIds(
-        uint32_t const& level,
-        std::function<double(PackedTileId const&)> const& tilePenaltyFun = {},
-        uint32_t limit = 0) const
-    {
-        auto resultList = tileIdsWithPriority(level, tilePenaltyFun, limit);
-        PackedTileIds result;
-        result.reserve(resultList.size());
-        for (auto const& [tid, _] : resultList)
-            result.emplace_back(tid);
-        return result;
     }
 
 private:

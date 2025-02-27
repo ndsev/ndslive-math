@@ -10,6 +10,9 @@
 namespace ndsmath
 {
 
+//! A class representing a tile in a hierarchical tiling system.
+//! Provides methods to extract level, size, and coordinate
+//! information from the packed tile ID.
 class PackedTileId
 {
 public:
@@ -60,19 +63,13 @@ public:
 
     bool operator==(const PackedTileId& other) const;
     bool operator!=(const PackedTileId& other) const;
-	bool operator<(const PackedTileId& other) const;
+    bool operator<(const PackedTileId& other) const;
 
     //! Get the value.
     uint32_t value() const;
 
-    //! Converstion operator for hash function.
+    //! Conversion operator for hash function.
     operator uint32_t() const;
-
-    //! Penalty value to determine an inverse priority for the tile,
-    //! in combination with a geographic position and a view direction.
-    //! The orientation denotes the viewing angle from the given lon+lat
-    //! position in counter-clockwise radians.
-    double penalty(int32_t const& lon, int32_t const& lat, double const& orientation) const;
 
 private:
     //! The packed tile id.
