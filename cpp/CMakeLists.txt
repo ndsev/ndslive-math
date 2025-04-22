@@ -19,8 +19,7 @@ add_library(ndsmath SHARED
 
 target_include_directories(ndsmath
   PRIVATE include/ndsmath
-  PUBLIC include
-  PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/version/)
+  PUBLIC include)
 
 set(USED_GLM_VERSION "1.0.1")
 if(TARGET glm::glm)
