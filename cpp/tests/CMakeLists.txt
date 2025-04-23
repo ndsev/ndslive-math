@@ -2,6 +2,21 @@ cmake_minimum_required(VERSION 3.14)
 
 project(ndsmath-test)
 
+include(FetchContent)
+
+set (USED_CATCH2_VERSION "v3.4.0")
+if(TARGET Catch2::Catch2WithMain)
+    if(NOT ${Catch2_VERSION} VERSION_EQUAL ${USED_CATCH2_VERSION})
+        message(WARNING "Catch2 version mismatch: found ${Catch2_VERSION}, expected 3.4.0")
+    endif()
+else()
+    FetchContent_Declare(Catch2
+        GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+        GIT_TAG "${USED_CATCH2_VERSION}"
+        GIT_SHALLOW ON)
+    FetchContent_MakeAvailable(Catch2)
+endif()
+
 add_executable(test-packedtileid
   src/testpackedtileid.cpp)
 
