@@ -38,15 +38,17 @@ class Wgs84:
 
     def to_nds_coordinates(self):
         # Convert to NDS coordinate system
-        x_nds = int(self.x / 360 * (2 ** 32))
-        y_nds = int(self.y / 180 * (2 ** 31))
+        x_nds = int((self.x / 360.0) * (2 ** 32))
+        y_nds = int((self.y / 180.0) * (2 ** 31))
         return x_nds, y_nds
 
     @staticmethod
     def from_nds_coordinates(x, y):
         # Convert from NDS coordinate system
-        lon = x / (2 ** 32) * 360 - 180
-        lat = y / (2 ** 31) * 180 - 90
+        lon_multiplier = 360.0 / (2 ** 32)
+        lat_multiplier = 180.0 / (2 ** 31)
+        lon = x * lon_multiplier
+        lat = y * lat_multiplier
         return Wgs84(lon, lat)
 
     def to_degree_minutes_seconds(self):
