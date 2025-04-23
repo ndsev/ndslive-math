@@ -66,9 +66,51 @@ class TestWgs84(unittest.TestCase):
         self.assertGreaterEqual(wgs.y, -90.0)
 
 class TestPackedTileId(unittest.TestCase):
-    def test_level_extraction(self):
-        tile = PackedTileId(value=545379780)
-        self.assertEqual(tile.level(), 13)
+    def test_validity(self):
+        """Port of 'PackedTileId is valid' test"""
+        tile = PackedTileId()
+        self.assertEqual(tile.value, 0)
+
+    def test_levels(self):
+        """Port of 'PackedTileId levels' test"""
+        for level in range(1, 16):
+            # Create tile-id from level 1 to 15 and check level
+            tile = PackedTileId(value=(1 << (level + 16)))
+            self.assertEqual(tile.level(), level)
+
+    def test_tile_number(self):
+        """Port of 'PackedTileId tile number' test"""
+        TILE_LEVEL_13 = 13
+        LEVEL13_TILE_LEN_NDS_UNITS = 1 << (32-(TILE_LEVEL_13+1))
+        size = LEVEL13_TILE_LEN_NDS_UNITS
+
+        test_data = [
+            (1 * size//2, 1 * size//2, TILE_LEVEL_13, 0),
+            (3 * size//2, 1 * size//2, TILE_LEVEL_13, 1),
+            (1 * size//2, 3 * size//2, TILE_LEVEL_13, 2),
+            (3 * size//2, 3 * size//2, TILE_LEVEL_13, 3)
+        ]
+
+        for _, _, level, expected_tile_num in test_data:
+            tile_id = PackedTileId(value=expected_tile_num + (1 << (level + 16)))
+            self.assertEqual(tile_id.morton_number(), expected_tile_num)
+
+    def test_corners(self):
+        """Port of 'PackedTileId corners' test"""
+        TILE_LEVEL_13 = 13
+        LEVEL13_TILE_LEN_NDS_UNITS = 1 << (31 - TILE_LEVEL_13)
+
+        ref_tile = PackedTileId(value=(1 << (TILE_LEVEL_13 + 16)))
+
+        # Test north east corner
+        ne_x, ne_y = ref_tile.north_east_corner()
+        self.assertEqual(ne_x, LEVEL13_TILE_LEN_NDS_UNITS)
+        self.assertEqual(ne_y, LEVEL13_TILE_LEN_NDS_UNITS)
+
+        # Test south west corner
+        sw_x, sw_y = ref_tile.south_west_corner()
+        self.assertEqual(sw_x, 0)
+        self.assertEqual(sw_y, 0)
 
 class TestMortonCode(unittest.TestCase):
     def test_coordinate_conversion(self):

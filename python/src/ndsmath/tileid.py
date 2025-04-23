@@ -51,7 +51,12 @@ class PackedTileId:
         return x + size, y + size
 
     def morton_number(self):
-        return self.value & ((1 << 16) - 1)
+        """
+        Returns the Morton number of the tile, calculated by subtracting
+        the level-specific offset from the packed tile ID value.
+        """
+        tile_level = self.level()
+        return self.value - (1 << (16 + tile_level))
 
     def __str__(self):
         return f"PackedTileId(value={self.value})"
