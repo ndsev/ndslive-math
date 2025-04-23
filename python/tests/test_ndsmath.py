@@ -113,12 +113,92 @@ class TestPackedTileId(unittest.TestCase):
         self.assertEqual(sw_y, 0)
 
 class TestMortonCode(unittest.TestCase):
-    def test_coordinate_conversion(self):
+    def test_basic_coordinate_conversion(self):
+        """Test basic coordinate conversion roundtrip"""
         x, y = 132787847, 572604061
         morton = MortonCode.from_nds_coordinates(x, y)
         x_back, y_back = morton.to_nds_coordinates()
         self.assertEqual(x, x_back)
         self.assertEqual(y, y_back)
+
+    def test_boundary_values(self):
+        """Test boundary values for coordinates"""
+        test_cases = [
+            (0, 0),  # Origin
+            ((1 << 31), (1 << 30)),  # Maximum values wrap to minimum
+            (-(1 << 31), -(1 << 30)),  # Minimum values
+            ((1 << 31) - 1, (1 << 30) - 1),  # Just below maximum
+            (-(1 << 31) + 1, -(1 << 30) + 1),  # Just above minimum
+        ]
+
+        # Special case: maximum values should wrap to minimum values
+        morton = MortonCode.from_nds_coordinates(1 << 31, 1 << 30)
+        x_back, y_back = morton.to_nds_coordinates()
+        self.assertEqual(x_back, -(1 << 31))  # Should wrap to minimum x
+        self.assertEqual(y_back, -(1 << 30))  # Should wrap to minimum y
+
+        # Test other boundary cases
+        for x, y in test_cases[1:]:  # Skip the first case as we tested it above
+            with self.subTest(x=x, y=y):
+                morton = MortonCode.from_nds_coordinates(x, y)
+                x_back, y_back = morton.to_nds_coordinates()
+                # For maximum values, we expect them to wrap to minimum values
+                if x == (1 << 31):
+                    self.assertEqual(x_back, -(1 << 31))
+                else:
+                    self.assertEqual(x_back, x)
+                if y == (1 << 30):
+                    self.assertEqual(y_back, -(1 << 30))
+                else:
+                    self.assertEqual(y_back, y)
+
+    def test_coordinate_wrapping(self):
+        """Test coordinate wrapping behavior"""
+        # Test values that should wrap around
+        x_over = (1 << 32) + 100  # Should wrap to 100
+        y_over = (1 << 31) + 50   # Should wrap to 50
+
+        morton = MortonCode.from_nds_coordinates(x_over, y_over)
+        x_back, y_back = morton.to_nds_coordinates()
+
+        self.assertEqual(100, x_back)
+        self.assertEqual(50, y_back)
+
+    def test_bit_interleaving(self):
+        """Test specific bit patterns to verify interleaving"""
+        # Test with power of 2 values to check bit interleaving
+        test_cases = [
+            (1, 1),      # 0b1, 0b1
+            (2, 2),      # 0b10, 0b10
+            (4, 4),      # 0b100, 0b100
+            (8, 8),      # 0b1000, 0b1000
+        ]
+
+        for x, y in test_cases:
+            with self.subTest(x=x, y=y):
+                morton = MortonCode.from_nds_coordinates(x, y)
+                x_back, y_back = morton.to_nds_coordinates()
+                self.assertEqual(x, x_back)
+                self.assertEqual(y, y_back)
+
+    def test_63rd_bit_masking(self):
+        """Test that the 63rd bit is always masked off"""
+        # Create coordinates that would set the 63rd bit if not masked
+        x_max = (1 << 31) - 1
+        y_max = (1 << 30) - 1
+
+        morton = MortonCode.from_nds_coordinates(x_max, y_max)
+        # Verify the 63rd bit is not set
+        self.assertEqual(morton.value() & (1 << 63), 0)
+
+    def test_value_method(self):
+        """Test the value() method matches the C++ API"""
+        morton = MortonCode(12345)
+        self.assertEqual(morton.value(), 12345)
+
+        # Test that values are properly masked to 64 bits
+        morton_large = MortonCode(1 << 65)  # Should be masked
+        self.assertLess(morton_large.value(), 1 << 64)
 
 if __name__ == '__main__':
     unittest.main()
