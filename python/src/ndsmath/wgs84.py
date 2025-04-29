@@ -18,23 +18,39 @@ class Wgs84:
 
     def normalize(self):
         # Normalize the coordinates
-        self.x = self.x % 360
+        # Use math.fmod to preserve the sign, matching C++ std::fmod behavior
+        self.x = math.fmod(self.x, 360.0)
 
-        if abs(self.x - 180) < self.LON_NDS_DELTA:
-            self.x = 180 - self.LON_NDS_DELTA
+        # Ensure longitude is within [-180, 180)
+        # The C++ version uses lonMin and lonMax constants derived from NDS deltas.
+        # Python original logic handles boundaries slightly differently.
+        # Let's align closer to the C++ logic's intent for the [-180, 180) range.
 
-        if self.x < -180:
-            self.x += 360
-        elif self.x > 180 - self.LON_NDS_DELTA:
-            self.x -= 360
+        # Handle the wrap-around explicitly:
+        # Values > 180 - delta should wrap to negative
+        # Values < -180 should wrap to positive
+        # Note: C++ lonMax is 180 - lonNdsDelta
 
-        if abs(self.y - 90) < self.LAT_NDS_DELTA:
-            self.y = 90 - self.LAT_NDS_DELTA
+        # This check handles values very close to +180, snapping them down slightly
+        # This is consistent with C++ 's check against lonMax
+        if abs(self.x - (180.0 - self.LON_NDS_DELTA)) < self.LON_NDS_DELTA:
+             self.x = 180.0 - self.LON_NDS_DELTA
 
-        if self.y > 90 - self.LAT_NDS_DELTA:
-            self.y = 90 - self.LAT_NDS_DELTA
-        elif self.y < -90:
-            self.y = -90
+        # Wrap values outside [-180, 180 - delta]
+        if self.x >= 180.0: # If exactly 180 or more after fmod (shouldn't happen with fmod(-180, 360))
+            self.x -= 360.0
+        elif self.x < -180.0: # Handles values less than -180
+             self.x += 360.0
+        # Now self.x should be in [-180, 180)
+
+        # Latitude normalization remains the same for now
+        if abs(self.y - (90.0 - self.LAT_NDS_DELTA)) < self.LAT_NDS_DELTA:
+            self.y = 90.0 - self.LAT_NDS_DELTA
+
+        if self.y > 90.0 - self.LAT_NDS_DELTA:
+            self.y = 90.0 - self.LAT_NDS_DELTA # Clamp to max lat
+        elif self.y < -90.0:
+            self.y = -90.0 # Clamp to min lat
 
     def to_nds_coordinates(self):
         # Convert to NDS coordinate system

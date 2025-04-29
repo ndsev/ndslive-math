@@ -1,4 +1,5 @@
 import unittest
+import math  # Add math import
 from ndsmath import Wgs84, PackedTileId, MortonCode
 
 class TestWgs84(unittest.TestCase):
@@ -8,10 +9,46 @@ class TestWgs84(unittest.TestCase):
         self.assertEqual(point.y, 20.0)
         self.assertEqual(point.z, 30.0)
 
-    def test_normalization(self):
+    def test_normalization_basic(self):
+        # Test basic normalization cases from original test
         point = Wgs84(lon=190.0, lat=100.0)
         self.assertLess(point.x, 180.0)
-        self.assertLess(point.y, 90.0)
+        self.assertGreaterEqual(point.x, -180.0)
+        self.assertAlmostEqual(point.y, 90.0 - Wgs84.LAT_NDS_DELTA, places=12)
+
+        point = Wgs84(lon=-190.0, lat=-100.0)
+        self.assertLess(point.x, 180.0)
+        self.assertGreaterEqual(point.x, -180.0)
+        self.assertEqual(point.y, -90.0)
+
+    def test_normalization_detailed(self):
+        """Test detailed normalization logic."""
+        # Test longitude normalization
+        # Within range
+        self.assertAlmostEqual(Wgs84(10.0, 0).x, 10.0, places=12)
+        self.assertAlmostEqual(Wgs84(-10.0, 0).x, -10.0, places=12)
+        # Boundaries
+        self.assertAlmostEqual(Wgs84(-180.0, 0).x, -180.0, places=12) # Should stay -180
+        self.assertAlmostEqual(Wgs84(180.0, 0).x, 180.0 - Wgs84.LON_NDS_DELTA, places=12) # Should become ~180 - delta
+        self.assertAlmostEqual(Wgs84(180.0 - Wgs84.LON_NDS_DELTA / 2, 0).x, 180.0 - Wgs84.LON_NDS_DELTA, places=12) # Close to 180
+        # Wrapping
+        self.assertAlmostEqual(Wgs84(190.0, 0).x, -170.0, places=12) # 190 -> -170
+        self.assertAlmostEqual(Wgs84(-190.0, 0).x, 170.0, places=12) # -190 -> 170
+        self.assertAlmostEqual(Wgs84(370.0, 0).x, 10.0, places=12) # 370 -> 10
+        self.assertAlmostEqual(Wgs84(-370.0, 0).x, -10.0, places=12) # -370 -> -10
+        self.assertAlmostEqual(Wgs84(540.0, 0).x, 180.0 - Wgs84.LON_NDS_DELTA, places=12) # 540 -> 180 -> ~180 - delta
+        self.assertAlmostEqual(Wgs84(-540.0, 0).x, -180.0, places=12) # -540 -> -180
+
+        # Test latitude normalization
+        # Within range
+        self.assertAlmostEqual(Wgs84(0, 80.0).y, 80.0, places=12)
+        self.assertAlmostEqual(Wgs84(0, -80.0).y, -80.0, places=12)
+        # Boundaries and clamping
+        self.assertAlmostEqual(Wgs84(0, -90.0).y, -90.0, places=12) # Min lat
+        self.assertAlmostEqual(Wgs84(0, 90.0).y, 90.0 - Wgs84.LAT_NDS_DELTA, places=12) # Max lat becomes 90 - delta
+        self.assertAlmostEqual(Wgs84(0, 90.0 - Wgs84.LAT_NDS_DELTA / 2).y, 90.0 - Wgs84.LAT_NDS_DELTA, places=12) # Close to 90
+        self.assertAlmostEqual(Wgs84(0, 100.0).y, 90.0 - Wgs84.LAT_NDS_DELTA, places=12) # Above 90 - delta gets clamped
+        self.assertAlmostEqual(Wgs84(0, -100.0).y, -90.0, places=12) # Below -90 gets clamped
 
     def test_distance_calculation(self):
         point1 = Wgs84(0, 0)
