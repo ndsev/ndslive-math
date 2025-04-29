@@ -85,3 +85,11 @@ Please refer to the README files in the language-specific directories for detail
 ## Contributing
 
 Contributions to ndsmath are welcome! Whether you're interested in adding features, fixing bugs, or improving documentation, your help is appreciated. Please feel free to submit pull requests or open issues on the GitHub repository.
+
+## Publishing releases
+
+When creating a release, please follow these conventions:
+
+- **Tagging:** Use git tags prefixed with `cpp-v` for C++ releases (e.g., `cpp-v0.2.0`) and `python-v` for Python releases (e.g., `python-v0.1.5`).
+- **Version Files:** Before creating the release tag, ensure you update the version number in the corresponding `VERSION` file (`cpp/VERSION.txt` for C++ or `python/VERSION` for Python) to match the version number in the tag. This keeps the tagged code consistent with the version specified within the source files.
+- **Release Distribution:** Python releases are automatically published to the NDS Artifactory when a Python release tag is created (see CI/CD workflow in `.github/workflows/ci.yml`). C++ releases are currently only available directly from this repository by checking out the corresponding C++ version tag.
