@@ -52,7 +52,7 @@ class MortonCode:
         morton_code = self.morton_code
         x = y = 0
 
-        for i in range(31):
+        for _ in range(31):
             x |= morton_code & bit
             morton_code >>= 1
             y |= morton_code & bit
