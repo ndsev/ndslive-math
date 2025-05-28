@@ -14,7 +14,7 @@ with open('VERSION') as f:
     version = f.read().strip()
 
 setuptools.setup(
-    name="ndsmath",
+    name="ndslive-math",
     version=version,
     author="Navigation Data Standard e.V.",
     author_email="support@nds-association.org",
@@ -24,6 +24,7 @@ setuptools.setup(
     url="https://github.com/ndsev/ndsmath",
     package_dir={"": "src"},
     packages=setuptools.find_packages(where="src"),
+    namespace_packages=["ndslive"],
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",

@@ -1,6 +1,6 @@
 import unittest
 import math  # Add math import
-from ndsmath import Wgs84, PackedTileId, MortonCode
+from ndslive.math import Wgs84, PackedTileId, MortonCode
 
 class TestWgs84(unittest.TestCase):
     def test_initialization(self):
