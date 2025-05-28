@@ -1,4 +1,4 @@
-import setuptools
+from setuptools import setup, find_namespace_packages
 from pathlib import Path
 
 # Read the contents of README.md
@@ -13,7 +13,7 @@ with open('requirements.txt') as f:
 with open('VERSION') as f:
     version = f.read().strip()
 
-setuptools.setup(
+setup(
     name="ndslive-math",
     version=version,
     author="Navigation Data Standard e.V.",
@@ -23,8 +23,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/ndsev/ndsmath",
     package_dir={"": "src"},
-    packages=setuptools.find_packages(where="src"),
-    namespace_packages=["ndslive"],
+    packages=find_namespace_packages(where="src", include=["ndslive.*"]),
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
