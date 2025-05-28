@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ndslive-math"
+dynamic = ["version"]
+authors = [
+    {name = "Navigation Data Standard e.V.", email = "support@nds-association.org"}
+]
+description = "Math utilities for NDS.Live"
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.8"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: Other/Proprietary License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/ndsev/ndsmath"
+Repository = "https://github.com/ndsev/ndsmath"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["ndslive.*"]
+namespaces = true
+
+[tool.setuptools.dynamic]
+version = {file = "VERSION"}
+
