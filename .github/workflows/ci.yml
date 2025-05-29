@@ -37,7 +37,10 @@ jobs:
   build-and-deploy:
     needs: test
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'pull_request' && github.base_ref == 'main') ||
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/python-v'))
 
     steps:
     - uses: actions/checkout@v3
@@ -55,6 +58,12 @@ jobs:
         cd python
         if [[ $GITHUB_REF == refs/tags/python-v* ]]; then
           VERSION=${GITHUB_REF#refs/tags/python-v}
+          # Validate VERSION file matches tag
+          VERSION_FILE=$(cat VERSION)
+          if [[ "$VERSION" != "$VERSION_FILE" ]]; then
+            echo "ERROR: Tag version ($VERSION) does not match VERSION file ($VERSION_FILE)"
+            exit 1
+          fi
         elif [[ $GITHUB_REF == refs/heads/main ]]; then
           VERSION=0.0.999.dev1
         else
