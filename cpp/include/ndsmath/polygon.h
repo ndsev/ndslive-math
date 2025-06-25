@@ -78,14 +78,12 @@ public:
     //! Array subscript operator.
     Position& operator[](const int index)
     {
-        NDSAFW_ASSERT(index < vertices_.size());
         return vertices_[index];
     }
 
     //! Const array subscript operator.
     const Position& operator[](const int index) const
     {
-        NDSAFW_ASSERT(index < vertices_.size());
         return vertices_[index];
     }
 
