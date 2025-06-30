@@ -10,9 +10,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_library(ndsmath SHARED
   src/mortoncode.cpp
   src/packedtileid.cpp
+  src/polygontriangulation.cpp
 
   include/ndsmath/mortoncode.h
   include/ndsmath/packedtileid.h
+  include/ndsmath/polygontriangulation.h
   include/ndsmath/wgs84.h
   include/ndsmath/wgs84polygon.h
   include/ndsmath/wgs84aabb.h)
