@@ -41,7 +41,7 @@ namespaces = true
 tag_regex = "^python-v(?P<version>.*)$"
 git_describe_command = ["git", "describe", "--dirty", "--tags", "--long", "--match", "python-v*"]
 write_to = "src/ndslive/math/_version.py"
-version_scheme = "post-release"
+version_scheme = "release-branch-semver"
 local_scheme = "no-local-version"
 fallback_version = "0.0.0+unknown"
 
