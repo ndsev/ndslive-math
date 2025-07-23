@@ -17,6 +17,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
       with:
@@ -27,12 +29,17 @@ jobs:
         pip install -r python/requirements.txt
     - name: Install ndsmath
       run: |
-        cd python
+        # Move Python package to root temporarily for install
+        cp -r python/* .
         pip install -e .
     - name: Run tests
       run: |
-        cd python
         python -m unittest discover tests
+    - name: Cleanup test environment
+      run: |
+        # Reset repository to clean state
+        git reset --hard HEAD
+        git clean -fd
 
   build-and-deploy:
     needs: test
@@ -44,6 +51,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
@@ -51,30 +60,24 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install setuptools wheel twine
-    - name: Set version
-      id: set_version
+        pip install build twine setuptools-scm
+    - name: Prepare build environment
       run: |
-        cd python
-        if [[ $GITHUB_REF == refs/tags/python-v* ]]; then
-          VERSION=${GITHUB_REF#refs/tags/python-v}
-          # Validate VERSION file matches tag
-          VERSION_FILE=$(cat VERSION)
-          if [[ "$VERSION" != "$VERSION_FILE" ]]; then
-            echo "ERROR: Tag version ($VERSION) does not match VERSION file ($VERSION_FILE)"
-            exit 1
-          fi
-        elif [[ $GITHUB_REF == refs/heads/main ]]; then
-          VERSION=0.0.999.dev1
-        else
-          VERSION=0.0.999.dev0
-        fi
-        echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
-        sed -i "s/version=version,/version='${VERSION}',/" setup.py
-    - name: Build wheel
+        # Move Python package to root temporarily for build
+        cp -r python/* .
+        # Show version info
+        python -m setuptools_scm
+    - name: Build distributions
       run: |
-        cd python
-        python setup.py sdist bdist_wheel
+        python -m build
+        # Move built artifacts back to python/dist
+        mkdir -p python/dist
+        mv dist/* python/dist/
+    - name: Cleanup
+      run: |
+        # Reset repository to clean state, preserving python/dist
+        git reset --hard HEAD
+        git clean -fd
     - name: Deploy to Artifactory
       env:
         TWINE_USERNAME: ${{ secrets.NDS_ARTIFACTORY_USER }}

@@ -91,5 +91,7 @@ Contributions to ndsmath are welcome! Whether you're interested in adding featur
 When creating a release, please follow these conventions:
 
 - **Tagging:** Use git tags prefixed with `cpp-v` for C++ releases (e.g., `cpp-v0.2.0`) and `python-v` for Python releases (e.g., `python-v0.1.5`).
-- **Version Files:** Before creating the release tag, ensure you update the version number in the corresponding `VERSION` file (`cpp/VERSION.txt` for C++ or `python/VERSION` for Python) to match the version number in the tag. This keeps the tagged code consistent with the version specified within the source files.
+- **Version Files:** 
+  - C++ releases require updating the version number in `cpp/VERSION.txt` before creating the release tag.
+  - Python releases use automatic versioning via `setuptools-scm` based on git tags - no manual version file updates needed.
 - **Release Distribution:** Python releases are automatically published to the NDS Artifactory when a Python release tag is created (see CI/CD workflow in `.github/workflows/ci.yml`). C++ releases are currently only available directly from this repository by checking out the corresponding C++ version tag.
