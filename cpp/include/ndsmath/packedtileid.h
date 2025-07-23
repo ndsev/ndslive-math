@@ -79,4 +79,13 @@ private:
 
 using PackedTileIds = std::vector<PackedTileId>;
 
+//! Get all tile IDs that intersect with a bounding box defined by NDS coordinates.
+//! @param swX South-west corner X coordinate (longitude) in NDS coordinates
+//! @param swY South-west corner Y coordinate (latitude) in NDS coordinates
+//! @param neX North-east corner X coordinate (longitude) in NDS coordinates
+//! @param neY North-east corner Y coordinate (latitude) in NDS coordinates
+//! @param level Tile level (0-15)
+//! @return Vector of PackedTileId objects that intersect with the bounding box
+PackedTileIds getTileIdsForBoundingBox(int32_t swX, int32_t swY, int32_t neX, int32_t neY, int level);
+
 } // namespace ndsmath

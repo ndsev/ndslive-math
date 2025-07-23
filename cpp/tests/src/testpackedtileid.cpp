@@ -1,6 +1,7 @@
 // Copyright (c) Navigation Data Standard e.V. - See "LICENSE" file.
 
 #include <glm/glm.hpp>
+#include <set>
 #include "ndsmath/packedtileid.h"
 
 #include "catch2/catch_all.hpp"
@@ -101,5 +102,109 @@ TEST_CASE("PackedTileId longitude edge", "[PackedTileId]") {
     REQUIRE(refTile1.eastNeighbour() == refTile2);
     REQUIRE(refTile2.westNeighbour() == refTile1);
     REQUIRE(x1 == x2);
+}
+
+TEST_CASE("getTileIdsForBoundingBox specific bounding box", "[PackedTileId]") {
+    // Given bounding box in NDS coordinates
+    const int32_t swX = 132644864;  // southwest longitude
+    const int32_t swY = 572522496;  // southwest latitude
+    const int32_t neX = 132907007;  // northeast longitude
+    const int32_t neY = 572784639;  // northeast latitude
+    const int level = 13;
+    
+    // Expected tile ID
+    const uint32_t expectedTileId = 545379780;
+    
+    // Get tile IDs for the bounding box
+    auto tileIds = getTileIdsForBoundingBox(swX, swY, neX, neY, level);
+    
+    // Check that the expected tile ID is in the result
+    bool found = false;
+    for (const auto& tile : tileIds) {
+        if (tile.value() == expectedTileId) {
+            found = true;
+            break;
+        }
+    }
+    REQUIRE(found);
+    
+    // Verify the bounding box is contained within a single tile at level 13
+    REQUIRE(tileIds.size() == 1);
+}
+
+TEST_CASE("getTileIdsForBoundingBox multiple tiles", "[PackedTileId]") {
+    // Create a bounding box that spans 2x2 tiles
+    const uint32_t tileSize = 1u << (31 - 13);  // Size of a level 13 tile
+    
+    // Start at tile boundary
+    const int32_t swX = 0;
+    const int32_t swY = 0;
+    // End just inside the neighboring tiles
+    const int32_t neX = static_cast<int32_t>(tileSize) + 1;
+    const int32_t neY = static_cast<int32_t>(tileSize) + 1;
+    
+    auto tileIds = getTileIdsForBoundingBox(swX, swY, neX, neY, 13);
+    
+    // Should get exactly 4 tiles (2x2)
+    REQUIRE(tileIds.size() == 4);
+}
+
+TEST_CASE("getTileIdsForBoundingBox single point", "[PackedTileId]") {
+    // Test bounding box with same SW and NE corners
+    const int32_t x = 132644864;
+    const int32_t y = 572522496;
+    const int level = 13;
+    
+    auto tileIds = getTileIdsForBoundingBox(x, y, x, y, level);
+    
+    // Should get exactly 1 tile
+    REQUIRE(tileIds.size() == 1);
+}
+
+TEST_CASE("getTileIdsForBoundingBox negative coordinates", "[PackedTileId]") {
+    // Test bounding box with negative coordinates
+    const int32_t swX = -132644864;
+    const int32_t swY = -572522496;
+    const int32_t neX = -132644864 + 100000;
+    const int32_t neY = -572522496 + 100000;
+    const int level = 10;
+    
+    auto tileIds = getTileIdsForBoundingBox(swX, swY, neX, neY, level);
+    
+    // Should get at least one tile
+    REQUIRE(tileIds.size() >= 1);
+    
+    // Verify all tiles have valid IDs
+    for (const auto& tile : tileIds) {
+        REQUIRE(tile.value() > 0);
+        REQUIRE(tile.level() == level);
+    }
+}
+
+TEST_CASE("getTileIdsForBoundingBox ground truth verification", "[PackedTileId]") {
+    // Test with known ground truth data
+    const int32_t swX = -209157330;
+    const int32_t swY = 174937580;
+    const int32_t neX = -208540811;
+    const int32_t neY = 175239411;
+    const int level = 13;
+    
+    // Expected tile IDs from ground truth
+    std::set<uint32_t> expectedTileIds = {
+        626579086, 626579087, 626579098, 626579120, 626579109, 626579108
+    };
+    
+    auto tileIds = getTileIdsForBoundingBox(swX, swY, neX, neY, level);
+    
+    // Should get exactly 6 tiles
+    REQUIRE(tileIds.size() == 6);
+    
+    // Verify all expected tiles are found
+    std::set<uint32_t> foundIds;
+    for (const auto& tile : tileIds) {
+        foundIds.insert(tile.value());
+    }
+    
+    REQUIRE(foundIds == expectedTileIds);
 }
 

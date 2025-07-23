@@ -1,6 +1,7 @@
 import unittest
 import math  # Add math import
 from ndslive.math import Wgs84, PackedTileId, MortonCode
+from ndslive.math.tileid import get_tile_ids_for_bounding_box
 
 class TestWgs84(unittest.TestCase):
     def test_initialization(self):
@@ -236,6 +237,103 @@ class TestMortonCode(unittest.TestCase):
         # Test that values are properly masked to 64 bits
         morton_large = MortonCode(1 << 65)  # Should be masked
         self.assertLess(morton_large.value(), 1 << 64)
+
+
+class TestBoundingBoxToTileIds(unittest.TestCase):
+    def test_specific_bounding_box(self):
+        """Test that the specified bounding box returns the correct tile ID."""
+        # Given bounding box in NDS coordinates
+        sw_x = 132644864  # southwest longitude
+        sw_y = 572522496  # southwest latitude
+        ne_x = 132907007  # northeast longitude
+        ne_y = 572784639  # northeast latitude
+        level = 13
+        
+        # Expected tile ID
+        expected_tile_id = 545379780
+        
+        # Get tile IDs for the bounding box
+        tile_ids = get_tile_ids_for_bounding_box(sw_x, sw_y, ne_x, ne_y, level)
+        
+        # Check that the expected tile ID is in the result
+        tile_values = [tile.value for tile in tile_ids]
+        self.assertIn(expected_tile_id, tile_values, 
+                      f"Expected tile ID {expected_tile_id} not found in {tile_values}")
+        
+        # Verify the bounding box is contained within a single tile at level 13
+        self.assertEqual(len(tile_ids), 1, 
+                         f"Expected 1 tile at level {level}, but got {len(tile_ids)}")
+        
+    def test_bounding_box_multiple_tiles(self):
+        """Test bounding box that spans multiple tiles."""
+        # Create a bounding box that spans 2x2 tiles
+        tile_size = 1 << (31 - 13)  # Size of a level 13 tile
+        
+        # Start at tile boundary
+        sw_x = 0
+        sw_y = 0
+        # End just inside the neighboring tiles
+        ne_x = tile_size + 1
+        ne_y = tile_size + 1
+        
+        tile_ids = get_tile_ids_for_bounding_box(sw_x, sw_y, ne_x, ne_y, 13)
+        
+        # Should get exactly 4 tiles (2x2)
+        self.assertEqual(len(tile_ids), 4)
+        
+    def test_single_point_bounding_box(self):
+        """Test bounding box with same SW and NE corners."""
+        x = 132644864
+        y = 572522496
+        level = 13
+        
+        tile_ids = get_tile_ids_for_bounding_box(x, y, x, y, level)
+        
+        # Should get exactly 1 tile
+        self.assertEqual(len(tile_ids), 1)
+        
+    def test_negative_coordinates(self):
+        """Test bounding box with negative coordinates."""
+        sw_x = -132644864
+        sw_y = -572522496
+        ne_x = -132644864 + 100000
+        ne_y = -572522496 + 100000
+        level = 10
+        
+        tile_ids = get_tile_ids_for_bounding_box(sw_x, sw_y, ne_x, ne_y, level)
+        
+        # Should get at least one tile
+        self.assertGreaterEqual(len(tile_ids), 1)
+        
+        # Verify all tiles have valid IDs
+        for tile in tile_ids:
+            self.assertGreater(tile.value, 0)
+            self.assertEqual(tile.level(), level)
+    
+    def test_ground_truth_verification(self):
+        """Test with known ground truth data."""
+        # Given bounding box and expected results
+        sw_x = -209157330
+        sw_y = 174937580
+        ne_x = -208540811
+        ne_y = 175239411
+        level = 13
+        
+        # Expected tile IDs from ground truth
+        expected_tile_ids = {
+            626579086, 626579087, 626579098, 626579120, 626579109, 626579108
+        }
+        
+        # Get tile IDs for the bounding box
+        tile_ids = get_tile_ids_for_bounding_box(sw_x, sw_y, ne_x, ne_y, level)
+        
+        # Should get exactly 6 tiles
+        self.assertEqual(len(tile_ids), 6)
+        
+        # Verify all expected tiles are found
+        found_ids = {tile.value for tile in tile_ids}
+        self.assertEqual(found_ids, expected_tile_ids)
+
 
 if __name__ == '__main__':
     unittest.main()

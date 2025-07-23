@@ -233,4 +233,39 @@ PackedTileId::operator uint32_t() const
     return value();
 }
 
+PackedTileIds getTileIdsForBoundingBox(int32_t swX, int32_t swY, int32_t neX, int32_t neY, int level)
+{
+    PackedTileIds tileIds;
+    
+    // Calculate tile size at this level
+    const uint32_t tileSize = 1u << (31 - level);
+    
+    // Calculate tile indices for the bounding box corners
+    // We need to handle the coordinate system properly
+    const int32_t startTileX = swX / static_cast<int32_t>(tileSize);
+    const int32_t startTileY = swY / static_cast<int32_t>(tileSize);
+    const int32_t endTileX = neX / static_cast<int32_t>(tileSize);
+    const int32_t endTileY = neY / static_cast<int32_t>(tileSize);
+    
+    // Iterate through all tiles in the bounding box
+    for (int32_t tileY = startTileY; tileY <= endTileY; ++tileY)
+    {
+        for (int32_t tileX = startTileX; tileX <= endTileX; ++tileX)
+        {
+            // Calculate the south-west corner of this tile
+            const int32_t tileSwX = tileX * static_cast<int32_t>(tileSize);
+            const int32_t tileSwY = tileY * static_cast<int32_t>(tileSize);
+            
+            // Create morton code from the tile's south-west corner
+            const MortonCode morton = MortonCode::fromNdsCoordinates(tileSwX, tileSwY);
+            
+            // Create the packed tile ID
+            const PackedTileId tileId(morton, level);
+            tileIds.push_back(tileId);
+        }
+    }
+    
+    return tileIds;
+}
+
 } // namespace ndsmath
