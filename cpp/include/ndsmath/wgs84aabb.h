@@ -112,7 +112,7 @@ public:
     inline double avgMercatorStretch() {
         T const latTop = glm::radians(sw_.latitude() + size_.y);
         T const latBottom = glm::radians(sw_.latitude());
-        auto radToMercatorLat = [](T wgs84Lat){return atanh(sin(wgs84Lat - M_PI_2));};
+        auto radToMercatorLat = [](T wgs84Lat){return atanh(sin(wgs84Lat - glm::half_pi<double>()));};
         return (radToMercatorLat(latTop) - radToMercatorLat(latBottom))/glm::radians(size_.y);
     }
 
