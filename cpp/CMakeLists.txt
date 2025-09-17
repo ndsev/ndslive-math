@@ -3,6 +3,13 @@ project(ndsmath)
 
 include(FetchContent)
 
+# Do not build additional content, if bundled
+set(MAIN_PROJECT NO)
+if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+  set(MAIN_PROJECT YES)
+endif()
+option(NDSMATH_WITH_TESTS "Build tests" ${MAIN_PROJECT})
+
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -41,5 +48,7 @@ target_link_libraries(ndsmath
     glm::glm)
 
 # Tests
-enable_testing()
-add_subdirectory(tests)
+if (NDSMATH_WITH_TESTS)
+  enable_testing()
+  add_subdirectory(tests)
+endif ()
