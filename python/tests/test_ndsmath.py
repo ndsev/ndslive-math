@@ -188,6 +188,40 @@ class TestPackedTileId(unittest.TestCase):
         self.assertEqual(ne_x - sw_x, expected_size)
         self.assertEqual(ne_y - sw_y, expected_size)
 
+    def test_is_valid(self):
+        """Test validation of packed tile IDs."""
+        # Valid tiles
+        self.assertTrue(PackedTileId(1 << 16).is_valid())  # Level 0, morton 0
+        self.assertTrue(PackedTileId((1 << 16) + 1).is_valid())  # Level 0, morton 1
+        self.assertTrue(PackedTileId(1 << 17).is_valid())  # Level 1, morton 0
+        self.assertTrue(PackedTileId((1 << 18) + 15).is_valid())  # Level 2, morton 15 (max)
+
+        # Invalid tiles - value too small
+        self.assertFalse(PackedTileId(0).is_valid())
+        self.assertFalse(PackedTileId(100).is_valid())
+        self.assertFalse(PackedTileId((1 << 16) - 1).is_valid())
+
+        # Invalid tiles - morton number exceeds max for level
+        # Level 0 max morton = 2^1 - 1 = 1, so morton 2 is invalid
+        invalid_level0 = PackedTileId((1 << 16) + 2)
+        self.assertFalse(invalid_level0.is_valid())
+
+        # Level 1 max morton = 2^3 - 1 = 7, so morton 8 is invalid
+        invalid_level1 = PackedTileId((1 << 17) + 8)
+        self.assertFalse(invalid_level1.is_valid())
+
+        # Level 2 max morton = 2^5 - 1 = 31, so morton 32 is invalid
+        invalid_level2 = PackedTileId((1 << 18) + 32)
+        self.assertFalse(invalid_level2.is_valid())
+
+        # The user's reported invalid tile: 262177 = 262144 + 33 (level 2, morton 33)
+        invalid_user_tile = PackedTileId(262177)
+        self.assertFalse(invalid_user_tile.is_valid())
+
+        # Valid user tile: 262145 = 262144 + 1 (level 2, morton 1)
+        valid_user_tile = PackedTileId(262145)
+        self.assertTrue(valid_user_tile.is_valid())
+
 class TestMortonCode(unittest.TestCase):
     def test_basic_coordinate_conversion(self):
         """Test basic coordinate conversion roundtrip"""

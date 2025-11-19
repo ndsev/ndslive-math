@@ -123,6 +123,27 @@ class PackedTileId:
         tile_level = self.level()
         return self.value - (1 << (16 + tile_level))
 
+    def is_valid(self):
+        """
+        Check if this is a valid PackedTileId.
+
+        A valid tile ID must:
+        - Have value >= 2^16 (minimum for level 0)
+        - Have a morton number within valid range for its level (0 to 2^(2*level+1) - 1)
+
+        Returns:
+            True if valid, False otherwise
+        """
+        min_packed_tile_id = 1 << 16
+        if self.value < min_packed_tile_id:
+            return False
+
+        tile_level = self.level()
+        morton = self.morton_number()
+        max_morton = (1 << (2 * tile_level + 1)) - 1
+
+        return 0 <= morton <= max_morton
+
     def __str__(self):
         return f"PackedTileId(value={self.value})"
 
