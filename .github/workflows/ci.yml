@@ -80,7 +80,7 @@ jobs:
     - name: Deploy to Artifactory
       env:
         TWINE_USERNAME: ${{ secrets.NDS_ARTIFACTORY_USER }}
-        TWINE_PASSWORD: ${{ secrets.NDS_ARTIFACTORY_USER_PW }}
+        TWINE_PASSWORD: ${{ secrets.NDS_ARTIFACTORY_TOKEN }}
       run: |
         cd python
         REPO_URL="https://artifactory.nds-association.org/artifactory/api/pypi/tooling-pypi"
