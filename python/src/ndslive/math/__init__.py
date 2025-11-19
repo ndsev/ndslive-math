@@ -1,4 +1,4 @@
-from .tileid import PackedTileId
+from .tileid import PackedTileId, get_tile_ids_for_bounding_box, bounding_box_from_tile_ids
 from .morton import MortonCode
 from .wgs84 import Wgs84
 

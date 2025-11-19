@@ -1,7 +1,7 @@
 import unittest
 import math  # Add math import
 from ndslive.math import Wgs84, PackedTileId, MortonCode
-from ndslive.math.tileid import get_tile_ids_for_bounding_box
+from ndslive.math.tileid import get_tile_ids_for_bounding_box, bounding_box_from_tile_ids
 
 class TestWgs84(unittest.TestCase):
     def test_initialization(self):
@@ -333,6 +333,109 @@ class TestBoundingBoxToTileIds(unittest.TestCase):
         # Verify all expected tiles are found
         found_ids = {tile.value for tile in tile_ids}
         self.assertEqual(found_ids, expected_tile_ids)
+
+
+class TestBoundingBoxFromTileIds(unittest.TestCase):
+    """Test bounding_box_from_tile_ids function."""
+
+    def test_single_tile_property(self):
+        """Test one-tile property: bbox from one tile covers only that tile."""
+        # Use a real tile ID from test fixtures
+        tile_id = PackedTileId(545554681)
+        level = tile_id.level()
+
+        # Get bounding box from this single tile
+        sw_x, sw_y, ne_x, ne_y = bounding_box_from_tile_ids([tile_id])
+
+        # Verify SW corner matches tile's SW corner (should be exact)
+        tile_sw_x, tile_sw_y = tile_id.south_west_corner()
+        self.assertEqual(sw_x, tile_sw_x)
+        self.assertEqual(sw_y, tile_sw_y)
+
+        # NE corner will be adjusted (tile.NE - 1) to be inclusive for get_tile_ids_for_bounding_box
+        # So we don't check exact NE match, but verify the one-tile property instead
+
+        # Verify inverse property: get_tile_ids_for_bounding_box returns only this tile
+        result_tiles = get_tile_ids_for_bounding_box(sw_x, sw_y, ne_x, ne_y, level)
+        self.assertEqual(len(result_tiles), 1, f"Expected 1 tile, got {len(result_tiles)}: {[t.value for t in result_tiles]}")
+        self.assertEqual(result_tiles[0].value, tile_id.value)
+
+    def test_multiple_adjacent_tiles(self):
+        """Test bbox covers multiple adjacent tiles."""
+        # 2x2 grid of level 13 tiles from test fixture (Munich region)
+        tile_ids = [
+            PackedTileId(545554681),
+            PackedTileId(545554683),
+            PackedTileId(545554684),
+            PackedTileId(545554686)
+        ]
+
+        sw_x, sw_y, ne_x, ne_y = bounding_box_from_tile_ids(tile_ids)
+
+        # Result should cover all input tiles
+        result_tiles = get_tile_ids_for_bounding_box(sw_x, sw_y, ne_x, ne_y, 13)
+        result_ids = {t.value for t in result_tiles}
+        input_ids = {t.value for t in tile_ids}
+
+        # All input tiles should be in result
+        self.assertTrue(input_ids.issubset(result_ids))
+
+    def test_accepts_integer_tile_ids(self):
+        """Test function accepts both PackedTileId objects and integers."""
+        tile_ids_int = [545554681, 545554683]
+        tile_ids_obj = [PackedTileId(545554681), PackedTileId(545554683)]
+
+        bbox1 = bounding_box_from_tile_ids(tile_ids_int)
+        bbox2 = bounding_box_from_tile_ids(tile_ids_obj)
+
+        self.assertEqual(bbox1, bbox2)
+
+    def test_mixed_tile_id_types(self):
+        """Test function accepts mixed list of integers and PackedTileId objects."""
+        tile_ids_mixed = [545554681, PackedTileId(545554683)]
+
+        # Should not raise an error
+        bbox = bounding_box_from_tile_ids(tile_ids_mixed)
+        self.assertEqual(len(bbox), 4)  # Should return 4-tuple
+
+    def test_empty_list_raises_error(self):
+        """Test empty list raises ValueError."""
+        with self.assertRaises(ValueError) as context:
+            bounding_box_from_tile_ids([])
+
+        self.assertIn("cannot be empty", str(context.exception))
+
+    def test_invalid_type_raises_error(self):
+        """Test invalid tile ID type raises TypeError."""
+        with self.assertRaises(TypeError):
+            bounding_box_from_tile_ids(["not a tile id"])
+
+    def test_distant_tiles_different_regions(self):
+        """Test bbox correctly covers tiles from different regions."""
+        # Munich tile and Berlin tile (from test fixture)
+        tile_ids = [
+            PackedTileId(545554681),  # Munich region
+            PackedTileId(545666600)   # Berlin region
+        ]
+
+        sw_x, sw_y, ne_x, ne_y = bounding_box_from_tile_ids(tile_ids)
+
+        # Result should cover both tiles
+        result_tiles = get_tile_ids_for_bounding_box(sw_x, sw_y, ne_x, ne_y, 13)
+        result_ids = {t.value for t in result_tiles}
+
+        self.assertIn(545554681, result_ids)
+        self.assertIn(545666600, result_ids)
+
+    def test_returns_tuple_of_four_integers(self):
+        """Test function returns tuple of 4 integers."""
+        tile_id = PackedTileId(545554681)
+        result = bounding_box_from_tile_ids([tile_id])
+
+        self.assertIsInstance(result, tuple)
+        self.assertEqual(len(result), 4)
+        for coord in result:
+            self.assertIsInstance(coord, int)
 
 
 if __name__ == '__main__':

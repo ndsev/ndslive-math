@@ -145,5 +145,72 @@ def get_tile_ids_for_bounding_box(sw_x, sw_y, ne_x, ne_y, level):
             # Create the packed tile ID
             tile_id = PackedTileId.from_morton_and_level(morton, level)
             tile_ids.append(tile_id)
-    
+
     return tile_ids
+
+
+def bounding_box_from_tile_ids(tile_ids):
+    """
+    Create a tight bounding box from a list of tile IDs.
+
+    This function computes the minimal bounding box in NDS coordinates that
+    covers all the specified tiles. The bounding box is guaranteed to be
+    tight, meaning it starts at the south-west corner of the westernmost/
+    southernmost tile and ends at the north-east corner of the easternmost/
+    northernmost tile.
+
+    Important property: When given a single tile ID, the resulting bounding
+    box will return only that tile when passed to get_tile_ids_for_bounding_box()
+    at the same level.
+
+    Args:
+        tile_ids: List of PackedTileId objects or integer tile IDs
+
+    Returns:
+        Tuple of (sw_x, sw_y, ne_x, ne_y) in NDS coordinates, representing
+        the minimal bounding box that covers all tiles.
+
+    Raises:
+        ValueError: If tile_ids list is empty
+
+    Example:
+        >>> tile = PackedTileId(545554681)
+        >>> bbox = bounding_box_from_tile_ids([tile])
+        >>> # bbox will exactly match tile's boundaries
+    """
+    if not tile_ids:
+        raise ValueError("tile_ids list cannot be empty")
+
+    # Ensure we have PackedTileId objects
+    tiles = []
+    for tid in tile_ids:
+        if isinstance(tid, int):
+            tiles.append(PackedTileId(tid))
+        elif isinstance(tid, PackedTileId):
+            tiles.append(tid)
+        else:
+            raise TypeError(f"Expected int or PackedTileId, got {type(tid)}")
+
+    # Initialize with first tile's bounds
+    first_sw_x, first_sw_y = tiles[0].south_west_corner()
+    first_ne_x, first_ne_y = tiles[0].north_east_corner()
+
+    min_x = first_sw_x
+    min_y = first_sw_y
+    max_x = first_ne_x
+    max_y = first_ne_y
+
+    # Expand bounds to include all tiles
+    for tile in tiles[1:]:
+        sw_x, sw_y = tile.south_west_corner()
+        ne_x, ne_y = tile.north_east_corner()
+
+        min_x = min(min_x, sw_x)
+        min_y = min(min_y, sw_y)
+        max_x = max(max_x, ne_x)
+        max_y = max(max_y, ne_y)
+
+    # Adjust NE corner: north_east_corner() returns exclusive boundary (first point outside tile)
+    # but get_tile_ids_for_bounding_box() treats coordinates as inclusive.
+    # Subtract 1 to get the last point inside the tile rather than first point outside.
+    return (min_x, min_y, max_x - 1, max_y - 1)
