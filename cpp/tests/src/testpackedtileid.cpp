@@ -188,23 +188,67 @@ TEST_CASE("getTileIdsForBoundingBox ground truth verification", "[PackedTileId]"
     const int32_t neX = -208540811;
     const int32_t neY = 175239411;
     const int level = 13;
-    
+
     // Expected tile IDs from ground truth
     std::set<uint32_t> expectedTileIds = {
         626579086, 626579087, 626579098, 626579120, 626579109, 626579108
     };
-    
+
     auto tileIds = getTileIdsForBoundingBox(swX, swY, neX, neY, level);
-    
+
     // Should get exactly 6 tiles
     REQUIRE(tileIds.size() == 6);
-    
+
     // Verify all expected tiles are found
     std::set<uint32_t> foundIds;
     for (const auto& tile : tileIds) {
         foundIds.insert(tile.value());
     }
-    
+
     REQUIRE(foundIds == expectedTileIds);
+}
+
+TEST_CASE("PackedTileId fromTileIndex", "[PackedTileId]") {
+    // Test basic case - the original bug report
+    auto tile = PackedTileId::fromTileIndex(4, 2);
+    REQUIRE(tile.mortonNumber() == 4);
+    REQUIRE(tile.level() == 2);
+
+    // Test various levels and morton numbers
+    struct TestData {
+        uint32_t mortonNumber;
+        int level;
+    };
+
+    std::vector<TestData> testData = {
+        {0, 1},    // First tile at level 1
+        {3, 1},    // Last tile at level 1 (4^1 - 1 = 3)
+        {0, 13},   // First tile at level 13
+        {15, 2},   // Last tile at level 2 (4^2 - 1 = 15)
+        {100, 10}  // Arbitrary tile at level 10
+    };
+
+    for (const auto& data : testData) {
+        auto tile = PackedTileId::fromTileIndex(data.mortonNumber, data.level);
+        REQUIRE(tile.mortonNumber() == data.mortonNumber);
+        REQUIRE(tile.level() == data.level);
+    }
+}
+
+TEST_CASE("PackedTileId fromTileIndex valid corners", "[PackedTileId]") {
+    auto tile = PackedTileId::fromTileIndex(4, 2);
+
+    // Get corners
+    int32_t swX, swY, neX, neY;
+    tile.southWestCorner().toNdsCoordinates(swX, swY);
+    tile.northEastCorner().toNdsCoordinates(neX, neY);
+
+    // Tile size at level 2
+    const uint32_t expectedSize = 1u << (31 - 2);
+    REQUIRE(tile.size() == expectedSize);
+
+    // Verify tile dimensions
+    REQUIRE(static_cast<uint32_t>(neX - swX) == expectedSize);
+    REQUIRE(static_cast<uint32_t>(neY - swY) == expectedSize);
 }
 

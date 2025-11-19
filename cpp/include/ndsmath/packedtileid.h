@@ -22,8 +22,17 @@ public:
     //! Constructor.
     explicit PackedTileId(uint32_t value);
 
-    //! Create the packed tile id from the morton code and level.
+    //! Create a PackedTileId that contains the point encoded by a MortonCode.
+    //! This finds the tile at the specified level containing the full-precision
+    //! NDS coordinates. The resulting mortonNumber() will NOT equal the input
+    //! mortonCode.value(). Use fromTileIndex() if you need a specific morton number.
     PackedTileId(MortonCode mortonCode, const int level);
+
+    //! Create a PackedTileId directly from a tile morton number and level.
+    //! @param mortonNumber The tile's morton number (0 to 4^level - 1)
+    //! @param level Tile level (0-15)
+    //! @return PackedTileId with the specified morton number at the given level
+    static PackedTileId fromTileIndex(uint32_t mortonNumber, int level);
 
     ///! Checks if the internal value represents an actual PackedTileId or not
     bool isValid() const;

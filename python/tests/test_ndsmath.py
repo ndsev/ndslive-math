@@ -150,6 +150,44 @@ class TestPackedTileId(unittest.TestCase):
         self.assertEqual(sw_x, 0)
         self.assertEqual(sw_y, 0)
 
+    def test_from_tile_index(self):
+        """Test creating a tile directly from morton number and level."""
+        # Test basic case - the original bug report
+        tile = PackedTileId.from_tile_index(4, 2)
+        self.assertEqual(tile.morton_number(), 4)
+        self.assertEqual(tile.level(), 2)
+
+        # Test various levels and morton numbers
+        test_cases = [
+            (0, 1),   # First tile at level 1
+            (3, 1),   # Last tile at level 1 (4^1 - 1 = 3)
+            (0, 13),  # First tile at level 13
+            (15, 2),  # Last tile at level 2 (4^2 - 1 = 15)
+            (100, 10), # Arbitrary tile at level 10
+        ]
+
+        for morton_number, level in test_cases:
+            with self.subTest(morton_number=morton_number, level=level):
+                tile = PackedTileId.from_tile_index(morton_number, level)
+                self.assertEqual(tile.morton_number(), morton_number)
+                self.assertEqual(tile.level(), level)
+
+    def test_from_tile_index_roundtrip(self):
+        """Test that from_tile_index produces valid tiles with correct corners."""
+        tile = PackedTileId.from_tile_index(4, 2)
+
+        # Get corners
+        sw_x, sw_y = tile.south_west_corner()
+        ne_x, ne_y = tile.north_east_corner()
+
+        # Tile size at level 2
+        expected_size = 1 << (31 - 2)
+        self.assertEqual(tile.size(), expected_size)
+
+        # Verify tile dimensions
+        self.assertEqual(ne_x - sw_x, expected_size)
+        self.assertEqual(ne_y - sw_y, expected_size)
+
 class TestMortonCode(unittest.TestCase):
     def test_basic_coordinate_conversion(self):
         """Test basic coordinate conversion roundtrip"""

@@ -11,10 +11,46 @@ class PackedTileId:
         self.value = value
     
     @classmethod
+    def from_tile_index(cls, morton_number, level):
+        """
+        Create a PackedTileId directly from a tile morton number and level.
+
+        This constructs a tile using the morton number as the tile's index
+        at the specified level, without any coordinate conversion.
+
+        Args:
+            morton_number: The tile's morton number (0 to 4^level - 1)
+            level: Tile level (0-15)
+
+        Returns:
+            PackedTileId with the specified morton number at the given level
+
+        Example:
+            >>> tile = PackedTileId.from_tile_index(4, 2)
+            >>> tile.morton_number()  # Returns 4
+        """
+        value = morton_number + (1 << (16 + level))
+        return cls(value)
+
+    @classmethod
     def from_morton_and_level(cls, morton_code, level):
         """
-        Create a PackedTileId from a MortonCode and level.
-        This mirrors the C++ constructor PackedTileId(MortonCode, int level).
+        Create a PackedTileId that contains the point encoded by a MortonCode.
+
+        This method finds the tile at the specified level that contains the
+        full-precision NDS coordinates encoded in the MortonCode. The resulting
+        tile's morton_number will NOT equal the input morton_code.value() unless
+        the point happens to be in that specific tile.
+
+        Note: If you want to create a tile with a specific morton number, use
+        from_tile_index() instead.
+
+        Args:
+            morton_code: A MortonCode representing full-precision NDS coordinates
+            level: Tile level (0-15)
+
+        Returns:
+            PackedTileId of the tile containing the encoded point
         """
         # Get NDS coordinates from morton code
         x_coord, y_coord = morton_code.to_nds_coordinates()
