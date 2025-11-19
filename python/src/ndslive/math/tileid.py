@@ -144,6 +144,110 @@ class PackedTileId:
 
         return 0 <= morton <= max_morton
 
+    def west_neighbour(self):
+        """
+        Returns the tile to the west of this tile at the same level.
+
+        Handles wrapping at the antimeridian (180° longitude).
+
+        Returns:
+            PackedTileId of the western neighbor
+        """
+        level = self.level()
+        current_bit = 1
+        result = self.value
+
+        while level >= 0:
+            if (result & current_bit) != 0:
+                # Clear bit
+                result &= ~current_bit
+                break
+            else:
+                # Set bit and move to next level
+                result |= current_bit
+                level -= 1
+                current_bit <<= 2
+
+        return PackedTileId(result)
+
+    def east_neighbour(self):
+        """
+        Returns the tile to the east of this tile at the same level.
+
+        Handles wrapping at the antimeridian (180° longitude).
+
+        Returns:
+            PackedTileId of the eastern neighbor
+        """
+        level = self.level()
+        current_bit = 1
+        result = self.value
+
+        while level >= 0:
+            if (result & current_bit) == 0:
+                # Set bit
+                result |= current_bit
+                break
+            else:
+                # Clear bit and move to next level
+                result &= ~current_bit
+                level -= 1
+                current_bit <<= 2
+
+        return PackedTileId(result)
+
+    def south_neighbour(self):
+        """
+        Returns the tile to the south of this tile at the same level.
+
+        Note: At the south pole boundary, behavior may wrap.
+
+        Returns:
+            PackedTileId of the southern neighbor
+        """
+        level = self.level()
+        current_bit = 2
+        result = self.value
+
+        while level >= 0:
+            if (result & current_bit) != 0:
+                # Clear bit
+                result &= ~current_bit
+                break
+            else:
+                # Set bit and move to next level
+                result |= current_bit
+                level -= 1
+                current_bit <<= 2
+
+        return PackedTileId(result)
+
+    def north_neighbour(self):
+        """
+        Returns the tile to the north of this tile at the same level.
+
+        Note: At the north pole boundary, behavior may wrap.
+
+        Returns:
+            PackedTileId of the northern neighbor
+        """
+        level = self.level()
+        current_bit = 2
+        result = self.value
+
+        while level >= 0:
+            if (result & current_bit) == 0:
+                # Set bit
+                result |= current_bit
+                break
+            else:
+                # Clear bit and move to next level
+                result &= ~current_bit
+                level -= 1
+                current_bit <<= 2
+
+        return PackedTileId(result)
+
     def __str__(self):
         return f"PackedTileId(value={self.value})"
 

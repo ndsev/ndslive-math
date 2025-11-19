@@ -222,6 +222,86 @@ class TestPackedTileId(unittest.TestCase):
         valid_user_tile = PackedTileId(262145)
         self.assertTrue(valid_user_tile.is_valid())
 
+    def test_neighbour_functions_basic(self):
+        """Test basic neighbour traversal."""
+        # Create a tile at level 2, morton number 0 (SW corner of world)
+        tile = PackedTileId.from_tile_index(0, 2)
+        self.assertEqual(tile.level(), 2)
+
+        # Get neighbours
+        east_tile = tile.east_neighbour()
+        north_tile = tile.north_neighbour()
+
+        # Neighbours should be at same level
+        self.assertEqual(east_tile.level(), 2)
+        self.assertEqual(north_tile.level(), 2)
+
+        # Neighbours should be different tiles
+        self.assertNotEqual(tile.value, east_tile.value)
+        self.assertNotEqual(tile.value, north_tile.value)
+
+        # Going back should return to original
+        self.assertEqual(east_tile.west_neighbour().value, tile.value)
+        self.assertEqual(north_tile.south_neighbour().value, tile.value)
+
+    def test_neighbour_functions_roundtrip(self):
+        """Test that going in opposite directions returns to original tile."""
+        test_tiles = [
+            PackedTileId.from_tile_index(0, 5),
+            PackedTileId.from_tile_index(100, 10),
+            PackedTileId.from_tile_index(7, 3),
+            PackedTileId(545554681),  # Real Munich tile
+        ]
+
+        for tile in test_tiles:
+            with self.subTest(tile_value=tile.value):
+                # East-West roundtrip
+                self.assertEqual(tile.east_neighbour().west_neighbour().value, tile.value)
+                self.assertEqual(tile.west_neighbour().east_neighbour().value, tile.value)
+
+                # North-South roundtrip
+                self.assertEqual(tile.north_neighbour().south_neighbour().value, tile.value)
+                self.assertEqual(tile.south_neighbour().north_neighbour().value, tile.value)
+
+    def test_neighbour_spatial_relationship(self):
+        """Test that neighbours have correct spatial relationships."""
+        tile = PackedTileId.from_tile_index(5, 3)
+        tile_sw_x, tile_sw_y = tile.south_west_corner()
+        tile_size = tile.size()
+
+        # East neighbour should be shifted east by tile_size
+        east_tile = tile.east_neighbour()
+        east_sw_x, east_sw_y = east_tile.south_west_corner()
+        self.assertEqual(east_sw_x, tile_sw_x + tile_size)
+        self.assertEqual(east_sw_y, tile_sw_y)
+
+        # North neighbour should be shifted north by tile_size
+        north_tile = tile.north_neighbour()
+        north_sw_x, north_sw_y = north_tile.south_west_corner()
+        self.assertEqual(north_sw_x, tile_sw_x)
+        self.assertEqual(north_sw_y, tile_sw_y + tile_size)
+
+        # West neighbour should be shifted west by tile_size
+        west_tile = tile.west_neighbour()
+        west_sw_x, west_sw_y = west_tile.south_west_corner()
+        self.assertEqual(west_sw_x, tile_sw_x - tile_size)
+        self.assertEqual(west_sw_y, tile_sw_y)
+
+        # South neighbour should be shifted south by tile_size
+        south_tile = tile.south_neighbour()
+        south_sw_x, south_sw_y = south_tile.south_west_corner()
+        self.assertEqual(south_sw_x, tile_sw_x)
+        self.assertEqual(south_sw_y, tile_sw_y - tile_size)
+
+    def test_neighbour_level_preservation(self):
+        """Test that neighbours are always at the same level."""
+        for level in range(1, 10):
+            tile = PackedTileId.from_tile_index(0, level)
+            self.assertEqual(tile.north_neighbour().level(), level)
+            self.assertEqual(tile.south_neighbour().level(), level)
+            self.assertEqual(tile.east_neighbour().level(), level)
+            self.assertEqual(tile.west_neighbour().level(), level)
+
 class TestMortonCode(unittest.TestCase):
     def test_basic_coordinate_conversion(self):
         """Test basic coordinate conversion roundtrip"""
