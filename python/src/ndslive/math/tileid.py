@@ -6,9 +6,12 @@ class PackedTileId:
     Represents a tile in a hierarchical tiling system.
     Provides methods to extract level, size, and coordinate
     information from the packed tile ID.
+
+    All constructors validate inputs and raise ValueError for invalid tile IDs.
     """
     def __init__(self, value=0):
         self.value = value
+        self._validate()
     
     @classmethod
     def from_tile_index(cls, morton_number, level):
@@ -19,16 +22,31 @@ class PackedTileId:
         at the specified level, without any coordinate conversion.
 
         Args:
-            morton_number: The tile's morton number (0 to 4^level - 1)
+            morton_number: The tile's morton number (0 to 2^(2*level+1) - 1)
             level: Tile level (0-15)
 
         Returns:
             PackedTileId with the specified morton number at the given level
 
+        Raises:
+            ValueError: If level or morton_number are out of valid range
+
         Example:
             >>> tile = PackedTileId.from_tile_index(4, 2)
             >>> tile.morton_number()  # Returns 4
         """
+        # Validate level
+        if not (0 <= level <= 15):
+            raise ValueError(f"Invalid level {level} (must be 0-15)")
+
+        # Validate morton number for this level
+        max_morton = (1 << (2 * level + 1)) - 1
+        if not (0 <= morton_number <= max_morton):
+            raise ValueError(
+                f"Invalid morton number {morton_number} for level {level} "
+                f"(allowed: 0-{max_morton})"
+            )
+
         value = morton_number + (1 << (16 + level))
         return cls(value)
 
@@ -51,7 +69,14 @@ class PackedTileId:
 
         Returns:
             PackedTileId of the tile containing the encoded point
+
+        Raises:
+            ValueError: If level is out of valid range
         """
+        # Validate level
+        if not (0 <= level <= 15):
+            raise ValueError(f"Invalid level {level} (must be 0-15)")
+
         # Get NDS coordinates from morton code
         x_coord, y_coord = morton_code.to_nds_coordinates()
         
@@ -123,130 +148,176 @@ class PackedTileId:
         tile_level = self.level()
         return self.value - (1 << (16 + tile_level))
 
-    def is_valid(self):
+    def _validate(self):
         """
-        Check if this is a valid PackedTileId.
+        Validates this PackedTileId.
 
-        A valid tile ID must:
-        - Have value >= 2^16 (minimum for level 0)
-        - Have a morton number within valid range for its level (0 to 2^(2*level+1) - 1)
-
-        Returns:
-            True if valid, False otherwise
+        Raises:
+            ValueError: If the tile ID is invalid, with a detailed error message
         """
         min_packed_tile_id = 1 << 16
         if self.value < min_packed_tile_id:
-            return False
+            raise ValueError(
+                f"Invalid PackedTileId({self.value}): value must be >= {min_packed_tile_id}"
+            )
 
         tile_level = self.level()
         morton = self.morton_number()
         max_morton = (1 << (2 * tile_level + 1)) - 1
 
-        return 0 <= morton <= max_morton
+        if morton < 0 or morton > max_morton:
+            raise ValueError(
+                f"Invalid PackedTileId({self.value}): morton number {morton} "
+                f"exceeds valid range for level {tile_level} (allowed: 0-{max_morton})"
+            )
+
+    def _deinterleave_morton(self, morton, level):
+        """
+        Extract X and Y coordinates from morton number.
+
+        In the NDS tiling system, X has (level+1) bits and Y has level bits,
+        creating a rectangular grid that is twice as wide as it is tall.
+
+        Args:
+            morton: The morton number to deinterleave
+            level: The tile level
+
+        Returns:
+            Tuple of (x, y) coordinates
+        """
+        x = y = 0
+        # Y has 'level' bits, X has 'level + 1' bits
+        # Morton bits are interleaved as: X0 Y0 X1 Y1 ... X{level} Y{level-1} X{level}
+        for i in range(level):
+            if morton & (1 << (2 * i)):
+                x |= (1 << i)
+            if morton & (1 << (2 * i + 1)):
+                y |= (1 << i)
+        # Extract the extra X bit
+        if morton & (1 << (2 * level)):
+            x |= (1 << level)
+        return x, y
+
+    def _interleave_coords(self, x, y, level):
+        """
+        Create morton number from X and Y coordinates.
+
+        In the NDS tiling system, X has (level+1) bits and Y has level bits.
+
+        Args:
+            x: X coordinate (0 to 2^(level+1) - 1)
+            y: Y coordinate (0 to 2^level - 1)
+            level: The tile level
+
+        Returns:
+            The interleaved morton number
+        """
+        morton = 0
+        # Interleave level bits from each coordinate
+        for i in range(level):
+            if x & (1 << i):
+                morton |= (1 << (2 * i))
+            if y & (1 << i):
+                morton |= (1 << (2 * i + 1))
+        # Add the extra X bit
+        if x & (1 << level):
+            morton |= (1 << (2 * level))
+        return morton
 
     def west_neighbour(self):
         """
         Returns the tile to the west of this tile at the same level.
 
-        Handles wrapping at the antimeridian (180° longitude).
+        Wraps around at the antimeridian (180° longitude) - going west from
+        the westernmost tile returns the easternmost tile at the same level.
 
         Returns:
-            PackedTileId of the western neighbor
+            PackedTileId of the western neighbor (with wrapping)
         """
         level = self.level()
-        current_bit = 1
-        result = self.value
+        morton = self.morton_number()
 
-        while level >= 0:
-            if (result & current_bit) != 0:
-                # Clear bit
-                result &= ~current_bit
-                break
-            else:
-                # Set bit and move to next level
-                result |= current_bit
-                level -= 1
-                current_bit <<= 2
+        # Deinterleave to get X, Y
+        x, y = self._deinterleave_morton(morton, level)
 
-        return PackedTileId(result)
+        # Move west (decrement X with wrapping)
+        # X has (level + 1) bits, so max value is 2^(level+1) - 1
+        max_x = (1 << (level + 1)) - 1
+        x = (x - 1) & max_x
+
+        # Reinterleave
+        new_morton = self._interleave_coords(x, y, level)
+
+        return PackedTileId.from_tile_index(new_morton, level)
 
     def east_neighbour(self):
         """
         Returns the tile to the east of this tile at the same level.
 
-        Handles wrapping at the antimeridian (180° longitude).
+        Wraps around at the antimeridian (180° longitude) - going east from
+        the easternmost tile returns the westernmost tile at the same level.
 
         Returns:
-            PackedTileId of the eastern neighbor
+            PackedTileId of the eastern neighbor (with wrapping)
         """
         level = self.level()
-        current_bit = 1
-        result = self.value
+        morton = self.morton_number()
 
-        while level >= 0:
-            if (result & current_bit) == 0:
-                # Set bit
-                result |= current_bit
-                break
-            else:
-                # Clear bit and move to next level
-                result &= ~current_bit
-                level -= 1
-                current_bit <<= 2
+        x, y = self._deinterleave_morton(morton, level)
 
-        return PackedTileId(result)
+        # Move east (increment X with wrapping)
+        # X has (level + 1) bits, so max value is 2^(level+1) - 1
+        max_x = (1 << (level + 1)) - 1
+        x = (x + 1) & max_x
+
+        new_morton = self._interleave_coords(x, y, level)
+        return PackedTileId.from_tile_index(new_morton, level)
 
     def south_neighbour(self):
         """
         Returns the tile to the south of this tile at the same level.
 
-        Note: At the south pole boundary, behavior may wrap.
+        Wraps around at the south pole - going south from the southernmost
+        tile returns the northernmost tile at the same level.
 
         Returns:
-            PackedTileId of the southern neighbor
+            PackedTileId of the southern neighbor (with wrapping)
         """
         level = self.level()
-        current_bit = 2
-        result = self.value
+        morton = self.morton_number()
 
-        while level >= 0:
-            if (result & current_bit) != 0:
-                # Clear bit
-                result &= ~current_bit
-                break
-            else:
-                # Set bit and move to next level
-                result |= current_bit
-                level -= 1
-                current_bit <<= 2
+        x, y = self._deinterleave_morton(morton, level)
 
-        return PackedTileId(result)
+        # Move south (decrement Y with wrapping)
+        # Y has level bits, so max value is 2^level - 1
+        max_y = (1 << level) - 1
+        y = (y - 1) & max_y
+
+        new_morton = self._interleave_coords(x, y, level)
+        return PackedTileId.from_tile_index(new_morton, level)
 
     def north_neighbour(self):
         """
         Returns the tile to the north of this tile at the same level.
 
-        Note: At the north pole boundary, behavior may wrap.
+        Wraps around at the north pole - going north from the northernmost
+        tile returns the southernmost tile at the same level.
 
         Returns:
-            PackedTileId of the northern neighbor
+            PackedTileId of the northern neighbor (with wrapping)
         """
         level = self.level()
-        current_bit = 2
-        result = self.value
+        morton = self.morton_number()
 
-        while level >= 0:
-            if (result & current_bit) == 0:
-                # Set bit
-                result |= current_bit
-                break
-            else:
-                # Clear bit and move to next level
-                result &= ~current_bit
-                level -= 1
-                current_bit <<= 2
+        x, y = self._deinterleave_morton(morton, level)
 
-        return PackedTileId(result)
+        # Move north (increment Y with wrapping)
+        # Y has level bits, so max value is 2^level - 1
+        max_y = (1 << level) - 1
+        y = (y + 1) & max_y
+
+        new_morton = self._interleave_coords(x, y, level)
+        return PackedTileId.from_tile_index(new_morton, level)
 
     def __str__(self):
         return f"PackedTileId(value={self.value})"
