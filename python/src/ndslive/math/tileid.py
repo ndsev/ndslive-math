@@ -319,6 +319,141 @@ class PackedTileId:
         new_morton = self._interleave_coords(x, y, level)
         return PackedTileId.from_tile_index(new_morton, level)
 
+    def print_with_neighbors(self):
+        """
+        Print a debug visualization showing this tile and all its neighbors in a 3x3 grid.
+
+        Shows the current tile's binary encoding first, then displays a 3x3 grid of neighbors.
+        Each grid cell displays:
+        - Line 1: TileID: <value>
+        - Line 2: Tile Number: <morton>
+        """
+        level = self.level()
+        bits = 2 * level + 1
+
+        # Helper to get hierarchical binary representation
+        def get_binary_label(morton_num):
+            """
+            Generate hierarchical address showing path through quad-tree.
+            Level 0: 1 bit (0 or 1)
+            Each subsequent level: 2 bits (00, 01, 10, 11)
+            Example: level 2 tile → "0-11-01" means:
+              - Level 0: tile 0
+              - Level 1: tile 11 within 0
+              - Level 2: tile 01 within 0-11
+            """
+            if level == 0:
+                # Level 0 has only 1 bit
+                return str(morton_num)
+
+            parts = []
+
+            # Extract bits from MSB to LSB
+            # Level 0: 1 bit
+            level0_bit = (morton_num >> (bits - 1)) & 1
+            parts.append(str(level0_bit))
+
+            # Subsequent levels: 2 bits each
+            for lev in range(1, level + 1):
+                # Extract 2 bits for this level
+                shift_amount = bits - 1 - (2 * lev)
+                two_bits = (morton_num >> shift_amount) & 0b11
+                parts.append(format(two_bits, '02b'))
+
+            return '-'.join(parts)
+
+        # Print header with current tile info
+        print(f"\nTileID: {self.value}")
+        print(f"Level: {level}")
+        print(f"Tile Number: {self.morton_number()}")
+        print(f"Bits for index: {bits}")
+        print(f"Binary Tile Number: {get_binary_label(self.morton_number())}")
+        print()
+
+        # Get all neighbors
+        north = self.north_neighbour()
+        south = self.south_neighbour()
+        east = self.east_neighbour()
+        west = self.west_neighbour()
+        ne = north.east_neighbour()
+        nw = north.west_neighbour()
+        se = south.east_neighbour()
+        sw = south.west_neighbour()
+
+        # Build grid data: 3x3 array of tiles
+        grid = [
+            [nw, north, ne],
+            [west, self, east],
+            [sw, south, se]
+        ]
+
+        # Determine column width to make cells square
+        # Each cell shows: TileID value and (morton) in parentheses
+        max_tileid_len = max(len(str(tile.value)) for row in grid for tile in row)
+        max_morton_len = max(len(f"({tile.morton_number()})") for row in grid for tile in row)
+        col_width = max(max_tileid_len, max_morton_len) + 4
+
+        # Print grid with directional labels
+        border = "+" + ("-" * col_width + "+") * 3
+
+        # Print "Neighbors:" label
+        print("Neighbors:")
+
+        # North label and border should align with grid (2 spaces for west labels)
+        north_label = "North".center(len(border))
+        print(f"  {north_label}")
+        print(f"  {border}")
+
+        # West/East labels shown vertically
+        for row_idx, row in enumerate(grid):
+            # Determine left/right labels for this row
+            if row_idx == 0:
+                left_label1 = "  "
+                left_label2 = "W "
+                right_label1 = "  "
+                right_label2 = " E"
+            elif row_idx == 1:
+                left_label1 = "e "
+                left_label2 = "s "
+                right_label1 = " a"
+                right_label2 = " s"
+            else:  # row_idx == 2
+                left_label1 = "t "
+                left_label2 = "  "
+                right_label1 = " t"
+                right_label2 = "  "
+
+            # Line 1: TileID values (or "CURRENT" for center tile)
+            line1 = left_label1 + "|"
+            for col_idx, tile in enumerate(row):
+                if row_idx == 1 and col_idx == 1:
+                    # Center tile: show "CURRENT"
+                    tileid_str = "CURRENT"
+                else:
+                    tileid_str = str(tile.value)
+                line1 += tileid_str.center(col_width) + "|"
+            line1 += right_label1
+            print(line1)
+
+            # Line 2: Tile Number (or "TILE" for center tile)
+            line2 = left_label2 + "|"
+            for col_idx, tile in enumerate(row):
+                if row_idx == 1 and col_idx == 1:
+                    # Center tile: show "TILE"
+                    morton_str = "TILE"
+                else:
+                    morton_str = f"({tile.morton_number()})"
+                line2 += morton_str.center(col_width) + "|"
+            line2 += right_label2
+            print(line2)
+
+            # Row border
+            print(f"  {border}  ")
+
+        # South label should align with grid
+        south_label = "South".center(len(border))
+        print(f"  {south_label}")
+
     def __str__(self):
         return f"PackedTileId(value={self.value})"
 
