@@ -70,6 +70,13 @@ public:
     //! Width and height of the tile in NDS coord units
     uint32_t size() const;
 
+    //! Get tile dimensions in meters.
+    //! @return Pair of (width_meters, height_meters) calculated at the tile's center latitude.
+    //! @note Dimensions vary by latitude - tiles are largest at the equator and shrink toward poles.
+    //!       Width (longitude) is affected by cos(latitude), height (latitude) remains constant.
+    template<typename T = double>
+    DeltaInMeters<T> dimensionsInMeters() const;
+
     bool operator==(const PackedTileId& other) const;
     bool operator!=(const PackedTileId& other) const;
     bool operator<(const PackedTileId& other) const;
@@ -96,5 +103,18 @@ using PackedTileIds = std::vector<PackedTileId>;
 //! @param level Tile level (0-15)
 //! @return Vector of PackedTileId objects that intersect with the bounding box
 PackedTileIds getTileIdsForBoundingBox(int32_t swX, int32_t swY, int32_t neX, int32_t neY, int level);
+
+// Template implementation
+template<typename T>
+DeltaInMeters<T> PackedTileId::dimensionsInMeters() const
+{
+    int32_t centerX, centerY;
+    center(centerX, centerY);
+
+    auto centerWgs = HighPrecWgs84::fromNdsCoordinates(centerX, centerY);
+    uint32_t tileSize = size();
+
+    return HighPrecWgs84::ndsDistanceToMeters(tileSize, tileSize, centerWgs.latitude());
+}
 
 } // namespace ndsmath
