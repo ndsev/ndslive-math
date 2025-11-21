@@ -412,6 +412,155 @@ class TestPackedTileId(unittest.TestCase):
             self.assertEqual(tile.east_neighbour().level(), level)
             self.assertEqual(tile.west_neighbour().level(), level)
 
+    # ===== Level 15 Signed Int32 Tests =====
+
+    def test_level15_signed_values(self):
+        """Level 15 tiles should return negative values per NDS.Live standard."""
+        # Morton 0 - minimum level 15 value
+        tile = PackedTileId.from_tile_index(0, 15)
+        self.assertEqual(tile.level(), 15)
+        self.assertEqual(tile.morton_number(), 0)
+        self.assertLess(tile.value, 0, "Level 15 tiles must have negative values")
+        self.assertEqual(tile.value, -2147483648, "Level 15 morton 0 should be -2^31")
+
+    def test_level15_max_morton(self):
+        """Maximum morton for level 15 should give value -1."""
+        max_morton = (1 << 31) - 1  # 2147483647
+        tile = PackedTileId.from_tile_index(max_morton, 15)
+        self.assertEqual(tile.value, -1, "Level 15 max morton should give value -1")
+        self.assertEqual(tile.morton_number(), max_morton)
+        self.assertEqual(tile.level(), 15)
+
+    def test_constructor_accepts_negative_level15(self):
+        """Constructor should accept negative values for level 15."""
+        # Signed representation (negative)
+        tile_signed = PackedTileId(-2147483648)
+        self.assertEqual(tile_signed.level(), 15)
+        self.assertEqual(tile_signed.morton_number(), 0)
+        self.assertEqual(tile_signed.value, -2147483648)
+
+        # Unsigned representation (positive, same bit pattern)
+        tile_unsigned = PackedTileId(2147483648)
+        self.assertEqual(tile_unsigned.level(), 15)
+        self.assertEqual(tile_unsigned.morton_number(), 0)
+        self.assertEqual(tile_unsigned.value, -2147483648, "Should return signed value")
+
+        # Both should be equivalent
+        self.assertEqual(tile_signed.value, tile_unsigned.value)
+        self.assertEqual(tile_signed._value, tile_unsigned._value)
+
+    def test_level15_roundtrip(self):
+        """Test creating level 15 tiles from signed values and getting correct morton."""
+        test_cases = [
+            (0, -2147483648),                    # Morton 0
+            (1, -2147483647),                    # Morton 1
+            (1000000, -2146483648),              # Mid-range morton
+            (100000000, -2047483648),            # Larger morton
+            ((1 << 31) - 1, -1),                 # Max morton
+        ]
+
+        for morton, expected_value in test_cases:
+            with self.subTest(morton=morton, expected_value=expected_value):
+                # Create from morton
+                tile1 = PackedTileId.from_tile_index(morton, 15)
+                self.assertEqual(tile1.value, expected_value)
+                self.assertEqual(tile1.level(), 15)
+                self.assertEqual(tile1.morton_number(), morton)
+
+                # Create from signed value
+                tile2 = PackedTileId(expected_value)
+                self.assertEqual(tile2.morton_number(), morton)
+                self.assertEqual(tile2.level(), 15)
+                self.assertEqual(tile2.value, expected_value)
+
+                # Both should be equivalent
+                self.assertEqual(tile1.value, tile2.value)
+                self.assertEqual(tile1._value, tile2._value)
+
+    def test_levels_0_to_14_positive(self):
+        """Levels 0-14 should always have positive values."""
+        for level in range(0, 15):
+            with self.subTest(level=level):
+                # Test with morton 0
+                tile = PackedTileId.from_tile_index(0, level)
+                self.assertGreaterEqual(tile.value, 0, f"Level {level} should be positive")
+                self.assertEqual(tile.level(), level)
+
+                # Test with max morton for this level (if reasonable size)
+                if level <= 10:  # Keep test fast for lower levels
+                    max_morton = (1 << (2 * level + 1)) - 1
+                    tile_max = PackedTileId.from_tile_index(max_morton, level)
+                    self.assertGreaterEqual(tile_max.value, 0, f"Level {level} max morton should be positive")
+
+    def test_level15_neighbors(self):
+        """Neighbor functions should work correctly with level 15 negative values."""
+        # Test with a mid-range morton number
+        tile = PackedTileId.from_tile_index(100, 15)
+        self.assertLess(tile.value, 0, "Level 15 tile should be negative")
+
+        # All neighbors should also be level 15 with negative values
+        north = tile.north_neighbour()
+        self.assertEqual(north.level(), 15)
+        self.assertLess(north.value, 0, "Level 15 neighbor should be negative")
+
+        south = tile.south_neighbour()
+        self.assertEqual(south.level(), 15)
+        self.assertLess(south.value, 0, "Level 15 neighbor should be negative")
+
+        east = tile.east_neighbour()
+        self.assertEqual(east.level(), 15)
+        self.assertLess(east.value, 0, "Level 15 neighbor should be negative")
+
+        west = tile.west_neighbour()
+        self.assertEqual(west.level(), 15)
+        self.assertLess(west.value, 0, "Level 15 neighbor should be negative")
+
+        # Test reversibility
+        self.assertEqual(tile, north.south_neighbour())
+        self.assertEqual(tile, south.north_neighbour())
+        self.assertEqual(tile, east.west_neighbour())
+        self.assertEqual(tile, west.east_neighbour())
+
+    def test_level15_validation_accepts_negative(self):
+        """Validation should accept negative values for level 15."""
+        # Should not raise for valid level 15 values
+        tile1 = PackedTileId(-2147483648)  # Min level 15
+        self.assertEqual(tile1.level(), 15)
+
+        tile2 = PackedTileId(-1)  # Max level 15
+        self.assertEqual(tile2.level(), 15)
+
+        tile3 = PackedTileId(-1000000000)  # Mid-range level 15
+        self.assertEqual(tile3.level(), 15)
+
+    def test_level15_comparison_operators(self):
+        """Test that comparison operators work correctly with level 15 negative values."""
+        tile1 = PackedTileId.from_tile_index(0, 15)  # value = -2147483648
+        tile2 = PackedTileId.from_tile_index(1, 15)  # value = -2147483647
+        tile3 = PackedTileId.from_tile_index(0, 15)  # value = -2147483648 (same as tile1)
+
+        # Equality
+        self.assertEqual(tile1, tile3)
+        self.assertNotEqual(tile1, tile2)
+
+        # Less than (should compare unsigned internally)
+        self.assertLess(tile1, tile2)  # morton 0 < morton 1
+
+    def test_level15_int_conversion(self):
+        """Test that __int__ returns signed value for level 15."""
+        tile = PackedTileId.from_tile_index(0, 15)
+        self.assertEqual(int(tile), -2147483648)
+        self.assertLess(int(tile), 0)
+
+    def test_level15_print_with_neighbors(self):
+        """Test that print_with_neighbors works with level 15 negative values."""
+        tile = PackedTileId.from_tile_index(0, 15)
+        # Should not raise, will print to stdout
+        try:
+            tile.print_with_neighbors()
+        except Exception as e:
+            self.fail(f"print_with_neighbors failed for level 15: {e}")
+
 
 class TestPackedTileIdLevel1Neighbors(unittest.TestCase):
     """Visual tests for level 1 neighbor wrapping behavior."""
@@ -745,6 +894,103 @@ class TestBoundingBoxFromTileIds(unittest.TestCase):
         self.assertEqual(len(result), 4)
         for coord in result:
             self.assertIsInstance(coord, int)
+
+
+class TestDistanceConversions(unittest.TestCase):
+    """Tests for Wgs84 distance conversion utilities."""
+
+    def test_degrees_to_meters_at_equator(self):
+        """At equator (latitude 0), both longitude and latitude should have same meters per degree."""
+        METERS_PER_DEGREE = 111320.0
+
+        lon_meters, lat_meters = Wgs84.degrees_to_meters(1.0, 1.0, 0.0)
+
+        self.assertAlmostEqual(lon_meters, METERS_PER_DEGREE, delta=0.1)
+        self.assertAlmostEqual(lat_meters, METERS_PER_DEGREE, delta=0.1)
+
+    def test_degrees_to_meters_at_different_latitudes(self):
+        """Test degree to meter conversion at various latitudes."""
+        METERS_PER_DEGREE = 111320.0
+
+        # At 60° latitude, longitude distance should be ~half of equatorial
+        lon_meters60, lat_meters60 = Wgs84.degrees_to_meters(1.0, 1.0, 60.0)
+
+        self.assertAlmostEqual(lon_meters60, METERS_PER_DEGREE * 0.5, delta=1.0)
+        self.assertAlmostEqual(lat_meters60, METERS_PER_DEGREE, delta=0.1)
+
+        # At poles (90°), longitude distance should be ~0
+        lon_meters90, lat_meters90 = Wgs84.degrees_to_meters(1.0, 1.0, 90.0)
+
+        self.assertAlmostEqual(lon_meters90, 0.0, delta=1.0)
+        self.assertAlmostEqual(lat_meters90, METERS_PER_DEGREE, delta=0.1)
+
+    def test_nds_distance_to_meters_conversion(self):
+        """Test NDS distance to meters conversion."""
+        # Test with a known NDS distance
+        # At equator, half of NDS X range should cover half the earth's longitude
+        HALF_NDS_X = 1 << 31  # Half of NDS X range
+        HALF_NDS_Y = 1 << 30  # Half of NDS Y range
+
+        lon_meters, lat_meters = Wgs84.nds_distance_to_meters(HALF_NDS_X, HALF_NDS_Y, 0.0)
+
+        # Half the X range = 180° longitude at equator ≈ 20,037 km
+        self.assertAlmostEqual(lon_meters, 20037500.0, delta=1000.0)
+
+        # Half the Y range = 90° latitude ≈ 10,018 km
+        self.assertAlmostEqual(lat_meters, 10018750.0, delta=1000.0)
+
+    def test_packedtileid_dimensions_in_meters(self):
+        """Test PackedTileId.dimensions_in_meters() method."""
+        # Test with tiles at a mid-latitude (45°) where dimensions are reasonable
+        wgs45 = Wgs84(lon=0.0, lat=45.0)
+        x45, y45 = wgs45.to_nds_coordinates()
+        morton45 = MortonCode.from_nds_coordinates(x45, y45)
+
+        # Test level 5 tile (reasonable size)
+        tile5 = PackedTileId.from_morton_and_level(morton45, 5)
+        width5, height5 = tile5.dimensions_in_meters()
+
+        # Dimensions should be positive and reasonable
+        self.assertGreater(width5, 0.0)
+        self.assertGreater(height5, 0.0)
+        self.assertLess(width5, 10000000.0)  # Less than 10,000 km
+        self.assertLess(height5, 10000000.0)
+
+        # Test level 6 tile (smaller than level 5)
+        tile6 = PackedTileId.from_morton_and_level(morton45, 6)
+        width6, height6 = tile6.dimensions_in_meters()
+
+        # Higher level should have smaller dimensions
+        self.assertLess(width6, width5)
+        self.assertLess(height6, height5)
+
+        # Each level increase divides tile size by 2
+        # Note: Width varies slightly due to different tile center latitudes
+        self.assertAlmostEqual(width6, width5 / 2.0, delta=10000.0)
+        self.assertAlmostEqual(height6, height5 / 2.0, delta=1000.0)
+
+    def test_tile_dimensions_vary_by_latitude(self):
+        """Test that tile dimensions vary by latitude as expected."""
+        # Create tiles at different latitudes at level 5
+        # Tile near equator
+        wgsEquator = Wgs84(lon=0.0, lat=0.0)
+        xEq, yEq = wgsEquator.to_nds_coordinates()
+        mortonEq = MortonCode.from_nds_coordinates(xEq, yEq)
+        tileEquator = PackedTileId.from_morton_and_level(mortonEq, 5)
+        widthEq, heightEq = tileEquator.dimensions_in_meters()
+
+        # Tile at higher latitude (~60°)
+        wgs60 = Wgs84(lon=0.0, lat=60.0)
+        x60, y60 = wgs60.to_nds_coordinates()
+        morton60 = MortonCode.from_nds_coordinates(x60, y60)
+        tile60 = PackedTileId.from_morton_and_level(morton60, 5)
+        width60, height60 = tile60.dimensions_in_meters()
+
+        # Width should decrease with latitude (cos effect)
+        self.assertLess(width60, widthEq)
+
+        # Height should remain approximately the same
+        self.assertAlmostEqual(height60, heightEq, delta=100.0)
 
 
 if __name__ == '__main__':

@@ -3,16 +3,120 @@ from .morton import MortonCode
 
 class PackedTileId:
     """
-    Represents a tile in a hierarchical tiling system.
-    Provides methods to extract level, size, and coordinate
-    information from the packed tile ID.
+    Represents a tile in a hierarchical tiling system following the NDS.Live standard.
+
+    Per the NDS.Live standard, tile IDs are signed 32-bit integers. For levels 0-14,
+    values are positive. For level 15, values are negative (-2147483648 to -1) because
+    the level bit (bit 31) is the sign bit in signed int32 representation.
+
+    Implementation Note:
+    Internally, values are stored as unsigned 32-bit integers to enable clean bit
+    operations without sign bit complications. Conversion between signed and unsigned
+    happens only at the API boundary:
+    - Constructor accepts both signed and unsigned representations
+    - value property returns signed int32 per NDS.Live standard
+    - All internal bit operations work with unsigned representation
+
+    This approach provides a signed API (matching the standard) while keeping internal
+    arithmetic simple and efficient.
+
+    Examples:
+        # Level 15 tiles have negative values per standard
+        >>> tile = PackedTileId.from_tile_index(0, 15)
+        >>> print(tile.value)
+        -2147483648
+
+        # Constructor accepts negative values (signed representation)
+        >>> tile = PackedTileId(-2147483648)
+        >>> print(tile.level())
+        15
+        >>> print(tile.morton_number())
+        0
+
+        # Constructor also accepts unsigned representation (same tile)
+        >>> tile = PackedTileId(2147483648)
+        >>> print(tile.value)  # Always returns signed
+        -2147483648
+
+        # Maximum level 15 tile
+        >>> tile = PackedTileId.from_tile_index((1 << 31) - 1, 15)
+        >>> print(tile.value)
+        -1
+
+        # Levels 0-14 have positive values
+        >>> tile = PackedTileId.from_tile_index(0, 14)
+        >>> print(tile.value)
+        1073741824
 
     All constructors validate inputs and raise ValueError for invalid tile IDs.
     """
     def __init__(self, value=0):
-        self.value = value
+        """
+        Construct a PackedTileId from a tile ID value.
+
+        Accepts both signed and unsigned 32-bit integer representations.
+        Per the NDS.Live standard, level 15 tiles have negative values
+        (-2147483648 to -1), while levels 0-14 have positive values.
+
+        Args:
+            value: Tile ID as signed int32 (negative for level 15) or unsigned int32.
+                   Both representations are accepted and produce identical results.
+
+        Examples:
+            # Level 15 morton 0 - both representations are equivalent:
+            >>> tile1 = PackedTileId(-2147483648)  # Signed representation
+            >>> tile2 = PackedTileId(2147483648)   # Unsigned representation
+            >>> tile1.value == tile2.value  # Both return -2147483648
+            True
+
+        Raises:
+            ValueError: If the tile ID is invalid
+        """
+        # Normalize to unsigned int32 for internal storage
+        # This allows clean bit operations without sign complications
+        if value < 0:
+            # Convert signed int32 to unsigned (e.g., -2147483648 → 2147483648)
+            self._value = value + (1 << 32)
+        elif value >= (1 << 32):
+            # Handle values outside 32-bit range by masking to 32 bits
+            self._value = value & 0xFFFFFFFF
+        else:
+            # Already unsigned, store as-is
+            self._value = value
+
         self._validate()
-    
+
+    @property
+    def value(self):
+        """
+        Get the tile ID value as signed int32 per NDS.Live standard.
+
+        Returns the tile ID in its signed int32 representation, matching the
+        NDS.Live standard. Level 15 tiles return negative values (-2147483648 to -1),
+        while levels 0-14 return positive values.
+
+        Returns:
+            int: Signed int32 value (negative for level 15, positive for levels 0-14)
+
+        Note:
+            Internally, values are stored as unsigned for cleaner bit operations.
+            This property performs the conversion from unsigned to signed at the API boundary.
+
+        Example:
+            >>> tile = PackedTileId.from_tile_index(0, 15)
+            >>> tile.value
+            -2147483648
+            >>> tile = PackedTileId.from_tile_index(0, 14)
+            >>> tile.value
+            1073741824
+        """
+        # Convert unsigned to signed int32 for API
+        if self._value >= (1 << 31):
+            # Value has bit 31 set, so it's negative in signed int32
+            return self._value - (1 << 32)
+        # Value is positive in both signed and unsigned
+        return self._value
+
     @classmethod
     def from_tile_index(cls, morton_number, level):
         """
@@ -105,7 +209,7 @@ class PackedTileId:
         Level of the tile (0..15)
         """
         level = 0
-        tile_id = self.value >> 16
+        tile_id = self._value >> 16
         while tile_id > 1:
             tile_id >>= 1
             level += 1
@@ -116,6 +220,25 @@ class PackedTileId:
         Size of the tile in NDS coordinate units.
         """
         return 1 << (31 - self.level())
+
+    def dimensions_in_meters(self):
+        """
+        Get tile dimensions in meters.
+
+        Returns:
+            Tuple of (width_meters, height_meters) calculated at the tile's center latitude.
+
+        Note:
+            Dimensions vary by latitude - tiles are largest at the equator and shrink toward poles.
+            Width (longitude) is affected by cos(latitude), height (latitude) remains constant.
+        """
+        from .wgs84 import Wgs84
+
+        center_x, center_y = self.center()
+        center_wgs = Wgs84.from_nds_coordinates(center_x, center_y)
+        tile_size = self.size()
+
+        return Wgs84.nds_distance_to_meters(tile_size, tile_size, center_wgs.y)
 
     def center(self):
         """
@@ -146,19 +269,25 @@ class PackedTileId:
         the level-specific offset from the packed tile ID value.
         """
         tile_level = self.level()
-        return self.value - (1 << (16 + tile_level))
+        return self._value - (1 << (16 + tile_level))
 
     def _validate(self):
         """
         Validates this PackedTileId.
 
+        Internal validation works with unsigned storage (_value), but error messages
+        show the signed API value for user clarity.
+
         Raises:
             ValueError: If the tile ID is invalid, with a detailed error message
         """
         min_packed_tile_id = 1 << 16
-        if self.value < min_packed_tile_id:
+        # Internal value is unsigned, so simple comparison works
+        # (level 15 tiles have _value >= 2^31 which is > min_packed_tile_id)
+        if self._value < min_packed_tile_id:
             raise ValueError(
-                f"Invalid PackedTileId({self.value}): value must be >= {min_packed_tile_id}"
+                f"Invalid PackedTileId({self.value}): value must be >= {min_packed_tile_id} "
+                f"or negative for level 15"
             )
 
         tile_level = self.level()
@@ -319,11 +448,19 @@ class PackedTileId:
         new_morton = self._interleave_coords(x, y, level)
         return PackedTileId.from_tile_index(new_morton, level)
 
-    def print_with_neighbors(self):
+    def print_with_neighbors(self, radius=1):
         """
-        Print a debug visualization showing this tile and all its neighbors in a 3x3 grid.
+        Print a debug visualization showing this tile and its neighbors.
 
-        Shows the current tile's binary encoding first, then displays a 3x3 grid of neighbors.
+        Shows the current tile's binary encoding first, then displays a grid of neighbors.
+        Grid size depends on radius:
+        - radius=1: 3x3 grid (default, current + 8 immediate neighbors)
+        - radius=2: 5x5 grid (current + 24 neighbors within 2 tiles)
+        - radius=3: 7x7 grid (current + 48 neighbors within 3 tiles)
+
+        Args:
+            radius (int): How many tiles away to show in each direction (default: 1)
+
         Each grid cell displays:
         - Line 1: TileID: <value>
         - Line 2: Tile Number: <morton>
@@ -368,24 +505,68 @@ class PackedTileId:
         print(f"Tile Number: {self.morton_number()}")
         print(f"Bits for index: {bits}")
         print(f"Binary Tile Number: {get_binary_label(self.morton_number())}")
+
+        # Print coordinate information (NDS coords with WGS84 in parentheses)
+        from .wgs84 import Wgs84
+
+        center_x, center_y = self.center()
+        sw_x, sw_y = self.south_west_corner()
+        ne_x, ne_y = self.north_east_corner()
+
+        # Convert to WGS84 for readability
+        center_wgs = Wgs84.from_nds_coordinates(center_x, center_y)
+        sw_wgs = Wgs84.from_nds_coordinates(sw_x, sw_y)
+        ne_wgs = Wgs84.from_nds_coordinates(ne_x, ne_y)
+
+        print(f"Center: ({center_x}, {center_y}) ({center_wgs.x:.6f}°, {center_wgs.y:.6f}°)")
+        print(f"SW Corner: ({sw_x}, {sw_y}) ({sw_wgs.x:.6f}°, {sw_wgs.y:.6f}°)")
+        print(f"NE Corner: ({ne_x}, {ne_y}) ({ne_wgs.x:.6f}°, {ne_wgs.y:.6f}°)")
+
+        # Print tile dimensions in real-world units
+        def format_distance(meters):
+            """Format distance with appropriate units."""
+            if meters < 1000:
+                return f"{meters:.0f} m"
+            else:
+                return f"{meters / 1000:.1f} km"
+
+        # Dimensions at tile's center latitude
+        width_m, height_m = self.dimensions_in_meters()
+        print(f"Tile Size: {format_distance(width_m)} × {format_distance(height_m)} (at {center_wgs.y:.1f}°)")
+
+        # Dimensions at equator for reference
+        tile_size = self.size()
+        width_eq, height_eq = Wgs84.nds_distance_to_meters(tile_size, tile_size, 0.0)
+        print(f"At Equator: {format_distance(width_eq)} × {format_distance(height_eq)}")
         print()
 
-        # Get all neighbors
-        north = self.north_neighbour()
-        south = self.south_neighbour()
-        east = self.east_neighbour()
-        west = self.west_neighbour()
-        ne = north.east_neighbour()
-        nw = north.west_neighbour()
-        se = south.east_neighbour()
-        sw = south.west_neighbour()
+        # Build grid dynamically based on radius
+        # Grid goes from -radius to +radius in both X and Y directions
+        grid_size = 2 * radius + 1
+        grid = []
 
-        # Build grid data: 3x3 array of tiles
-        grid = [
-            [nw, north, ne],
-            [west, self, east],
-            [sw, south, se]
-        ]
+        for dy in range(-radius, radius + 1):
+            row = []
+            for dx in range(-radius, radius + 1):
+                # Start from center tile
+                tile = self
+
+                # Move horizontally (east/west)
+                for _ in range(abs(dx)):
+                    if dx > 0:
+                        tile = tile.east_neighbour()
+                    else:
+                        tile = tile.west_neighbour()
+
+                # Move vertically (north/south)
+                for _ in range(abs(dy)):
+                    if dy > 0:
+                        tile = tile.north_neighbour()
+                    else:
+                        tile = tile.south_neighbour()
+
+                row.append(tile)
+            grid.append(row)
 
         # Determine column width to make cells square
         # Each cell shows: TileID value and (morton) in parentheses
@@ -394,7 +575,7 @@ class PackedTileId:
         col_width = max(max_tileid_len, max_morton_len) + 4
 
         # Print grid with directional labels
-        border = "+" + ("-" * col_width + "+") * 3
+        border = "+" + ("-" * col_width + "+") * grid_size
 
         # Print "Neighbors:" label
         print("Neighbors:")
@@ -404,29 +585,37 @@ class PackedTileId:
         print(f"  {north_label}")
         print(f"  {border}")
 
-        # West/East labels shown vertically
+        # West/East labels shown vertically (centered on the grid)
+        center_row = radius
         for row_idx, row in enumerate(grid):
             # Determine left/right labels for this row
-            if row_idx == 0:
+            # Position "West" and "East" in the middle of the grid
+            if row_idx == center_row - 1:
                 left_label1 = "  "
                 left_label2 = "W "
                 right_label1 = "  "
                 right_label2 = " E"
-            elif row_idx == 1:
+            elif row_idx == center_row:
                 left_label1 = "e "
                 left_label2 = "s "
                 right_label1 = " a"
                 right_label2 = " s"
-            else:  # row_idx == 2
+            elif row_idx == center_row + 1:
                 left_label1 = "t "
                 left_label2 = "  "
                 right_label1 = " t"
+                right_label2 = "  "
+            else:
+                # Other rows: no labels
+                left_label1 = "  "
+                left_label2 = "  "
+                right_label1 = "  "
                 right_label2 = "  "
 
             # Line 1: TileID values (or "CURRENT" for center tile)
             line1 = left_label1 + "|"
             for col_idx, tile in enumerate(row):
-                if row_idx == 1 and col_idx == 1:
+                if row_idx == radius and col_idx == radius:
                     # Center tile: show "CURRENT"
                     tileid_str = "CURRENT"
                 else:
@@ -438,7 +627,7 @@ class PackedTileId:
             # Line 2: Tile Number (or "TILE" for center tile)
             line2 = left_label2 + "|"
             for col_idx, tile in enumerate(row):
-                if row_idx == 1 and col_idx == 1:
+                if row_idx == radius and col_idx == radius:
                     # Center tile: show "TILE"
                     morton_str = "TILE"
                 else:
@@ -458,19 +647,19 @@ class PackedTileId:
         return f"PackedTileId(value={self.value})"
 
     def __eq__(self, other):
-        return self.value == other.value
+        return self._value == other._value
 
     def __ne__(self, other):
-        return self.value != other.value
+        return self._value != other._value
 
     def __lt__(self, other):
-        return self.value < other.value
+        return self._value < other._value
 
     def __int__(self):
+        """
+        Convert to integer (returns signed int32 per NDS.Live standard).
+        """
         return self.value
-
-    def __str__(self):
-        return f"PackedTileId(value={self.value})"
 
 
 def get_tile_ids_for_bounding_box(sw_x, sw_y, ne_x, ne_y, level):

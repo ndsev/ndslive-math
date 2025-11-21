@@ -67,6 +67,47 @@ class Wgs84:
         lat = y * lat_multiplier
         return Wgs84(lon, lat)
 
+    @staticmethod
+    def degrees_to_meters(lon_degrees, lat_degrees, at_latitude):
+        """
+        Convert degree distances to meters at a given latitude.
+
+        Args:
+            lon_degrees: Longitude distance in degrees
+            lat_degrees: Latitude distance in degrees
+            at_latitude: The latitude where measurement is taken (affects longitude distance)
+
+        Returns:
+            Tuple of (width_meters, height_meters)
+
+        Note:
+            Longitude distance varies by latitude (shrinks toward poles), latitude distance is constant.
+        """
+        METERS_PER_DEGREE = 111320.0
+
+        lon_meters = abs(lon_degrees) * METERS_PER_DEGREE * math.cos(math.radians(at_latitude))
+        lat_meters = abs(lat_degrees) * METERS_PER_DEGREE
+
+        return (lon_meters, lat_meters)
+
+    @staticmethod
+    def nds_distance_to_meters(nds_x_distance, nds_y_distance, at_latitude):
+        """
+        Convert NDS coordinate distances to meters at a given latitude.
+
+        Args:
+            nds_x_distance: X (longitude) distance in NDS units
+            nds_y_distance: Y (latitude) distance in NDS units
+            at_latitude: The latitude where measurement is taken
+
+        Returns:
+            Tuple of (width_meters, height_meters)
+        """
+        lon_degrees = (nds_x_distance / (2 ** 32)) * 360.0
+        lat_degrees = (nds_y_distance / (2 ** 31)) * 180.0
+
+        return Wgs84.degrees_to_meters(lon_degrees, lat_degrees, at_latitude)
+
     def to_degree_minutes_seconds(self):
         def convert(value):
             degrees = int(value)
