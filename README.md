@@ -73,7 +73,7 @@ To install the Python version of `ndsmath`, use pip:
 python -m pip install \
 --index-url=https://pip.nds.live \
 --extra-index-url=https://pypi.org/simple \
-ndsmath
+ndslive-math
 ```
 
 For installation instructions for other language implementations, please refer to their respective directories once they become available.
@@ -88,10 +88,18 @@ Contributions to ndsmath are welcome! Whether you're interested in adding featur
 
 ## Publishing releases
 
-When creating a release, please follow these conventions:
+### Release workflow
+
+1. **During PR**: Update `CHANGELOG.md` with your changes (CI checks that CHANGELOG.md was modified)
+2. **Merge to main**: CI requires all changelog entries have release dates (e.g., `## [Python v0.4.0] - 2025-12-01`)
+   - Either add the date in your PR, or push a fix to main if the build fails
+3. **Create release tag** (e.g., `python-v0.4.0` or `cpp-v0.5.0`)
+
+### Conventions
 
 - **Tagging:** Use git tags prefixed with `cpp-v` for C++ releases (e.g., `cpp-v0.2.0`) and `python-v` for Python releases (e.g., `python-v0.1.5`).
-- **Version Files:** 
+- **Changelog:** Update `CHANGELOG.md` following [Keep a Changelog](https://keepachangelog.com/) format. Mark breaking changes with `**BREAKING:**` prefix.
+- **Version Files:**
   - C++ releases require updating the version number in `cpp/VERSION.txt` before creating the release tag.
   - Python releases use automatic versioning via `setuptools-scm` based on git tags - no manual version file updates needed.
 - **Release Distribution:** Python releases are automatically published to the NDS Artifactory when a Python release tag is created (see CI/CD workflow in `.github/workflows/ci.yml`). C++ releases are currently only available directly from this repository by checking out the corresponding C++ version tag.

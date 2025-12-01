@@ -13,32 +13,33 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Validate CHANGELOG has unreleased entries
+      with:
+        fetch-depth: 0
+    - name: Validate CHANGELOG
       run: |
-        # Count unreleased entries per track (no date suffix)
-        PYTHON_UNRELEASED=$(grep -cE "^## \[Python v[0-9.]+\]$" CHANGELOG.md || echo "0")
-        CPP_UNRELEASED=$(grep -cE "^## \[C\+\+ v[0-9.]+\]$" CHANGELOG.md || echo "0")
-        TOTAL=$((PYTHON_UNRELEASED + CPP_UNRELEASED))
+        if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+          # ON MAIN: All entries must have dates (no unreleased allowed)
+          PYTHON_UNRELEASED=$(grep -cE "^## \[Python v[0-9.]+\]$" CHANGELOG.md || echo "0")
+          CPP_UNRELEASED=$(grep -cE "^## \[C\+\+ v[0-9.]+\]$" CHANGELOG.md || echo "0")
+          TOTAL=$((PYTHON_UNRELEASED + CPP_UNRELEASED))
 
-        echo "Unreleased entries: Python=$PYTHON_UNRELEASED, C++=$CPP_UNRELEASED"
-
-        if [ "$TOTAL" -eq 0 ]; then
-          echo "ERROR: No unreleased version entry found in CHANGELOG.md"
-          echo "Add an entry like: ## [Python vX.Y.Z] or ## [C++ vX.Y.Z]"
-          exit 1
+          if [ "$TOTAL" -gt 0 ]; then
+            echo "ERROR: Found $TOTAL unreleased entries on main branch"
+            echo "Add release dates: ## [Python vX.Y.Z] - YYYY-MM-DD"
+            grep -E "^## \[(Python|C\+\+) v[0-9.]+\]$" CHANGELOG.md
+            exit 1
+          fi
+          echo "OK: All changelog entries have release dates"
+        else
+          # ON PR: Check that CHANGELOG.md was modified
+          if git diff --name-only origin/main...HEAD | grep -q "^CHANGELOG.md$"; then
+            echo "OK: CHANGELOG.md has been modified"
+          else
+            echo "WARNING: CHANGELOG.md was not modified"
+            echo "Please document your changes in CHANGELOG.md"
+            exit 1
+          fi
         fi
-
-        if [ "$PYTHON_UNRELEASED" -gt 1 ]; then
-          echo "ERROR: Found $PYTHON_UNRELEASED unreleased Python entries, expected at most 1"
-          exit 1
-        fi
-
-        if [ "$CPP_UNRELEASED" -gt 1 ]; then
-          echo "ERROR: Found $CPP_UNRELEASED unreleased C++ entries, expected at most 1"
-          exit 1
-        fi
-
-        echo "OK: Found $TOTAL unreleased entry/entries"
 
   test-cpp:
     runs-on: ubuntu-latest
