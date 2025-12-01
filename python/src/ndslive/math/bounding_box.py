@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from typing import Union
     from .tileid import PackedTileId
+    from .wgs84 import Wgs84
 
 
 @dataclass
@@ -78,3 +79,18 @@ class NdsBoundingBox:
         sw_x, sw_y = tile.south_west_corner()
         ne_x, ne_y = tile.north_east_corner()
         return cls(sw_x, sw_y, ne_x, ne_y)
+
+    @classmethod
+    def from_wgs84_corners(cls, sw: 'Wgs84', ne: 'Wgs84') -> 'NdsBoundingBox':
+        """Create bounding box from WGS84 corner coordinates.
+
+        Args:
+            sw: South-west corner as Wgs84 (min longitude, min latitude)
+            ne: North-east corner as Wgs84 (max longitude, max latitude)
+
+        Returns:
+            NdsBoundingBox with corners converted to NDS coordinates
+        """
+        min_x, min_y = sw.to_nds_coordinates()
+        max_x, max_y = ne.to_nds_coordinates()
+        return cls(min_x, min_y, max_x, max_y)

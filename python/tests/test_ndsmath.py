@@ -1,6 +1,6 @@
 import unittest
 import math  # Add math import
-from ndslive.math import Wgs84, PackedTileId, MortonCode
+from ndslive.math import Wgs84, PackedTileId, MortonCode, NdsBoundingBox
 from ndslive.math.tileid import get_tile_ids_for_bounding_box, bounding_box_from_tile_ids
 
 
@@ -894,6 +894,136 @@ class TestBoundingBoxFromTileIds(unittest.TestCase):
         self.assertEqual(len(result), 4)
         for coord in result:
             self.assertIsInstance(coord, int)
+
+
+class TestNdsBoundingBox(unittest.TestCase):
+    """Tests for NdsBoundingBox class."""
+
+    def test_basic_constructor(self):
+        """Test basic NdsBoundingBox construction."""
+        bbox = NdsBoundingBox(100, 200, 300, 400)
+
+        self.assertEqual(bbox.min_x, 100)
+        self.assertEqual(bbox.min_y, 200)
+        self.assertEqual(bbox.max_x, 300)
+        self.assertEqual(bbox.max_y, 400)
+
+    def test_from_tile(self):
+        """Test creating bbox from a tile ID."""
+        tile = PackedTileId.from_tile_index(4, 2)
+        bbox = NdsBoundingBox.from_tile(tile)
+
+        # Verify bbox matches tile corners
+        sw_x, sw_y = tile.south_west_corner()
+        ne_x, ne_y = tile.north_east_corner()
+
+        self.assertEqual(bbox.min_x, sw_x)
+        self.assertEqual(bbox.min_y, sw_y)
+        self.assertEqual(bbox.max_x, ne_x)
+        self.assertEqual(bbox.max_y, ne_y)
+
+    def test_from_tile_with_int(self):
+        """Test creating bbox from an integer tile ID."""
+        tile_value = PackedTileId.from_tile_index(4, 2).value
+        bbox = NdsBoundingBox.from_tile(tile_value)
+
+        tile = PackedTileId(tile_value)
+        sw_x, sw_y = tile.south_west_corner()
+        ne_x, ne_y = tile.north_east_corner()
+
+        self.assertEqual(bbox.min_x, sw_x)
+        self.assertEqual(bbox.min_y, sw_y)
+        self.assertEqual(bbox.max_x, ne_x)
+        self.assertEqual(bbox.max_y, ne_y)
+
+    def test_from_wgs84_corners(self):
+        """Test creating bbox from WGS84 corner coordinates."""
+        # Create WGS84 corners for a bbox around Berlin
+        sw = Wgs84(13.0, 52.0)  # SW corner
+        ne = Wgs84(14.0, 53.0)  # NE corner
+
+        bbox = NdsBoundingBox.from_wgs84_corners(sw, ne)
+
+        # Convert back to verify
+        sw_back = Wgs84.from_nds_coordinates(bbox.min_x, bbox.min_y)
+        ne_back = Wgs84.from_nds_coordinates(bbox.max_x, bbox.max_y)
+
+        self.assertAlmostEqual(sw_back.x, 13.0, places=4)
+        self.assertAlmostEqual(sw_back.y, 52.0, places=4)
+        self.assertAlmostEqual(ne_back.x, 14.0, places=4)
+        self.assertAlmostEqual(ne_back.y, 53.0, places=4)
+
+    def test_intersects_overlapping(self):
+        """Test intersects with overlapping boxes."""
+        bbox1 = NdsBoundingBox(0, 0, 100, 100)
+        bbox2 = NdsBoundingBox(50, 50, 150, 150)
+
+        self.assertTrue(bbox1.intersects(bbox2))
+        self.assertTrue(bbox2.intersects(bbox1))
+
+    def test_intersects_non_overlapping(self):
+        """Test intersects with non-overlapping boxes."""
+        bbox1 = NdsBoundingBox(0, 0, 100, 100)
+        bbox2 = NdsBoundingBox(200, 200, 300, 300)
+
+        self.assertFalse(bbox1.intersects(bbox2))
+        self.assertFalse(bbox2.intersects(bbox1))
+
+    def test_intersects_touching_edges(self):
+        """Test intersects with touching edges (touching = intersecting)."""
+        bbox1 = NdsBoundingBox(0, 0, 100, 100)
+        bbox2 = NdsBoundingBox(100, 0, 200, 100)
+
+        # Touching at edge counts as intersecting
+        self.assertTrue(bbox1.intersects(bbox2))
+
+    def test_intersects_one_inside_other(self):
+        """Test intersects when one box is inside another."""
+        outer = NdsBoundingBox(0, 0, 100, 100)
+        inner = NdsBoundingBox(25, 25, 75, 75)
+
+        self.assertTrue(outer.intersects(inner))
+        self.assertTrue(inner.intersects(outer))
+
+    def test_contains_inner_box(self):
+        """Test contains with inner box."""
+        outer = NdsBoundingBox(0, 0, 100, 100)
+        inner = NdsBoundingBox(25, 25, 75, 75)
+
+        self.assertTrue(outer.contains(inner))
+        self.assertFalse(inner.contains(outer))
+
+    def test_contains_same_box(self):
+        """Test contains with same box."""
+        bbox = NdsBoundingBox(0, 0, 100, 100)
+
+        self.assertTrue(bbox.contains(bbox))
+
+    def test_contains_partially_overlapping(self):
+        """Test contains with partially overlapping boxes."""
+        bbox1 = NdsBoundingBox(0, 0, 100, 100)
+        bbox2 = NdsBoundingBox(50, 50, 150, 150)
+
+        self.assertFalse(bbox1.contains(bbox2))
+        self.assertFalse(bbox2.contains(bbox1))
+
+    def test_tile_intersection_check(self):
+        """Test using bbox for tile intersection checking."""
+        # Create a bbox from WGS84 coordinates
+        sw = Wgs84(13.3, 52.4)
+        ne = Wgs84(13.5, 52.6)
+        query_bbox = NdsBoundingBox.from_wgs84_corners(sw, ne)
+
+        # Create a tile at level 13 containing the area
+        wgs_center = Wgs84(13.4, 52.5)
+        cx, cy = wgs_center.to_nds_coordinates()
+        morton = MortonCode.from_nds_coordinates(cx, cy)
+        tile = PackedTileId.from_morton_and_level(morton, 13)
+        tile_bbox = NdsBoundingBox.from_tile(tile)
+
+        # The tile should intersect with the query bbox
+        self.assertTrue(query_bbox.intersects(tile_bbox))
+        self.assertTrue(tile_bbox.intersects(query_bbox))
 
 
 class TestDistanceConversions(unittest.TestCase):
