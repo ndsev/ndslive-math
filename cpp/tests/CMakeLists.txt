@@ -33,8 +33,19 @@ target_link_libraries(test-wgs84
   glm::glm
   Catch2::Catch2WithMain)
 
+add_executable(test-ndsboundingbox
+  src/testndsboundingbox.cpp)
+
+target_link_libraries(test-ndsboundingbox
+  ndsmath
+  glm::glm
+  Catch2::Catch2WithMain)
+
 add_test(NAME test-packedtileid
   COMMAND "$<TARGET_FILE:test-packedtileid>")
 
 add_test(NAME test-wgs84
   COMMAND "$<TARGET_FILE:test-wgs84>")
+
+add_test(NAME test-ndsboundingbox
+  COMMAND "$<TARGET_FILE:test-ndsboundingbox>")
