@@ -9,6 +9,37 @@ on:
     branches: [main]
 
 jobs:
+  check-changelog:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Validate CHANGELOG has unreleased entries
+      run: |
+        # Count unreleased entries per track (no date suffix)
+        PYTHON_UNRELEASED=$(grep -cE "^## \[Python v[0-9.]+\]$" CHANGELOG.md || echo "0")
+        CPP_UNRELEASED=$(grep -cE "^## \[C\+\+ v[0-9.]+\]$" CHANGELOG.md || echo "0")
+        TOTAL=$((PYTHON_UNRELEASED + CPP_UNRELEASED))
+
+        echo "Unreleased entries: Python=$PYTHON_UNRELEASED, C++=$CPP_UNRELEASED"
+
+        if [ "$TOTAL" -eq 0 ]; then
+          echo "ERROR: No unreleased version entry found in CHANGELOG.md"
+          echo "Add an entry like: ## [Python vX.Y.Z] or ## [C++ vX.Y.Z]"
+          exit 1
+        fi
+
+        if [ "$PYTHON_UNRELEASED" -gt 1 ]; then
+          echo "ERROR: Found $PYTHON_UNRELEASED unreleased Python entries, expected at most 1"
+          exit 1
+        fi
+
+        if [ "$CPP_UNRELEASED" -gt 1 ]; then
+          echo "ERROR: Found $CPP_UNRELEASED unreleased C++ entries, expected at most 1"
+          exit 1
+        fi
+
+        echo "OK: Found $TOTAL unreleased entry/entries"
+
   test-cpp:
     runs-on: ubuntu-latest
 
@@ -64,7 +95,7 @@ jobs:
         git clean -fd
 
   build-and-deploy:
-    needs: [test-cpp, test-python]
+    needs: [check-changelog, test-cpp, test-python]
     runs-on: ubuntu-latest
     if: |
       (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
