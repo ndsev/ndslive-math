@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project uses separate versioning for C++ and Python components.
 
-## [Python v0.4.0]
+## [Python v0.4.0] - 2025-12-01
 
 ### Added
 - `from_tile_index()` class method for direct tile construction from morton number and level
@@ -24,7 +24,7 @@ This project uses separate versioning for C++ and Python components.
 ### Removed
 - Remove obsolete `requirements.txt` and `setup.py` (migrated to pyproject.toml)
 
-## [C++ v0.5.0]
+## [C++ v0.5.0] - 2025-12-01
 
 ### Added
 - `fromTileIndex()` static method for direct tile construction from morton number and level
