@@ -9,7 +9,30 @@ on:
     branches: [main]
 
 jobs:
-  test:
+  test-cpp:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake build-essential
+    - name: Configure
+      run: |
+        mkdir -p build
+        cd build
+        cmake ../cpp -DCMAKE_BUILD_TYPE=Release
+    - name: Build
+      run: |
+        cd build
+        make -j$(nproc)
+    - name: Run tests
+      run: |
+        cd build
+        ctest --output-on-failure
+
+  test-python:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -41,7 +64,7 @@ jobs:
         git clean -fd
 
   build-and-deploy:
-    needs: test
+    needs: [test-cpp, test-python]
     runs-on: ubuntu-latest
     if: |
       (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
