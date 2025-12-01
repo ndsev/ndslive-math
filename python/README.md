@@ -8,6 +8,16 @@ Python version of ndsmath, math utilities for NDS.Live.
 pip install ndslive-math
 ```
 
+## Development
+
+For development, install in editable mode with the version workaround since the Python package is in a subdirectory:
+
+```bash
+SETUPTOOLS_SCM_PRETEND_VERSION=$(cd .. && python -m setuptools_scm) pip install --config-settings editable-mode=strict -e .
+```
+
+This workaround is needed because the git repository is at the parent level, not in the `python/` directory.
+
 ## Usage
 
 ```python
