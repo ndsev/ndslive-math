@@ -19,8 +19,9 @@ jobs:
       run: |
         if [ "${{ github.ref }}" = "refs/heads/main" ]; then
           # ON MAIN: All entries must have dates (no unreleased allowed)
-          PYTHON_UNRELEASED=$(grep -cE "^## \[Python v[0-9.]+\]$" CHANGELOG.md || echo "0")
-          CPP_UNRELEASED=$(grep -cE "^## \[C\+\+ v[0-9.]+\]$" CHANGELOG.md || echo "0")
+          # Note: grep -c outputs count but exits 1 when count is 0, so use || true
+          PYTHON_UNRELEASED=$(grep -cE "^## \[Python v[0-9.]+\]$" CHANGELOG.md || true)
+          CPP_UNRELEASED=$(grep -cE "^## \[C\+\+ v[0-9.]+\]$" CHANGELOG.md || true)
           TOTAL=$((PYTHON_UNRELEASED + CPP_UNRELEASED))
 
           if [ "$TOTAL" -gt 0 ]; then
