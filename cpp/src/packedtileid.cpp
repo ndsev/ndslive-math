@@ -18,6 +18,11 @@ PackedTileId::PackedTileId(uint32_t value) :
 {
 }
 
+PackedTileId PackedTileId::fromTileIndex(uint32_t mortonNumber, int level)
+{
+    return PackedTileId(mortonNumber + (1 << (16 + level)));
+}
+
 PackedTileId PackedTileId::westNeighbour() const
 {
     int level = this->level();

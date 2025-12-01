@@ -165,6 +165,35 @@ namespace ndsmath
             return Wgs84(static_cast<T>(x) * bitScaling, static_cast<T>(y) * bitScaling);
         }
 
+        //! Convert degree distances to meters at a given latitude.
+        //! @param lonDegrees Longitude distance in degrees
+        //! @param latDegrees Latitude distance in degrees
+        //! @param atLatitude The latitude where measurement is taken (affects longitude distance)
+        //! @return Pair of (width_meters, height_meters)
+        //! @note Longitude distance varies by latitude (shrinks toward poles), latitude distance is constant.
+        static std::pair<T, T> degreesToMeters(T lonDegrees, T latDegrees, T atLatitude)
+        {
+            constexpr T METERS_PER_DEGREE = static_cast<T>(111320.0);
+
+            T lonMeters = std::abs(lonDegrees) * METERS_PER_DEGREE * std::cos(glm::radians(atLatitude));
+            T latMeters = std::abs(latDegrees) * METERS_PER_DEGREE;
+
+            return {lonMeters, latMeters};
+        }
+
+        //! Convert NDS coordinate distances to meters at a given latitude.
+        //! @param ndsXDistance X (longitude) distance in NDS units
+        //! @param ndsYDistance Y (latitude) distance in NDS units
+        //! @param atLatitude The latitude where measurement is taken
+        //! @return Pair of (width_meters, height_meters)
+        static std::pair<T, T> ndsDistanceToMeters(int32_t ndsXDistance, int32_t ndsYDistance, T atLatitude)
+        {
+            T lonDegrees = (static_cast<T>(ndsXDistance) / std::pow(2.0, 32.0)) * 360.0;
+            T latDegrees = (static_cast<T>(ndsYDistance) / std::pow(2.0, 31.0)) * 180.0;
+
+            return degreesToMeters(lonDegrees, latDegrees, atLatitude);
+        }
+
         glm::dvec3 toEuclidean(T refRadius = EARTH_RADIUS_IN_METERS) const
         {
             const T theta = y * glm::pi<double>() / 180.;
@@ -340,6 +369,10 @@ namespace ndsmath
         }
 
     }; // class Wgs84
+
+    //! Type alias for distance measurements in meters (width, height)
+    template<typename T>
+    using DeltaInMeters = std::pair<T, T>;
 
     using HighPrecWgs84 = Wgs84<double>;
     using HighPrecWgs84_3d = glm::dvec3;

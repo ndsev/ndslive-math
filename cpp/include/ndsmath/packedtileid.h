@@ -22,8 +22,17 @@ public:
     //! Constructor.
     explicit PackedTileId(uint32_t value);
 
-    //! Create the packed tile id from the morton code and level.
+    //! Create a PackedTileId that contains the point encoded by a MortonCode.
+    //! This finds the tile at the specified level containing the full-precision
+    //! NDS coordinates. The resulting mortonNumber() will NOT equal the input
+    //! mortonCode.value(). Use fromTileIndex() if you need a specific morton number.
     PackedTileId(MortonCode mortonCode, const int level);
+
+    //! Create a PackedTileId directly from a tile morton number and level.
+    //! @param mortonNumber The tile's morton number (0 to 4^level - 1)
+    //! @param level Tile level (0-15)
+    //! @return PackedTileId with the specified morton number at the given level
+    static PackedTileId fromTileIndex(uint32_t mortonNumber, int level);
 
     ///! Checks if the internal value represents an actual PackedTileId or not
     bool isValid() const;
@@ -61,6 +70,13 @@ public:
     //! Width and height of the tile in NDS coord units
     uint32_t size() const;
 
+    //! Get tile dimensions in meters.
+    //! @return Pair of (width_meters, height_meters) calculated at the tile's center latitude.
+    //! @note Dimensions vary by latitude - tiles are largest at the equator and shrink toward poles.
+    //!       Width (longitude) is affected by cos(latitude), height (latitude) remains constant.
+    template<typename T = double>
+    DeltaInMeters<T> dimensionsInMeters() const;
+
     bool operator==(const PackedTileId& other) const;
     bool operator!=(const PackedTileId& other) const;
     bool operator<(const PackedTileId& other) const;
@@ -87,5 +103,18 @@ using PackedTileIds = std::vector<PackedTileId>;
 //! @param level Tile level (0-15)
 //! @return Vector of PackedTileId objects that intersect with the bounding box
 PackedTileIds getTileIdsForBoundingBox(int32_t swX, int32_t swY, int32_t neX, int32_t neY, int level);
+
+// Template implementation
+template<typename T>
+DeltaInMeters<T> PackedTileId::dimensionsInMeters() const
+{
+    int32_t centerX, centerY;
+    center(centerX, centerY);
+
+    auto centerWgs = HighPrecWgs84::fromNdsCoordinates(centerX, centerY);
+    uint32_t tileSize = size();
+
+    return HighPrecWgs84::ndsDistanceToMeters(tileSize, tileSize, centerWgs.latitude());
+}
 
 } // namespace ndsmath

@@ -9,7 +9,62 @@ on:
     branches: [main]
 
 jobs:
-  test:
+  check-changelog:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - name: Validate CHANGELOG
+      run: |
+        if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+          # ON MAIN: All entries must have dates (no unreleased allowed)
+          PYTHON_UNRELEASED=$(grep -cE "^## \[Python v[0-9.]+\]$" CHANGELOG.md || echo "0")
+          CPP_UNRELEASED=$(grep -cE "^## \[C\+\+ v[0-9.]+\]$" CHANGELOG.md || echo "0")
+          TOTAL=$((PYTHON_UNRELEASED + CPP_UNRELEASED))
+
+          if [ "$TOTAL" -gt 0 ]; then
+            echo "ERROR: Found $TOTAL unreleased entries on main branch"
+            echo "Add release dates: ## [Python vX.Y.Z] - YYYY-MM-DD"
+            grep -E "^## \[(Python|C\+\+) v[0-9.]+\]$" CHANGELOG.md
+            exit 1
+          fi
+          echo "OK: All changelog entries have release dates"
+        else
+          # ON PR: Check that CHANGELOG.md was modified
+          if git diff --name-only origin/main...HEAD | grep -q "^CHANGELOG.md$"; then
+            echo "OK: CHANGELOG.md has been modified"
+          else
+            echo "WARNING: CHANGELOG.md was not modified"
+            echo "Please document your changes in CHANGELOG.md"
+            exit 1
+          fi
+        fi
+
+  test-cpp:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake build-essential
+    - name: Configure
+      run: |
+        mkdir -p build
+        cd build
+        cmake ../cpp -DCMAKE_BUILD_TYPE=Release
+    - name: Build
+      run: |
+        cd build
+        make -j$(nproc)
+    - name: Run tests
+      run: |
+        cd build
+        ctest --output-on-failure
+
+  test-python:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -26,7 +81,6 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r python/requirements.txt
     - name: Install ndsmath
       run: |
         # Move Python package to root temporarily for install
@@ -42,7 +96,7 @@ jobs:
         git clean -fd
 
   build-and-deploy:
-    needs: test
+    needs: [check-changelog, test-cpp, test-python]
     runs-on: ubuntu-latest
     if: |
       (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
@@ -81,7 +135,7 @@ jobs:
     - name: Deploy to Artifactory
       env:
         TWINE_USERNAME: ${{ secrets.NDS_ARTIFACTORY_USER }}
-        TWINE_PASSWORD: ${{ secrets.NDS_ARTIFACTORY_USER_PW }}
+        TWINE_PASSWORD: ${{ secrets.NDS_ARTIFACTORY_TOKEN }}
       run: |
         cd python
         REPO_URL="https://artifactory.nds-association.org/artifactory/api/pypi/tooling-pypi"
