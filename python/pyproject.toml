@@ -38,9 +38,7 @@ include = ["ndslive.*"]
 namespaces = true
 
 [tool.setuptools_scm]
-tag_regex = "^v(?P<version>.*)$"
 write_to = "src/ndslive/math/_version.py"
-version_scheme = "release-branch-semver"
 local_scheme = "no-local-version"
 fallback_version = "0.0.0+unknown"
 
