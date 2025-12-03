@@ -19,15 +19,23 @@ runs:
       run: |
         python -m pip install --upgrade pip
         pip install build twine setuptools-scm
-    - name: Show version
+    - name: Determine version
+      id: version
       shell: bash
       run: |
-        cd python
-        python -m setuptools_scm
+        if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+          VERSION=${GITHUB_REF#refs/tags/v}
+        else
+          VERSION=$(cd python && python -m setuptools_scm)
+        fi
+        echo "VERSION=$VERSION"
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
     - name: Build distributions
       shell: bash
+      env:
+        SETUPTOOLS_SCM_PRETEND_VERSION: ${{ steps.version.outputs.version }}
       run: |
-        python -m build python/
+        python -m build python/ -o dist/
     - name: Deploy to Artifactory
       shell: bash
       env:
