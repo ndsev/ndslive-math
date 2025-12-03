@@ -1,0 +1,50 @@
+name: 'Build and Deploy Python'
+description: 'Build and deploy Python package to Artifactory'
+inputs:
+  twine-username:
+    description: 'Artifactory username'
+    required: true
+  twine-password:
+    description: 'Artifactory password'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+    - name: Install dependencies
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        pip install build twine setuptools-scm
+    - name: Prepare build environment
+      shell: bash
+      run: |
+        cp -r python/* .
+        python -m setuptools_scm
+    - name: Build distributions
+      shell: bash
+      run: |
+        python -m build
+        mkdir -p python/dist
+        mv dist/* python/dist/
+    - name: Cleanup
+      shell: bash
+      run: |
+        git reset --hard HEAD
+        git clean -fd
+    - name: Deploy to Artifactory
+      shell: bash
+      env:
+        TWINE_USERNAME: ${{ inputs.twine-username }}
+        TWINE_PASSWORD: ${{ inputs.twine-password }}
+      run: |
+        cd python
+        REPO_URL="https://artifactory.nds-association.org/artifactory/api/pypi/tooling-pypi"
+        twine check dist/*
+        twine upload --verbose --repository-url $REPO_URL dist/*

@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     tags:
-      - 'python-v*'
+      - 'v*'
   pull_request:
     branches: [main]
 
@@ -20,15 +20,12 @@ jobs:
       run: |
         if [ "${{ github.ref }}" = "refs/heads/main" ]; then
           # ON MAIN: All entries must have dates (no unreleased allowed)
-          # Note: grep -c outputs count but exits 1 when count is 0, so use || true
-          PYTHON_UNRELEASED=$(grep -cE "^## \[Python v[0-9.]+\]$" CHANGELOG.md || true)
-          CPP_UNRELEASED=$(grep -cE "^## \[C\+\+ v[0-9.]+\]$" CHANGELOG.md || true)
-          TOTAL=$((PYTHON_UNRELEASED + CPP_UNRELEASED))
+          UNRELEASED=$(grep -cE "^## \[v[0-9.]+\]$" CHANGELOG.md || true)
 
-          if [ "$TOTAL" -gt 0 ]; then
-            echo "ERROR: Found $TOTAL unreleased entries on main branch"
-            echo "Add release dates: ## [Python vX.Y.Z] - YYYY-MM-DD"
-            grep -E "^## \[(Python|C\+\+) v[0-9.]+\]$" CHANGELOG.md
+          if [ "$UNRELEASED" -gt 0 ]; then
+            echo "ERROR: Found $UNRELEASED unreleased entries on main branch"
+            echo "Add release dates: ## [vX.Y.Z] - YYYY-MM-DD"
+            grep -E "^## \[v[0-9.]+\]$" CHANGELOG.md
             exit 1
           fi
           echo "OK: All changelog entries have release dates"
@@ -85,7 +82,6 @@ jobs:
         python -m pip install --upgrade pip
     - name: Install ndsmath
       run: |
-        # Move Python package to root temporarily for install
         cp -r python/* .
         pip install -e .
     - name: Run tests
@@ -93,53 +89,27 @@ jobs:
         python -m unittest discover tests
     - name: Cleanup test environment
       run: |
-        # Reset repository to clean state
         git reset --hard HEAD
         git clean -fd
 
-  build-and-deploy:
+  build-and-deploy-snapshot:
     needs: [check-changelog, test-cpp, test-python]
     runs-on: ubuntu-latest
     if: |
       (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
-      (github.event_name == 'pull_request' && github.base_ref == 'main') ||
-      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/python-v'))
-
+      (github.event_name == 'pull_request' && github.base_ref == 'main')
     steps:
-    - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.12'
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install build twine setuptools-scm
-    - name: Prepare build environment
-      run: |
-        # Move Python package to root temporarily for build
-        cp -r python/* .
-        # Show version info
-        python -m setuptools_scm
-    - name: Build distributions
-      run: |
-        python -m build
-        # Move built artifacts back to python/dist
-        mkdir -p python/dist
-        mv dist/* python/dist/
-    - name: Cleanup
-      run: |
-        # Reset repository to clean state, preserving python/dist
-        git reset --hard HEAD
-        git clean -fd
-    - name: Deploy to Artifactory
-      env:
-        TWINE_USERNAME: ${{ secrets.NDS_ARTIFACTORY_USER }}
-        TWINE_PASSWORD: ${{ secrets.NDS_ARTIFACTORY_TOKEN }}
-      run: |
-        cd python
-        REPO_URL="https://artifactory.nds-association.org/artifactory/api/pypi/tooling-pypi"
-        twine check dist/*
-        twine upload --verbose --repository-url $REPO_URL dist/*
+      - uses: ./.github/actions/python-build-deploy
+        with:
+          twine-username: ${{ secrets.NDS_ARTIFACTORY_USER }}
+          twine-password: ${{ secrets.NDS_ARTIFACTORY_TOKEN }}
+
+  build-and-deploy-release:
+    needs: [test-cpp, test-python]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: ./.github/actions/python-build-deploy
+        with:
+          twine-username: ${{ secrets.NDS_ARTIFACTORY_USER }}
+          twine-password: ${{ secrets.NDS_ARTIFACTORY_TOKEN }}

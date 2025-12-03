@@ -3,11 +3,16 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
-This project uses separate versioning for C++ and Python components.
 
-## [Python v0.4.0] - 2025-12-01
+## [v0.5.0] - 2025-12-03
 
-### Added
+### Project
+- Introduced unified versioning for C++ and Python (previously separate `cpp-v*` and `python-v*` tags)
+- Python version jumps from 0.3.0 to 0.5.0 to align with C++ (0.4.0 was never published to Artifactory)
+
+### Python
+
+#### Added
 - `from_tile_index()` class method for direct tile construction from morton number and level
 - `is_valid()` method to PackedTileId for validating tile IDs
 - Neighbor methods: `north_neighbour()`, `south_neighbour()`, `east_neighbour()`, `west_neighbour()` with proper boundary wrapping
@@ -17,23 +22,24 @@ This project uses separate versioning for C++ and Python components.
 - `NdsBoundingBox` dataclass with `from_wgs84_corners()`, `from_tile()`, `intersects()`, `contains()` methods
 - `degrees_to_meters()` and `nds_distance_to_meters()` to Wgs84
 
-### Changed
+#### Changed
 - **BREAKING:** PackedTileId now uses signed int32 API per NDS.Live standard (level 15 tiles return negative values from `.value`)
 - Improve docs for `from_morton_and_level()` clarifying it finds containing tile
 
-### Removed
+#### Removed
 - Remove obsolete `requirements.txt` and `setup.py` (migrated to pyproject.toml)
 
-## [C++ v0.5.0] - 2025-12-01
+### C++
 
-### Added
+#### Added
 - `fromTileIndex()` static method for direct tile construction from morton number and level
 - `dimensionsInMeters()` method to PackedTileId for getting tile dimensions in meters
 - `degreesToMeters()` and `ndsDistanceToMeters()` methods to Wgs84 for distance conversions
 - `DeltaInMeters<T>` type alias for distance measurements
 - `NdsBoundingBox` struct with `fromWgs84Corners()`, `fromTile()`, `intersects()`, `contains()` methods
 
-### Changed
+#### Changed
+- Uses unified versioning with `v*` tags (no longer separate `cpp-v*` tags)
 - Improve API docs for `PackedTileId(MortonCode, level)` clarifying it finds containing tile
 
 ## [C++ v0.4.0] - 2025-09-09
