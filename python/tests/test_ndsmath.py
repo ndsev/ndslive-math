@@ -125,6 +125,35 @@ class TestWgs84(unittest.TestCase):
         distance = point1.distance_to(point2)
         self.assertGreater(distance, 0)
 
+    def test_nds_coordinate_uses_floor(self):
+        """Test that to_nds_coordinates uses floor (toward -infinity) not truncate."""
+        # Floor should round toward -infinity, not toward zero (truncate)
+        # This matters for negative coordinates near tile boundaries
+
+        # Test positive coordinates (floor and truncate behave the same)
+        positive = Wgs84(0.0001, 0.0001)
+        px, py = positive.to_nds_coordinates()
+        self.assertGreater(px, 0)
+        self.assertGreater(py, 0)
+
+        # Test negative coordinates (floor rounds down, truncate rounds toward zero)
+        negative = Wgs84(-0.0001, -0.0001)
+        nx, ny = negative.to_nds_coordinates()
+        self.assertLess(nx, 0)
+        self.assertLess(ny, 0)
+
+        # Verify floor behavior: for tiny negative value, result should be -1, not 0
+        tiny_neg = Wgs84(-1e-10, -1e-10)
+        tnx, tny = tiny_neg.to_nds_coordinates()
+        self.assertEqual(tnx, -1)  # floor(-tiny) = -1, not 0
+        self.assertEqual(tny, -1)
+
+        # Roundtrip test: convert back and verify we're in the same "cell"
+        back_positive = Wgs84.from_nds_coordinates(px, py)
+        back_negative = Wgs84.from_nds_coordinates(nx, ny)
+        self.assertGreaterEqual(back_positive.x, 0.0)
+        self.assertLess(back_negative.x, 0.0)
+
     def test_nds_coordinate_conversion(self):
         # Test conversion at origin (0, 0)
         origin = Wgs84(0.0, 0.0)

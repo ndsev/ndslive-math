@@ -53,9 +53,10 @@ class Wgs84:
             self.y = -90.0 # Clamp to min lat
 
     def to_nds_coordinates(self):
-        # Convert to NDS coordinate system
-        x_nds = int((self.x / 360.0) * (2 ** 32))
-        y_nds = int((self.y / 180.0) * (2 ** 31))
+        # Convert to NDS coordinate system using floor (rounds toward -infinity)
+        # Floor is recommended by NDS spec for consistency with tiling scheme
+        x_nds = math.floor((self.x / 360.0) * (2 ** 32))
+        y_nds = math.floor((self.y / 180.0) * (2 ** 31))
         return x_nds, y_nds
 
     @staticmethod
