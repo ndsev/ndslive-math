@@ -90,6 +90,9 @@ namespace ndsmath
             return result;
         }
 
+        //! Convert WGS84 coordinates to NDS integer coordinates.
+        //! @note NDS spec allows floor, truncate, or round operations for this conversion.
+        //!       Floor is used here as recommended by NDS for consistency with the tiling scheme.
         void toNdsCoordinates(int32_t &xOut, int32_t &yOut) const
         {
             xOut = static_cast<int32_t>(std::floor((x / 360.0) * std::ldexp(1.0, 32)));
