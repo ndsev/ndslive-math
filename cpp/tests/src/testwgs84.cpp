@@ -11,6 +11,44 @@
 using namespace ndsmath;
 
 
+TEST_CASE("toNdsCoordinates uses floor", "[toNdsCoordinates]")
+{
+    // Floor should round toward -infinity, not toward zero (truncate)
+    // This matters for negative coordinates near tile boundaries
+
+    // Test positive coordinates (floor and truncate behave the same)
+    HighPrecWgs84 positive(0.0001, 0.0001);
+    int32_t px, py;
+    positive.toNdsCoordinates(px, py);
+    REQUIRE(px > 0);
+    REQUIRE(py > 0);
+
+    // Test negative coordinates (floor rounds down, truncate rounds toward zero)
+    HighPrecWgs84 negative(-0.0001, -0.0001);
+    int32_t nx, ny;
+    negative.toNdsCoordinates(nx, ny);
+    REQUIRE(nx < 0);
+    REQUIRE(ny < 0);
+
+    // Verify floor behavior: for small negative value, result should be -1 times unit, not 0
+    // The scaled value is approximately -1193 for x and -1193 for y
+    // floor(-1193.046) = -1194, truncate(-1193.046) = -1193
+    // We verify floor by checking that very small negative gives more negative result
+    HighPrecWgs84 tinyNeg(-1e-10, -1e-10);
+    int32_t tnx, tny;
+    tinyNeg.toNdsCoordinates(tnx, tny);
+    REQUIRE(tnx == -1);  // floor(-tiny) = -1, not 0
+    REQUIRE(tny == -1);
+
+    // Roundtrip test: convert back and verify we're in the same "cell"
+    auto backPositive = HighPrecWgs84::fromNdsCoordinates(px, py);
+    auto backNegative = HighPrecWgs84::fromNdsCoordinates(nx, ny);
+
+    REQUIRE(backPositive.longitude() >= 0.0);
+    REQUIRE(backNegative.longitude() < 0.0);
+}
+
+
 TEST_CASE("Point inside polygon", "[isInsidePolygon]")
 {
     std::vector<HighPrecWgs84> v = {
