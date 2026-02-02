@@ -206,7 +206,10 @@ class PackedTileId:
 
     def level(self):
         """
-        Level of the tile (0..15)
+        Get the tile level.
+
+        Returns:
+            int: Tile level (0-15). Higher levels have smaller tiles.
         """
         level = 0
         tile_id = self._value >> 16
@@ -217,7 +220,10 @@ class PackedTileId:
 
     def size(self):
         """
-        Size of the tile in NDS coordinate units.
+        Get the tile size in NDS coordinate units.
+
+        Returns:
+            int: Edge length of the tile in NDS units.
         """
         return 1 << (31 - self.level())
 
@@ -242,7 +248,10 @@ class PackedTileId:
 
     def center(self):
         """
-        Returns the center of the tile in NDS coordinates.
+        Get the center point of the tile.
+
+        Returns:
+            Tuple of (x, y) NDS coordinates at the tile center.
         """
         x, y = self.south_west_corner()
         half_size = self.size() // 2
@@ -250,14 +259,20 @@ class PackedTileId:
 
     def south_west_corner(self):
         """
-        Returns the south-west corner of the tile in NDS coordinates.
+        Get the south-west corner of the tile.
+
+        Returns:
+            Tuple of (x, y) NDS coordinates at the SW corner.
         """
         morton_number = self.morton_number()
         return MortonCode(morton_number << (63 - (2 * self.level() + 1))).to_nds_coordinates()
 
     def north_east_corner(self):
         """
-        Returns the north-east corner of the tile in NDS coordinates.
+        Get the north-east corner of the tile.
+
+        Returns:
+            Tuple of (x, y) NDS coordinates at the NE corner (exclusive boundary).
         """
         x, y = self.south_west_corner()
         size = self.size()
@@ -265,8 +280,10 @@ class PackedTileId:
 
     def morton_number(self):
         """
-        Returns the Morton number of the tile, calculated by subtracting
-        the level-specific offset from the packed tile ID value.
+        Get the tile's Morton number (index within its level).
+
+        Returns:
+            int: Morton number (0 to 2^(2*level+1) - 1).
         """
         tile_level = self.level()
         return self._value - (1 << (16 + tile_level))

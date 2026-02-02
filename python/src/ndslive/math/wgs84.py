@@ -3,21 +3,47 @@ import math
 
 class Wgs84:
     """
-    Represents a point on the Earth's surface using the WGS84 coordinate system.
-    Provides methods for coordinate conversion, normalization, and distance calculations.
+    WGS84 coordinate representation with conversion and distance utilities.
+
+    Represents a point in the WGS84 coordinate system (longitude, latitude, altitude)
+    and provides methods for coordinate conversion, normalization, and distance
+    calculations.
+
+    Attributes:
+        x: Longitude in degrees (-180 to ~180).
+        y: Latitude in degrees (-90 to ~90).
+        z: Altitude in meters (default 0).
+
+    Example:
+        >>> berlin = Wgs84(lon=13.404954, lat=52.520008)
+        >>> x_nds, y_nds = berlin.to_nds_coordinates()
+        >>> back = Wgs84.from_nds_coordinates(x_nds, y_nds)
     """
     EARTH_RADIUS_IN_METERS = 6371000.8  # Approximate radius of Earth in meters
     LON_NDS_DELTA = 360 / (2 ** 32 - 1)
     LAT_NDS_DELTA = 180 / (2 ** 31 - 1)
 
     def __init__(self, lon=0.0, lat=0.0, alt=0.0):
+        """
+        Create a WGS84 coordinate point.
+
+        Args:
+            lon: Longitude in degrees. Values outside [-180, 180) are normalized.
+            lat: Latitude in degrees. Values are clamped to [-90, ~90).
+            alt: Altitude in meters (default 0).
+        """
         self.x = lon
         self.y = lat
         self.z = alt
         self.normalize()
 
     def normalize(self):
-        # Normalize the coordinates
+        """
+        Normalize coordinates to valid WGS84 ranges.
+
+        Longitude is wrapped to [-180, 180) and latitude is clamped to [-90, ~90).
+        Called automatically by __init__.
+        """
         # Use math.fmod to preserve the sign, matching C++ std::fmod behavior
         self.x = math.fmod(self.x, 360.0)
 
@@ -53,14 +79,28 @@ class Wgs84:
             self.y = -90.0 # Clamp to min lat
 
     def to_nds_coordinates(self):
-        # Convert to NDS coordinate system
+        """
+        Convert to NDS coordinate system.
+
+        Returns:
+            Tuple of (x_nds, y_nds) as 32-bit and 31-bit signed integers.
+        """
         x_nds = int((self.x / 360.0) * (2 ** 32))
         y_nds = int((self.y / 180.0) * (2 ** 31))
         return x_nds, y_nds
 
     @staticmethod
     def from_nds_coordinates(x, y):
-        # Convert from NDS coordinate system
+        """
+        Create a Wgs84 point from NDS coordinates.
+
+        Args:
+            x: Longitude in NDS units (32-bit signed integer).
+            y: Latitude in NDS units (31-bit signed integer).
+
+        Returns:
+            Wgs84 instance with converted coordinates.
+        """
         lon_multiplier = 360.0 / (2 ** 32)
         lat_multiplier = 180.0 / (2 ** 31)
         lon = x * lon_multiplier
@@ -109,6 +149,13 @@ class Wgs84:
         return Wgs84.degrees_to_meters(lon_degrees, lat_degrees, at_latitude)
 
     def to_degree_minutes_seconds(self):
+        """
+        Convert coordinates to degree-minutes-seconds format.
+
+        Returns:
+            Tuple of (latitude_str, longitude_str) in DMS format with N/S/E/W suffix.
+            Example: ("52° 31' 12.03\" N", "13° 24' 17.83\" E")
+        """
         def convert(value):
             degrees = int(value)
             minutes = int((value - degrees) * 60)
@@ -120,7 +167,15 @@ class Wgs84:
         return lat, lon
 
     def distance_to(self, other):
-        # Calculate haversine distance
+        """
+        Calculate great-circle distance to another point using haversine formula.
+
+        Args:
+            other: Target Wgs84 coordinate.
+
+        Returns:
+            Distance in meters.
+        """
         dlat = math.radians(other.y - self.y)
         dlon = math.radians(other.x - self.x)
         a = math.sin(dlat / 2) ** 2 + math.cos(math.radians(self.y)) * math.cos(math.radians(other.y)) * math.sin(
@@ -129,7 +184,15 @@ class Wgs84:
         return self.EARTH_RADIUS_IN_METERS * c
 
     def bearing_from(self, other):
-        # Calculate bearing from another Wgs84 coordinate
+        """
+        Calculate initial bearing from another point to this point.
+
+        Args:
+            other: Origin Wgs84 coordinate.
+
+        Returns:
+            Bearing in radians (0 = north, π/2 = east).
+        """
         lat1, lon1, lat2, lon2 = map(math.radians, [self.y, self.x, other.y, other.x])
         y = math.sin(lon2 - lon1) * math.cos(lat2)
         x = math.cos(lat1) * math.sin(lat2) - math.sin(lat1) * math.cos(lat2) * math.cos(lon2 - lon1)
