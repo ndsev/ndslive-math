@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [v0.5.1] - 2026-03-12
 
 ### Changed
 - Use floor instead of truncate for WGS84 to NDS coordinate conversion (C++ and Python)
