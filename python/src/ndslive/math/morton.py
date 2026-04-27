@@ -5,10 +5,30 @@ class MortonCode:
     """
 
     def __init__(self, morton_code=0):
+        """Construct a MortonCode from a raw 64-bit code value.
+
+        Most callers use :meth:`from_nds_coordinates` instead; this
+        constructor is for round-tripping a previously computed code.
+
+        Args:
+            morton_code: 64-bit Morton (Z-order) code value. Higher bits
+                are masked off to ensure 64-bit unsigned semantics.
+        """
         self.morton_code = morton_code & ((1 << 64) - 1)  # Ensure 64-bit unsigned
 
     @staticmethod
     def from_nds_coordinates(x, y):
+        """Encode NDS integer coordinates into a Morton (Z-order) code.
+
+        Inverse of :meth:`to_nds_coordinates`.
+
+        Args:
+            x: NDS longitude (signed 32-bit integer). Wrapped if outside range.
+            y: NDS latitude (signed 31-bit integer). Wrapped if outside range.
+
+        Returns:
+            MortonCode encoding the interleaved bit positions of ``(x, y)``.
+        """
         x_base = 1 << 31
         y_base = 1 << 30
         bit = 1
@@ -46,6 +66,14 @@ class MortonCode:
         return MortonCode(morton_code)
 
     def to_nds_coordinates(self):
+        """Decode this Morton code back into NDS integer coordinates.
+
+        Inverse of :meth:`from_nds_coordinates`.
+
+        Returns:
+            Tuple of ``(x, y)`` as signed integers — NDS longitude (32-bit)
+            and NDS latitude (31-bit).
+        """
         YBASE = 1 << 30
         XBASE = 1 << 31
         bit = 1
