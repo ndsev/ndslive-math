@@ -11,12 +11,24 @@ class Wgs84:
     LAT_NDS_DELTA = 180 / (2 ** 31 - 1)
 
     def __init__(self, lon=0.0, lat=0.0, alt=0.0):
+        """Construct a WGS84 point in degrees.
+
+        Args:
+            lon: Longitude in degrees. Wrapped into ``[-180, 180)``.
+            lat: Latitude in degrees. Clamped to ``[-90, 90)``.
+            alt: Altitude in meters above the WGS84 ellipsoid.
+        """
         self.x = lon
         self.y = lat
         self.z = alt
         self.normalize()
 
     def normalize(self):
+        """Wrap longitude into ``[-180, 180)`` and clamp latitude into ``[-90, 90)``.
+
+        Called automatically by ``__init__``; call explicitly after mutating
+        ``x`` (longitude) or ``y`` (latitude) directly.
+        """
         # Normalize the coordinates
         # Use math.fmod to preserve the sign, matching C++ std::fmod behavior
         self.x = math.fmod(self.x, 360.0)
@@ -69,6 +81,17 @@ class Wgs84:
 
     @staticmethod
     def from_nds_coordinates(x, y):
+        """Construct a :class:`Wgs84` point from NDS integer coordinates.
+
+        Inverse of :meth:`to_nds_coordinates`.
+
+        Args:
+            x: NDS longitude (signed 32-bit integer).
+            y: NDS latitude (signed 31-bit integer).
+
+        Returns:
+            Wgs84 point with longitude / latitude in degrees and ``alt=0``.
+        """
         # Convert from NDS coordinate system
         lon_multiplier = 360.0 / (2 ** 32)
         lat_multiplier = 180.0 / (2 ** 31)
@@ -118,6 +141,12 @@ class Wgs84:
         return Wgs84.degrees_to_meters(lon_degrees, lat_degrees, at_latitude)
 
     def to_degree_minutes_seconds(self):
+        """Format this point as degrees-minutes-seconds strings.
+
+        Returns:
+            Tuple of ``(lat_str, lon_str)`` in the form
+            ``"DD° MM' SS.ss\\" N|S"`` and ``"DDD° MM' SS.ss\\" E|W"``.
+        """
         def convert(value):
             degrees = int(value)
             minutes = int((value - degrees) * 60)
@@ -129,6 +158,15 @@ class Wgs84:
         return lat, lon
 
     def distance_to(self, other):
+        """Great-circle distance to another point, computed via the haversine formula.
+
+        Args:
+            other: Another :class:`Wgs84` point.
+
+        Returns:
+            Distance in meters along the Earth's surface
+            (uses :data:`EARTH_RADIUS_IN_METERS`).
+        """
         # Calculate haversine distance
         dlat = math.radians(other.y - self.y)
         dlon = math.radians(other.x - self.x)
@@ -138,6 +176,15 @@ class Wgs84:
         return self.EARTH_RADIUS_IN_METERS * c
 
     def bearing_from(self, other):
+        """Initial bearing (forward azimuth) from ``other`` toward this point.
+
+        Args:
+            other: Another :class:`Wgs84` point — the starting point.
+
+        Returns:
+            Bearing in radians, measured clockwise from true north.
+            Use ``math.degrees(...)`` to convert to degrees.
+        """
         # Calculate bearing from another Wgs84 coordinate
         lat1, lon1, lat2, lon2 = map(math.radians, [self.y, self.x, other.y, other.x])
         y = math.sin(lon2 - lon1) * math.cos(lat2)
