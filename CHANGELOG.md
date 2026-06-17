@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [v0.6.0] - Unreleased
+
+### Changed
+- Prepare ndslive-math as the shared C++/Python tile-ID dependency for mapget and the MapViewer stack.
+
 ## [v0.5.2] - 2026-04-27
 
 ### Changed
