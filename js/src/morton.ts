@@ -25,7 +25,7 @@ export class MortonCode {
    *   Higher bits are masked off to ensure 64-bit unsigned semantics.
    */
   constructor(mortonCode: bigint | number = 0n) {
-    const v = typeof mortonCode === "bigint" ? mortonCode : BigInt(mortonCode);
+    const v = typeof mortonCode === 'bigint' ? mortonCode : BigInt(mortonCode);
     this.mortonCode = v & MASK_64; // Ensure 64-bit unsigned
   }
 

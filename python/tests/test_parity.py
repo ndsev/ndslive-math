@@ -6,18 +6,19 @@ port, so this test keeps the reference implementation honest against the
 contract it itself produced (and catches accidental drift if the vectors are
 regenerated from changed code without updating tests).
 """
+
 import json
 import math
 import os
 import unittest
 
 from ndslive.math import (
-    Wgs84,
     MortonCode,
-    PackedTileId,
     NdsBoundingBox,
-    get_tile_ids_for_bounding_box,
+    PackedTileId,
+    Wgs84,
     bounding_box_from_tile_ids,
+    get_tile_ids_for_bounding_box,
 )
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
@@ -46,9 +47,10 @@ TOL = VECTORS["_meta"]["float_tolerance"]
 
 class TestParityVectors(unittest.TestCase):
     def assertClose(self, a, b, msg=""):
-        self.assertTrue(math.isclose(a, b, rel_tol=0, abs_tol=TOL)
-                        or math.isclose(a, b, rel_tol=1e-9),
-                        f"{msg}: {a} != {b}")
+        self.assertTrue(
+            math.isclose(a, b, rel_tol=0, abs_tol=TOL) or math.isclose(a, b, rel_tol=1e-9),
+            f"{msg}: {a} != {b}",
+        )
 
     def test_wgs84_to_nds(self):
         for r in VECTORS["wgs84_to_nds"]:
@@ -67,8 +69,7 @@ class TestParityVectors(unittest.TestCase):
         for r in VECTORS["morton"]:
             m = MortonCode.from_nds_coordinates(r["x"], r["y"])
             self.assertEqual(m.value(), int(r["morton"]))
-            self.assertEqual(list(m.to_nds_coordinates()),
-                             [r["decoded_x"], r["decoded_y"]])
+            self.assertEqual(list(m.to_nds_coordinates()), [r["decoded_x"], r["decoded_y"]])
 
     def test_packed_tile_from_index(self):
         for r in VECTORS["packed_tile_from_index"]:
@@ -100,7 +101,8 @@ class TestParityVectors(unittest.TestCase):
     def test_tiles_for_bbox(self):
         for r in VECTORS["tiles_for_bbox"]:
             tiles = get_tile_ids_for_bounding_box(
-                r["sw_x"], r["sw_y"], r["ne_x"], r["ne_y"], r["level"])
+                r["sw_x"], r["sw_y"], r["ne_x"], r["ne_y"], r["level"]
+            )
             self.assertEqual([t.value for t in tiles], r["tile_values"])
 
     def test_bbox_from_tiles(self):
@@ -118,8 +120,8 @@ class TestParityVectors(unittest.TestCase):
     def test_nds_bbox_from_wgs84(self):
         for r in VECTORS["nds_bbox_from_wgs84"]:
             bbox = NdsBoundingBox.from_wgs84_corners(
-                Wgs84(lon=r["sw"][0], lat=r["sw"][1]),
-                Wgs84(lon=r["ne"][0], lat=r["ne"][1]))
+                Wgs84(lon=r["sw"][0], lat=r["sw"][1]), Wgs84(lon=r["ne"][0], lat=r["ne"][1])
+            )
             self.assertEqual(bbox.min_x, r["min_x"])
             self.assertEqual(bbox.min_y, r["min_y"])
             self.assertEqual(bbox.max_x, r["max_x"])
@@ -134,8 +136,7 @@ class TestParityVectors(unittest.TestCase):
 
     def test_nds_distance_to_meters(self):
         for r in VECTORS["nds_distance_to_meters"]:
-            w, h = Wgs84.nds_distance_to_meters(
-                r["nds_x"], r["nds_y"], r["at_latitude"])
+            w, h = Wgs84.nds_distance_to_meters(r["nds_x"], r["nds_y"], r["at_latitude"])
             self.assertClose(w, r["width_m"], "width")
             self.assertClose(h, r["height_m"], "height")
 

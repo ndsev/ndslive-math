@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 
-import { PackedTileId } from "./tileid.js";
-import { Wgs84 } from "./wgs84.js";
+import { PackedTileId } from './tileid.js';
+import { Wgs84 } from './wgs84.js';
 
 /**
  * Axis-aligned bounding box in NDS coordinates (32-bit integers).
@@ -60,7 +60,7 @@ export class NdsBoundingBox {
    * @param tile PackedTileId object or integer tile ID.
    */
   static fromTile(tile: PackedTileId | number): NdsBoundingBox {
-    const t = typeof tile === "number" ? new PackedTileId(tile) : tile;
+    const t = typeof tile === 'number' ? new PackedTileId(tile) : tile;
     const [swX, swY] = t.southWestCorner();
     const [neX, neY] = t.northEastCorner();
     return new NdsBoundingBox(swX, swY, neX, neY);

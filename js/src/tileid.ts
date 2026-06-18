@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 
-import { MortonCode } from "./morton.js";
-import { Wgs84 } from "./wgs84.js";
+import { MortonCode } from './morton.js';
+import { Wgs84 } from './wgs84.js';
 
 const TWO_32 = 2 ** 32; // 4294967296
 const TWO_31 = 2 ** 31; // 2147483648
@@ -82,8 +82,7 @@ export class PackedTileId {
     const maxMorton = 2 ** (2 * level + 1) - 1;
     if (!(mortonNumber >= 0 && mortonNumber <= maxMorton)) {
       throw new RangeError(
-        `Invalid morton number ${mortonNumber} for level ${level} ` +
-          `(allowed: 0-${maxMorton})`,
+        `Invalid morton number ${mortonNumber} for level ${level} ` + `(allowed: 0-${maxMorton})`,
       );
     }
 
@@ -262,10 +261,9 @@ export class PackedTileId {
   westNeighbour(): PackedTileId {
     const level = this.level();
     const morton = this.mortonNumber();
-    let [x, y] = this.deinterleaveMorton(morton, level);
+    const [x, y] = this.deinterleaveMorton(morton, level);
     const maxX = (1 << (level + 1)) - 1;
-    x = (x - 1) & maxX;
-    const newMorton = this.interleaveCoords(x, y, level);
+    const newMorton = this.interleaveCoords((x - 1) & maxX, y, level);
     return PackedTileId.fromTileIndex(newMorton, level);
   }
 
@@ -276,10 +274,9 @@ export class PackedTileId {
   eastNeighbour(): PackedTileId {
     const level = this.level();
     const morton = this.mortonNumber();
-    let [x, y] = this.deinterleaveMorton(morton, level);
+    const [x, y] = this.deinterleaveMorton(morton, level);
     const maxX = (1 << (level + 1)) - 1;
-    x = (x + 1) & maxX;
-    const newMorton = this.interleaveCoords(x, y, level);
+    const newMorton = this.interleaveCoords((x + 1) & maxX, y, level);
     return PackedTileId.fromTileIndex(newMorton, level);
   }
 
@@ -290,10 +287,9 @@ export class PackedTileId {
   southNeighbour(): PackedTileId {
     const level = this.level();
     const morton = this.mortonNumber();
-    let [x, y] = this.deinterleaveMorton(morton, level);
+    const [x, y] = this.deinterleaveMorton(morton, level);
     const maxY = (1 << level) - 1;
-    y = (y - 1) & maxY;
-    const newMorton = this.interleaveCoords(x, y, level);
+    const newMorton = this.interleaveCoords(x, (y - 1) & maxY, level);
     return PackedTileId.fromTileIndex(newMorton, level);
   }
 
@@ -304,10 +300,9 @@ export class PackedTileId {
   northNeighbour(): PackedTileId {
     const level = this.level();
     const morton = this.mortonNumber();
-    let [x, y] = this.deinterleaveMorton(morton, level);
+    const [x, y] = this.deinterleaveMorton(morton, level);
     const maxY = (1 << level) - 1;
-    y = (y + 1) & maxY;
-    const newMorton = this.interleaveCoords(x, y, level);
+    const newMorton = this.interleaveCoords(x, (y + 1) & maxY, level);
     return PackedTileId.fromTileIndex(newMorton, level);
   }
 
@@ -383,11 +378,11 @@ export function boundingBoxFromTileIds(
   tileIds: ReadonlyArray<PackedTileId | number>,
 ): [number, number, number, number] {
   if (tileIds.length === 0) {
-    throw new Error("tileIds list cannot be empty");
+    throw new Error('tileIds list cannot be empty');
   }
 
   const tiles: PackedTileId[] = tileIds.map((tid) =>
-    typeof tid === "number" ? new PackedTileId(tid) : tid,
+    typeof tid === 'number' ? new PackedTileId(tid) : tid,
   );
 
   const [firstSwX, firstSwY] = tiles[0].southWestCorner();

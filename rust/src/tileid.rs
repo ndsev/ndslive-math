@@ -127,10 +127,7 @@ impl PackedTileId {
     ///
     /// Note: the resulting tile's [`PackedTileId::morton_number`] generally
     /// differs from `morton_code.value()`.
-    pub fn from_morton_and_level(
-        morton_code: MortonCode,
-        level: u32,
-    ) -> Result<Self, TileIdError> {
+    pub fn from_morton_and_level(morton_code: MortonCode, level: u32) -> Result<Self, TileIdError> {
         if level > 15 {
             return Err(TileIdError::InvalidLevel(level));
         }

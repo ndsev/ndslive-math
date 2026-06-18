@@ -13,7 +13,8 @@ MortonCode MortonCode::fromWgs84Coordinates(const HighPrecWgs84 &wgs84)
     const double ndsCoordX = wgs84.longitude() / bitScaling;
     const double ndsCoordY = wgs84.latitude() / bitScaling;
 
-    return MortonCode::fromNdsCoordinates(static_cast<int64_t>(ndsCoordX), static_cast<int64_t>(ndsCoordY));
+    return MortonCode::fromNdsCoordinates(static_cast<int64_t>(ndsCoordX),
+                                          static_cast<int64_t>(ndsCoordY));
 }
 
 } // namespace ndsmath

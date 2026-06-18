@@ -43,3 +43,14 @@ write_to = "src/ndslive/math/_version.py"
 local_scheme = "no-local-version"
 fallback_version = "0.0.0+unknown"
 
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+extend-exclude = ["src/ndslive/math/_version.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+# Line length is enforced by the formatter on a best-effort basis; don't fail
+# lint on the occasional unbreakable long line.
+ignore = ["E501"]
+

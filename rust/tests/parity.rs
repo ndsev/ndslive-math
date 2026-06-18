@@ -246,8 +246,20 @@ fn packed_tile_from_index() {
     assert!(!v.packed_tile_from_index.is_empty());
     for row in &v.packed_tile_from_index {
         let t = PackedTileId::from_tile_index(row.morton_number, row.level).unwrap();
-        assert_eq!(t.value(), row.value, "value m={} l={}", row.morton_number, row.level);
-        assert_eq!(t.level(), row.computed_level, "level m={} l={}", row.morton_number, row.level);
+        assert_eq!(
+            t.value(),
+            row.value,
+            "value m={} l={}",
+            row.morton_number,
+            row.level
+        );
+        assert_eq!(
+            t.level(),
+            row.computed_level,
+            "level m={} l={}",
+            row.morton_number,
+            row.level
+        );
         assert_eq!(
             t.morton_number(),
             row.computed_morton_number,
@@ -255,7 +267,13 @@ fn packed_tile_from_index() {
             row.morton_number,
             row.level
         );
-        assert_eq!(t.size(), row.size, "size m={} l={}", row.morton_number, row.level);
+        assert_eq!(
+            t.size(),
+            row.size,
+            "size m={} l={}",
+            row.morton_number,
+            row.level
+        );
         assert_eq!(
             t.south_west_corner(),
             (row.sw[0], row.sw[1]),
@@ -286,10 +304,34 @@ fn tile_neighbours() {
     assert!(!v.tile_neighbours.is_empty());
     for row in &v.tile_neighbours {
         let t = PackedTileId::from_tile_index(row.morton_number, row.level).unwrap();
-        assert_eq!(t.west_neighbour().value(), row.west, "west m={} l={}", row.morton_number, row.level);
-        assert_eq!(t.east_neighbour().value(), row.east, "east m={} l={}", row.morton_number, row.level);
-        assert_eq!(t.south_neighbour().value(), row.south, "south m={} l={}", row.morton_number, row.level);
-        assert_eq!(t.north_neighbour().value(), row.north, "north m={} l={}", row.morton_number, row.level);
+        assert_eq!(
+            t.west_neighbour().value(),
+            row.west,
+            "west m={} l={}",
+            row.morton_number,
+            row.level
+        );
+        assert_eq!(
+            t.east_neighbour().value(),
+            row.east,
+            "east m={} l={}",
+            row.morton_number,
+            row.level
+        );
+        assert_eq!(
+            t.south_neighbour().value(),
+            row.south,
+            "south m={} l={}",
+            row.morton_number,
+            row.level
+        );
+        assert_eq!(
+            t.north_neighbour().value(),
+            row.north,
+            "north m={} l={}",
+            row.morton_number,
+            row.level
+        );
     }
 }
 
@@ -300,8 +342,22 @@ fn from_morton_and_level() {
     for row in &v.from_morton_and_level {
         let m = MortonCode::from_nds_coordinates(row.x, row.y);
         let t = PackedTileId::from_morton_and_level(m, row.level).unwrap();
-        assert_eq!(t.value(), row.value, "value x={} y={} l={}", row.x, row.y, row.level);
-        assert_eq!(t.level(), row.computed_level, "level x={} y={} l={}", row.x, row.y, row.level);
+        assert_eq!(
+            t.value(),
+            row.value,
+            "value x={} y={} l={}",
+            row.x,
+            row.y,
+            row.level
+        );
+        assert_eq!(
+            t.level(),
+            row.computed_level,
+            "level x={} y={} l={}",
+            row.x,
+            row.y,
+            row.level
+        );
         assert_eq!(
             t.morton_number(),
             row.computed_morton_number,
@@ -318,9 +374,14 @@ fn tiles_for_bbox() {
     let v = load();
     assert!(!v.tiles_for_bbox.is_empty());
     for row in &v.tiles_for_bbox {
-        let tiles = get_tile_ids_for_bounding_box(row.sw_x, row.sw_y, row.ne_x, row.ne_y, row.level);
+        let tiles =
+            get_tile_ids_for_bounding_box(row.sw_x, row.sw_y, row.ne_x, row.ne_y, row.level);
         let values: Vec<i32> = tiles.iter().map(|t| t.value()).collect();
-        assert_eq!(values, row.tile_values, "tiles_for_bbox {:?}", row.tile_values);
+        assert_eq!(
+            values, row.tile_values,
+            "tiles_for_bbox {:?}",
+            row.tile_values
+        );
     }
 }
 
@@ -351,8 +412,20 @@ fn nds_bbox_ops() {
     for row in &v.nds_bbox_ops {
         let a = NdsBoundingBox::new(row.a[0], row.a[1], row.a[2], row.a[3]);
         let b = NdsBoundingBox::new(row.b[0], row.b[1], row.b[2], row.b[3]);
-        assert_eq!(a.intersects(&b), row.intersects, "intersects a={:?} b={:?}", row.a, row.b);
-        assert_eq!(a.contains(&b), row.a_contains_b, "contains a={:?} b={:?}", row.a, row.b);
+        assert_eq!(
+            a.intersects(&b),
+            row.intersects,
+            "intersects a={:?} b={:?}",
+            row.a,
+            row.b
+        );
+        assert_eq!(
+            a.contains(&b),
+            row.a_contains_b,
+            "contains a={:?} b={:?}",
+            row.a,
+            row.b
+        );
     }
 }
 

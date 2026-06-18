@@ -34,13 +34,15 @@ private:
     };
 
     //! Check if a polygon is convex.
-    bool isConvex(const HighPrecWgs84& p1, const HighPrecWgs84& p2, const HighPrecWgs84& p3);
+    bool isConvex(const HighPrecWgs84 &p1, const HighPrecWgs84 &p2, const HighPrecWgs84 &p3);
 
     //! Check if a given point is inside the polygon.
-    bool isInside(const HighPrecWgs84& p1, const HighPrecWgs84& p2, const HighPrecWgs84& p3, const HighPrecWgs84 &p);
+    bool isInside(const HighPrecWgs84 &p1, const HighPrecWgs84 &p2, const HighPrecWgs84 &p3,
+                  const HighPrecWgs84 &p);
 
     //! Checks if two lines intersect.
-    bool intersects(const HighPrecWgs84 &p11, const HighPrecWgs84 &p12, const HighPrecWgs84 &p21, const HighPrecWgs84 &p22);
+    bool intersects(const HighPrecWgs84 &p11, const HighPrecWgs84 &p12, const HighPrecWgs84 &p21,
+                    const HighPrecWgs84 &p22);
 
     //! Normalize a point threated as a vector.
     HighPrecWgs84 normalize(const HighPrecWgs84 &p);
@@ -51,5 +53,3 @@ private:
 }; // class PolygonTriangulation
 
 } // namespace ndsmath
-
-

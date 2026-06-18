@@ -5,7 +5,6 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from typing import Union
     from .tileid import PackedTileId
     from .wgs84 import Wgs84
 
@@ -24,12 +23,13 @@ class NdsBoundingBox:
         max_x: NE corner longitude (NDS coords)
         max_y: NE corner latitude (NDS coords)
     """
+
     min_x: int
     min_y: int
     max_x: int
     max_y: int
 
-    def intersects(self, other: 'NdsBoundingBox') -> bool:
+    def intersects(self, other: "NdsBoundingBox") -> bool:
         """Check if this bbox intersects (overlaps) with another.
 
         Two bounding boxes intersect if they share any area.
@@ -41,13 +41,13 @@ class NdsBoundingBox:
             True if the bounding boxes overlap
         """
         return not (
-            self.max_x < other.min_x or
-            self.min_x > other.max_x or
-            self.max_y < other.min_y or
-            self.min_y > other.max_y
+            self.max_x < other.min_x
+            or self.min_x > other.max_x
+            or self.max_y < other.min_y
+            or self.min_y > other.max_y
         )
 
-    def contains(self, other: 'NdsBoundingBox') -> bool:
+    def contains(self, other: "NdsBoundingBox") -> bool:
         """Check if this bbox fully contains another.
 
         Args:
@@ -57,14 +57,14 @@ class NdsBoundingBox:
             True if other is completely inside this bbox
         """
         return (
-            self.min_x <= other.min_x and
-            self.max_x >= other.max_x and
-            self.min_y <= other.min_y and
-            self.max_y >= other.max_y
+            self.min_x <= other.min_x
+            and self.max_x >= other.max_x
+            and self.min_y <= other.min_y
+            and self.max_y >= other.max_y
         )
 
     @classmethod
-    def from_tile(cls, tile: 'Union[PackedTileId, int]') -> 'NdsBoundingBox':
+    def from_tile(cls, tile: "PackedTileId | int") -> "NdsBoundingBox":
         """Create bounding box from a tile ID.
 
         Args:
@@ -82,7 +82,7 @@ class NdsBoundingBox:
         return cls(sw_x, sw_y, ne_x, ne_y)
 
     @classmethod
-    def from_wgs84_corners(cls, sw: 'Wgs84', ne: 'Wgs84') -> 'NdsBoundingBox':
+    def from_wgs84_corners(cls, sw: "Wgs84", ne: "Wgs84") -> "NdsBoundingBox":
         """Create bounding box from WGS84 corner coordinates.
 
         Args:

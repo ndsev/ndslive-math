@@ -123,8 +123,7 @@ export class Wgs84 {
   ): [number, number] {
     const METERS_PER_DEGREE = 111320.0;
 
-    const lonMeters =
-      Math.abs(lonDegrees) * METERS_PER_DEGREE * Math.cos(toRadians(atLatitude));
+    const lonMeters = Math.abs(lonDegrees) * METERS_PER_DEGREE * Math.cos(toRadians(atLatitude));
     const latMeters = Math.abs(latDegrees) * METERS_PER_DEGREE;
 
     return [lonMeters, latMeters];
@@ -163,8 +162,8 @@ export class Wgs84 {
       return `${degrees}° ${minutes}' ${seconds.toFixed(2)}"`;
     };
 
-    const lat = convert(Math.abs(this.y)) + (this.y < 0 ? " S" : " N");
-    const lon = convert(Math.abs(this.x)) + (this.x < 0 ? " W" : " E");
+    const lat = convert(Math.abs(this.y)) + (this.y < 0 ? ' S' : ' N');
+    const lon = convert(Math.abs(this.x)) + (this.x < 0 ? ' W' : ' E');
     return [lat, lon];
   }
 
@@ -180,9 +179,7 @@ export class Wgs84 {
     const dlon = toRadians(other.x - this.x);
     const a =
       Math.sin(dlat / 2) ** 2 +
-      Math.cos(toRadians(this.y)) *
-        Math.cos(toRadians(other.y)) *
-        Math.sin(dlon / 2) ** 2;
+      Math.cos(toRadians(this.y)) * Math.cos(toRadians(other.y)) * Math.sin(dlon / 2) ** 2;
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return Wgs84.EARTH_RADIUS_IN_METERS * c;
   }
@@ -200,8 +197,7 @@ export class Wgs84 {
     const lon2 = toRadians(other.x);
     const y = Math.sin(lon2 - lon1) * Math.cos(lat2);
     const x =
-      Math.cos(lat1) * Math.sin(lat2) -
-      Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1);
+      Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1);
     return Math.atan2(y, x);
   }
 

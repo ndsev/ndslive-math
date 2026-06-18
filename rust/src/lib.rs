@@ -41,6 +41,4 @@ pub use morton::MortonCode;
 pub use tileid::{
     bounding_box_from_tile_ids, get_tile_ids_for_bounding_box, PackedTileId, TileIdError,
 };
-pub use wgs84::{
-    Wgs84, EARTH_RADIUS_IN_METERS, LAT_NDS_DELTA, LON_NDS_DELTA, METERS_PER_DEGREE,
-};
+pub use wgs84::{Wgs84, EARTH_RADIUS_IN_METERS, LAT_NDS_DELTA, LON_NDS_DELTA, METERS_PER_DEGREE};

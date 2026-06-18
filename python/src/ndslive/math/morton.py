@@ -39,17 +39,17 @@ class MortonCode:
         y = int(y)
 
         while x >= x_base:
-            x -= (1 << 32)
+            x -= 1 << 32
         while x < -x_base:
-            x += (1 << 32)
+            x += 1 << 32
         while y >= y_base:
-            y -= (1 << 31)
+            y -= 1 << 31
         while y < -y_base:
-            y += (1 << 31)
+            y += 1 << 31
 
         y <<= 1
 
-        for i in range(31):
+        for _ in range(31):
             morton_code |= x & bit
             x <<= 1
             bit <<= 1
@@ -91,9 +91,9 @@ class MortonCode:
         morton_code >>= 1
 
         if y >= YBASE:
-            y -= (1 << 31)
+            y -= 1 << 31
         if x >= XBASE:
-            x -= (1 << 32)
+            x -= 1 << 32
 
         return x, y
 

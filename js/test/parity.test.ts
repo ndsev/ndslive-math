@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 
-import { describe, it, expect } from "vitest";
-import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
-import { dirname, resolve } from "node:path";
+import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, resolve } from 'node:path';
 
 import {
   Wgs84,
@@ -12,10 +12,10 @@ import {
   NdsBoundingBox,
   getTileIdsForBoundingBox,
   boundingBoxFromTileIds,
-} from "../src/index.js";
+} from '../src/index.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const vectorsPath = resolve(__dirname, "../../test-vectors/parity_vectors.json");
+const vectorsPath = resolve(__dirname, '../../test-vectors/parity_vectors.json');
 
 interface Vectors {
   _meta: { float_tolerance: number };
@@ -103,37 +103,34 @@ interface Vectors {
   }>;
 }
 
-const vectors: Vectors = JSON.parse(readFileSync(vectorsPath, "utf-8"));
+const vectors: Vectors = JSON.parse(readFileSync(vectorsPath, 'utf-8'));
 const TOL = vectors._meta.float_tolerance;
 
 function approx(actual: number, expected: number): void {
   expect(Math.abs(actual - expected)).toBeLessThanOrEqual(TOL);
 }
 
-describe("wgs84_to_nds", () => {
-  it.each(vectors.wgs84_to_nds)(
-    "lon=$lon lat=$lat",
-    (v) => {
-      const p = new Wgs84(v.lon, v.lat);
-      approx(p.x, v.normalized_lon);
-      approx(p.y, v.normalized_lat);
-      const [x, y] = p.toNdsCoordinates();
-      expect(x).toBe(v.nds_x);
-      expect(y).toBe(v.nds_y);
-    },
-  );
+describe('wgs84_to_nds', () => {
+  it.each(vectors.wgs84_to_nds)('lon=$lon lat=$lat', (v) => {
+    const p = new Wgs84(v.lon, v.lat);
+    approx(p.x, v.normalized_lon);
+    approx(p.y, v.normalized_lat);
+    const [x, y] = p.toNdsCoordinates();
+    expect(x).toBe(v.nds_x);
+    expect(y).toBe(v.nds_y);
+  });
 });
 
-describe("nds_to_wgs84", () => {
-  it.each(vectors.nds_to_wgs84)("x=$x y=$y", (v) => {
+describe('nds_to_wgs84', () => {
+  it.each(vectors.nds_to_wgs84)('x=$x y=$y', (v) => {
     const p = Wgs84.fromNdsCoordinates(v.x, v.y);
     approx(p.x, v.lon);
     approx(p.y, v.lat);
   });
 });
 
-describe("morton", () => {
-  it.each(vectors.morton)("x=$x y=$y", (v) => {
+describe('morton', () => {
+  it.each(vectors.morton)('x=$x y=$y', (v) => {
     const m = MortonCode.fromNdsCoordinates(v.x, v.y);
     expect(m.value()).toBe(BigInt(v.morton));
     const [dx, dy] = m.toNdsCoordinates();
@@ -141,7 +138,7 @@ describe("morton", () => {
     expect(dy).toBe(v.decoded_y);
   });
 
-  it("round-trips through the raw constructor", () => {
+  it('round-trips through the raw constructor', () => {
     for (const v of vectors.morton) {
       const m = new MortonCode(BigInt(v.morton));
       const [dx, dy] = m.toNdsCoordinates();
@@ -151,82 +148,61 @@ describe("morton", () => {
   });
 });
 
-describe("packed_tile_from_index", () => {
-  it.each(vectors.packed_tile_from_index)(
-    "morton=$morton_number level=$level",
-    (v) => {
-      const tile = PackedTileId.fromTileIndex(v.morton_number, v.level);
-      expect(tile.value).toBe(v.value);
-      expect(tile.level()).toBe(v.computed_level);
-      expect(tile.mortonNumber()).toBe(v.computed_morton_number);
-      expect(tile.size()).toBe(v.size);
-      expect(tile.southWestCorner()).toEqual(v.sw);
-      expect(tile.northEastCorner()).toEqual(v.ne);
-      expect(tile.center()).toEqual(v.center);
+describe('packed_tile_from_index', () => {
+  it.each(vectors.packed_tile_from_index)('morton=$morton_number level=$level', (v) => {
+    const tile = PackedTileId.fromTileIndex(v.morton_number, v.level);
+    expect(tile.value).toBe(v.value);
+    expect(tile.level()).toBe(v.computed_level);
+    expect(tile.mortonNumber()).toBe(v.computed_morton_number);
+    expect(tile.size()).toBe(v.size);
+    expect(tile.southWestCorner()).toEqual(v.sw);
+    expect(tile.northEastCorner()).toEqual(v.ne);
+    expect(tile.center()).toEqual(v.center);
 
-      // Constructing from the signed value reproduces the same tile.
-      const fromValue = new PackedTileId(v.value);
-      expect(fromValue.value).toBe(v.value);
-      expect(fromValue.level()).toBe(v.computed_level);
-      expect(fromValue.mortonNumber()).toBe(v.computed_morton_number);
-    },
-  );
+    // Constructing from the signed value reproduces the same tile.
+    const fromValue = new PackedTileId(v.value);
+    expect(fromValue.value).toBe(v.value);
+    expect(fromValue.level()).toBe(v.computed_level);
+    expect(fromValue.mortonNumber()).toBe(v.computed_morton_number);
+  });
 });
 
-describe("tile_neighbours", () => {
-  it.each(vectors.tile_neighbours)(
-    "morton=$morton_number level=$level",
-    (v) => {
-      const tile = PackedTileId.fromTileIndex(v.morton_number, v.level);
-      expect(tile.westNeighbour().value).toBe(v.west);
-      expect(tile.eastNeighbour().value).toBe(v.east);
-      expect(tile.southNeighbour().value).toBe(v.south);
-      expect(tile.northNeighbour().value).toBe(v.north);
-    },
-  );
+describe('tile_neighbours', () => {
+  it.each(vectors.tile_neighbours)('morton=$morton_number level=$level', (v) => {
+    const tile = PackedTileId.fromTileIndex(v.morton_number, v.level);
+    expect(tile.westNeighbour().value).toBe(v.west);
+    expect(tile.eastNeighbour().value).toBe(v.east);
+    expect(tile.southNeighbour().value).toBe(v.south);
+    expect(tile.northNeighbour().value).toBe(v.north);
+  });
 });
 
-describe("from_morton_and_level", () => {
-  it.each(vectors.from_morton_and_level)(
-    "x=$x y=$y level=$level",
-    (v) => {
-      const m = MortonCode.fromNdsCoordinates(v.x, v.y);
-      const tile = PackedTileId.fromMortonAndLevel(m, v.level);
-      expect(tile.value).toBe(v.value);
-      expect(tile.level()).toBe(v.computed_level);
-      expect(tile.mortonNumber()).toBe(v.computed_morton_number);
-    },
-  );
+describe('from_morton_and_level', () => {
+  it.each(vectors.from_morton_and_level)('x=$x y=$y level=$level', (v) => {
+    const m = MortonCode.fromNdsCoordinates(v.x, v.y);
+    const tile = PackedTileId.fromMortonAndLevel(m, v.level);
+    expect(tile.value).toBe(v.value);
+    expect(tile.level()).toBe(v.computed_level);
+    expect(tile.mortonNumber()).toBe(v.computed_morton_number);
+  });
 });
 
-describe("tiles_for_bbox", () => {
-  it.each(vectors.tiles_for_bbox)(
-    "level=$level",
-    (v) => {
-      const tiles = getTileIdsForBoundingBox(
-        v.sw_x,
-        v.sw_y,
-        v.ne_x,
-        v.ne_y,
-        v.level,
-      );
-      expect(tiles.map((t) => t.value)).toEqual(v.tile_values);
-    },
-  );
+describe('tiles_for_bbox', () => {
+  it.each(vectors.tiles_for_bbox)('level=$level', (v) => {
+    const tiles = getTileIdsForBoundingBox(v.sw_x, v.sw_y, v.ne_x, v.ne_y, v.level);
+    expect(tiles.map((t) => t.value)).toEqual(v.tile_values);
+  });
 });
 
-describe("bbox_from_tiles", () => {
-  it.each(vectors.bbox_from_tiles)(
-    "tiles=$tile_values",
-    (v) => {
-      const bbox = boundingBoxFromTileIds(v.tile_values);
-      expect(bbox).toEqual(v.result);
-    },
-  );
+describe('bbox_from_tiles', () => {
+  it.each(vectors.bbox_from_tiles)('tiles=$tile_values', (v) => {
+    const bbox = boundingBoxFromTileIds(v.tile_values);
+    expect(bbox).toEqual(v.result);
+  });
 });
 
-describe("nds_bbox_ops", () => {
-  it.each(vectors.nds_bbox_ops)("intersects/contains", (v) => {
+describe('nds_bbox_ops', () => {
+  it.each(vectors.nds_bbox_ops)('intersects/contains', (v) => {
     const a = new NdsBoundingBox(v.a[0], v.a[1], v.a[2], v.a[3]);
     const b = new NdsBoundingBox(v.b[0], v.b[1], v.b[2], v.b[3]);
     expect(a.intersects(b)).toBe(v.intersects);
@@ -234,8 +210,8 @@ describe("nds_bbox_ops", () => {
   });
 });
 
-describe("nds_bbox_from_wgs84", () => {
-  it.each(vectors.nds_bbox_from_wgs84)("corners", (v) => {
+describe('nds_bbox_from_wgs84', () => {
+  it.each(vectors.nds_bbox_from_wgs84)('corners', (v) => {
     const bbox = NdsBoundingBox.fromWgs84Corners(
       new Wgs84(v.sw[0], v.sw[1]),
       new Wgs84(v.ne[0], v.ne[1]),
@@ -247,8 +223,8 @@ describe("nds_bbox_from_wgs84", () => {
   });
 });
 
-describe("distance_bearing", () => {
-  it.each(vectors.distance_bearing)("haversine + bearing", (v) => {
+describe('distance_bearing', () => {
+  it.each(vectors.distance_bearing)('haversine + bearing', (v) => {
     const a = new Wgs84(v.a[0], v.a[1]);
     const b = new Wgs84(v.b[0], v.b[1]);
     approx(a.distanceTo(b), v.distance_m);
@@ -256,8 +232,8 @@ describe("distance_bearing", () => {
   });
 });
 
-describe("nds_distance_to_meters", () => {
-  it.each(vectors.nds_distance_to_meters)("at lat=$at_latitude", (v) => {
+describe('nds_distance_to_meters', () => {
+  it.each(vectors.nds_distance_to_meters)('at lat=$at_latitude', (v) => {
     const [w, h] = Wgs84.ndsDistanceToMeters(v.nds_x, v.nds_y, v.at_latitude);
     approx(w, v.width_m);
     approx(h, v.height_m);

@@ -23,41 +23,46 @@ inline bool approx(double a, double b, double tol)
 }
 } // namespace tst
 
-#define CHECK(cond)                                                            \
-    do {                                                                       \
-        ++tst::g_checks;                                                       \
-        if (!(cond)) {                                                         \
-            ++tst::g_failures;                                                 \
-            std::cerr << "FAIL " << __FILE__ << ":" << __LINE__ << ": " << #cond << "\n"; \
-        }                                                                      \
+#define CHECK(cond)                                                                                \
+    do                                                                                             \
+    {                                                                                              \
+        ++tst::g_checks;                                                                           \
+        if (!(cond))                                                                               \
+        {                                                                                          \
+            ++tst::g_failures;                                                                     \
+            std::cerr << "FAIL " << __FILE__ << ":" << __LINE__ << ": " << #cond << "\n";          \
+        }                                                                                          \
     } while (0)
 
-#define CHECK_EQ(a, b)                                                         \
-    do {                                                                       \
-        ++tst::g_checks;                                                       \
-        auto _a = (a);                                                         \
-        auto _b = (b);                                                         \
-        if (!(_a == _b)) {                                                     \
-            ++tst::g_failures;                                                 \
-            std::cerr << "FAIL " << __FILE__ << ":" << __LINE__ << ": " << #a   \
-                      << " (" << _a << ") != " << #b << " (" << _b << ")\n";   \
-        }                                                                      \
+#define CHECK_EQ(a, b)                                                                             \
+    do                                                                                             \
+    {                                                                                              \
+        ++tst::g_checks;                                                                           \
+        auto _a = (a);                                                                             \
+        auto _b = (b);                                                                             \
+        if (!(_a == _b))                                                                           \
+        {                                                                                          \
+            ++tst::g_failures;                                                                     \
+            std::cerr << "FAIL " << __FILE__ << ":" << __LINE__ << ": " << #a << " (" << _a        \
+                      << ") != " << #b << " (" << _b << ")\n";                                     \
+        }                                                                                          \
     } while (0)
 
-#define CHECK_NEAR(a, b, tol)                                                  \
-    do {                                                                       \
-        ++tst::g_checks;                                                       \
-        double _a = (a);                                                       \
-        double _b = (b);                                                       \
-        if (!tst::approx(_a, _b, (tol))) {                                     \
-            ++tst::g_failures;                                                 \
-            std::cerr << "FAIL " << __FILE__ << ":" << __LINE__ << ": " << #a   \
-                      << " (" << _a << ") !~ " << #b << " (" << _b << ")\n";   \
-        }                                                                      \
+#define CHECK_NEAR(a, b, tol)                                                                      \
+    do                                                                                             \
+    {                                                                                              \
+        ++tst::g_checks;                                                                           \
+        double _a = (a);                                                                           \
+        double _b = (b);                                                                           \
+        if (!tst::approx(_a, _b, (tol)))                                                           \
+        {                                                                                          \
+            ++tst::g_failures;                                                                     \
+            std::cerr << "FAIL " << __FILE__ << ":" << __LINE__ << ": " << #a << " (" << _a        \
+                      << ") !~ " << #b << " (" << _b << ")\n";                                     \
+        }                                                                                          \
     } while (0)
 
 // Use at the end of main(): prints a summary and yields the process exit code.
-#define TEST_SUMMARY()                                                         \
-    (std::cerr << tst::g_checks << " checks, " << tst::g_failures             \
-               << " failures\n",                                               \
+#define TEST_SUMMARY()                                                                             \
+    (std::cerr << tst::g_checks << " checks, " << tst::g_failures << " failures\n",                \
      tst::g_failures == 0 ? 0 : 1)

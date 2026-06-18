@@ -198,7 +198,7 @@ func TestFloorDiv(t *testing.T) {
 		a, b, want int64
 	}{
 		{7, 2, 3},
-		{-7, 2, -4},   // floor, not -3 (truncation)
+		{-7, 2, -4}, // floor, not -3 (truncation)
 		{-1, 1073741824, -1},
 		{-1073741824, 1073741824, -1},
 		{0, 4, 0},

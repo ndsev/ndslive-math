@@ -27,11 +27,7 @@
  * ```
  */
 
-export { Wgs84 } from "./wgs84.js";
-export { MortonCode } from "./morton.js";
-export {
-  PackedTileId,
-  getTileIdsForBoundingBox,
-  boundingBoxFromTileIds,
-} from "./tileid.js";
-export { NdsBoundingBox } from "./boundingBox.js";
+export { Wgs84 } from './wgs84.js';
+export { MortonCode } from './morton.js';
+export { PackedTileId, getTileIdsForBoundingBox, boundingBoxFromTileIds } from './tileid.js';
+export { NdsBoundingBox } from './boundingBox.js';

@@ -9,15 +9,9 @@
 namespace ndsmath
 {
 
-PackedTileId::PackedTileId() :
-    value_(0u)
-{
-}
+PackedTileId::PackedTileId() : value_(0u) {}
 
-PackedTileId::PackedTileId(uint32_t value) :
-    value_(value)
-{
-}
+PackedTileId::PackedTileId(uint32_t value) : value_(value) {}
 
 PackedTileId PackedTileId::fromTileIndex(uint32_t mortonNumber, int level)
 {
@@ -29,16 +23,19 @@ namespace
 // Deinterleave a tile's Morton number into its (x, y) tile-grid indices.
 // Per the NDS Morton scheme, X has (level+1) bits and Y has level bits.
 // Mirrors the Python reference's _deinterleave_morton.
-void deinterleaveMorton(uint32_t morton, int level, uint32_t& x, uint32_t& y)
+void deinterleaveMorton(uint32_t morton, int level, uint32_t &x, uint32_t &y)
 {
     x = 0;
     y = 0;
     for (int i = 0; i < level; ++i)
     {
-        if (morton & (1u << (2 * i)))     x |= (1u << i);
-        if (morton & (1u << (2 * i + 1))) y |= (1u << i);
+        if (morton & (1u << (2 * i)))
+            x |= (1u << i);
+        if (morton & (1u << (2 * i + 1)))
+            y |= (1u << i);
     }
-    if (morton & (1u << (2 * level)))     x |= (1u << level);  // extra X bit
+    if (morton & (1u << (2 * level)))
+        x |= (1u << level); // extra X bit
 }
 
 // Inverse of deinterleaveMorton.
@@ -47,10 +44,13 @@ uint32_t interleaveCoords(uint32_t x, uint32_t y, int level)
     uint32_t morton = 0;
     for (int i = 0; i < level; ++i)
     {
-        if (x & (1u << i)) morton |= (1u << (2 * i));
-        if (y & (1u << i)) morton |= (1u << (2 * i + 1));
+        if (x & (1u << i))
+            morton |= (1u << (2 * i));
+        if (y & (1u << i))
+            morton |= (1u << (2 * i + 1));
     }
-    if (x & (1u << level)) morton |= (1u << (2 * level));
+    if (x & (1u << level))
+        morton |= (1u << (2 * level));
     return morton;
 }
 } // namespace
@@ -135,8 +135,8 @@ PackedTileId::PackedTileId(MortonCode mortonCode, const int level)
 
 bool PackedTileId::isValid() const
 {
-   const auto MIN_PACKED_TILE_ID = 1u << 16u;
-   return value_ >= MIN_PACKED_TILE_ID;
+    const auto MIN_PACKED_TILE_ID = 1u << 16u;
+    return value_ >= MIN_PACKED_TILE_ID;
 }
 
 MortonCode PackedTileId::southWestCorner() const
@@ -147,8 +147,8 @@ MortonCode PackedTileId::southWestCorner() const
 
 MortonCode PackedTileId::northEastCorner() const
 {
-    int32_t x,y;
-    southWestCorner().toNdsCoordinates(x,y);
+    int32_t x, y;
+    southWestCorner().toNdsCoordinates(x, y);
     auto const s = size();
     return MortonCode::fromNdsCoordinates(x + s, y + s);
 }
@@ -156,7 +156,7 @@ MortonCode PackedTileId::northEastCorner() const
 void PackedTileId::center(int32_t &centerX, int32_t &centerY) const
 {
     southWestCorner().toNdsCoordinates(centerX, centerY);
-    auto const halfSize = size()/2;
+    auto const halfSize = size() / 2;
     centerX += halfSize;
     centerY += halfSize;
 }
@@ -169,7 +169,7 @@ uint32_t PackedTileId::mortonNumber() const
 
 uint32_t PackedTileId::size() const
 {
-   return 1 << (31 - (level()));
+    return 1 << (31 - (level()));
 }
 
 int PackedTileId::level() const
@@ -185,17 +185,17 @@ int PackedTileId::level() const
     return level;
 }
 
-bool PackedTileId::operator==(const PackedTileId& other) const
+bool PackedTileId::operator==(const PackedTileId &other) const
 {
     return value_ == other.value_;
 }
 
-bool PackedTileId::operator!=(const PackedTileId& other) const
+bool PackedTileId::operator!=(const PackedTileId &other) const
 {
     return value_ != other.value_;
 }
 
-bool PackedTileId::operator<(const PackedTileId& other) const
+bool PackedTileId::operator<(const PackedTileId &other) const
 {
     return value_ < other.value_;
 }
@@ -213,20 +213,21 @@ PackedTileId::operator uint32_t() const
     return value_;
 }
 
-PackedTileIds getTileIdsForBoundingBox(int32_t swX, int32_t swY, int32_t neX, int32_t neY, int level)
+PackedTileIds getTileIdsForBoundingBox(int32_t swX, int32_t swY, int32_t neX, int32_t neY,
+                                       int level)
 {
     PackedTileIds tileIds;
-    
+
     // Calculate tile size at this level
     const uint32_t tileSize = 1u << (31 - level);
-    
+
     // Calculate tile indices for the bounding box corners
     // We need to handle the coordinate system properly
     const int32_t startTileX = swX / static_cast<int32_t>(tileSize);
     const int32_t startTileY = swY / static_cast<int32_t>(tileSize);
     const int32_t endTileX = neX / static_cast<int32_t>(tileSize);
     const int32_t endTileY = neY / static_cast<int32_t>(tileSize);
-    
+
     // Iterate through all tiles in the bounding box
     for (int32_t tileY = startTileY; tileY <= endTileY; ++tileY)
     {
@@ -235,16 +236,16 @@ PackedTileIds getTileIdsForBoundingBox(int32_t swX, int32_t swY, int32_t neX, in
             // Calculate the south-west corner of this tile
             const int32_t tileSwX = tileX * static_cast<int32_t>(tileSize);
             const int32_t tileSwY = tileY * static_cast<int32_t>(tileSize);
-            
+
             // Create morton code from the tile's south-west corner
             const MortonCode morton = MortonCode::fromNdsCoordinates(tileSwX, tileSwY);
-            
+
             // Create the packed tile ID
             const PackedTileId tileId(morton, level);
             tileIds.push_back(tileId);
         }
     }
-    
+
     return tileIds;
 }
 

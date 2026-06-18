@@ -73,14 +73,14 @@ public:
 
     //! Get tile dimensions in meters.
     //! @return Pair of (width_meters, height_meters) calculated at the tile's center latitude.
-    //! @note Dimensions vary by latitude - tiles are largest at the equator and shrink toward poles.
+    //! @note Dimensions vary by latitude - tiles are largest at the equator and shrink toward
+    //! poles.
     //!       Width (longitude) is affected by cos(latitude), height (latitude) remains constant.
-    template<typename T = double>
-    DeltaInMeters<T> dimensionsInMeters() const;
+    template <typename T = double> DeltaInMeters<T> dimensionsInMeters() const;
 
-    bool operator==(const PackedTileId& other) const;
-    bool operator!=(const PackedTileId& other) const;
-    bool operator<(const PackedTileId& other) const;
+    bool operator==(const PackedTileId &other) const;
+    bool operator!=(const PackedTileId &other) const;
+    bool operator<(const PackedTileId &other) const;
 
     //! Get the value as a signed 32-bit integer, per the NDS.Live standard.
     //! Levels 0-14 are positive; level 15 tiles are negative (bit 31 set), a
@@ -105,11 +105,11 @@ using PackedTileIds = std::vector<PackedTileId>;
 //! @param neY North-east corner Y coordinate (latitude) in NDS coordinates
 //! @param level Tile level (0-15)
 //! @return Vector of PackedTileId objects that intersect with the bounding box
-PackedTileIds getTileIdsForBoundingBox(int32_t swX, int32_t swY, int32_t neX, int32_t neY, int level);
+PackedTileIds getTileIdsForBoundingBox(int32_t swX, int32_t swY, int32_t neX, int32_t neY,
+                                       int level);
 
 // Template implementation
-template<typename T>
-DeltaInMeters<T> PackedTileId::dimensionsInMeters() const
+template <typename T> DeltaInMeters<T> PackedTileId::dimensionsInMeters() const
 {
     int32_t centerX, centerY;
     center(centerX, centerY);

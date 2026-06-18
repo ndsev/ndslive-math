@@ -2,6 +2,7 @@ plugins {
     id 'java-library'
     id 'maven-publish'
     id 'jacoco'
+    id 'com.diffplug.spotless' version '6.25.0'
 }
 
 group = 'io.github.ndsev'
@@ -20,6 +21,19 @@ java {
 
 repositories {
     mavenCentral()
+}
+
+spotless {
+    java {
+        target 'src/**/*.java'
+        // Eclipse JDT formatter: self-contained (no javac internals), so it
+        // works across JDKs including very new ones. google/palantir-java-format
+        // depend on javac internals and break on JDK 25+.
+        eclipse()
+        importOrder()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
 }
 
 dependencies {

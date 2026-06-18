@@ -12,9 +12,9 @@
 #include <cstdint>
 #include <limits>
 
-using ndsmath::Wgs84;
 using ndsmath::MortonCode;
 using ndsmath::PackedTileId;
+using ndsmath::Wgs84;
 
 int main()
 {
@@ -22,21 +22,22 @@ int main()
     CHECK(!PackedTileId().isValid());
 
     // level() decodes every level 1..15.
-    for (int level = 1; level <= 15; ++level) {
+    for (int level = 1; level <= 15; ++level)
+    {
         uint32_t mask = 1u << (level + 16);
         CHECK_EQ(PackedTileId(mask).level(), level);
     }
 
     // Signed int32 value per NDS.Live spec: level 15 tiles are negative.
     CHECK_EQ(PackedTileId::fromTileIndex(0, 15).value(),
-             std::numeric_limits<int32_t>::min());          // 0x80000000 -> -2147483648
+             std::numeric_limits<int32_t>::min()); // 0x80000000 -> -2147483648
     CHECK_EQ(PackedTileId::fromTileIndex((1u << 31) - 1, 15).value(),
-             static_cast<int32_t>(-1));                      // 0xFFFFFFFF -> -1
+             static_cast<int32_t>(-1)); // 0xFFFFFFFF -> -1
     CHECK_EQ(PackedTileId::fromTileIndex(0, 14).value(),
-             static_cast<int32_t>(1u << 30));                // 1073741824 (positive)
+             static_cast<int32_t>(1u << 30)); // 1073741824 (positive)
 
     // Corners of a level-13 tile at the SW origin.
-    constexpr uint32_t L13 = 1u << (32 - 14);  // tile length in NDS units
+    constexpr uint32_t L13 = 1u << (32 - 14); // tile length in NDS units
     {
         MortonCode m = MortonCode::fromNdsCoordinates(L13 / 2, L13 / 2);
         PackedTileId t(m, 13);
@@ -69,7 +70,7 @@ int main()
         constexpr int32_t tileSize = 1 << (31 - 13);
         auto tiles = ndsmath::getTileIdsForBoundingBox(0, 0, tileSize + 1, tileSize + 1, 13);
         CHECK_EQ(tiles.size(), static_cast<size_t>(4));
-        for (const auto& t : tiles)
+        for (const auto &t : tiles)
             CHECK_EQ(t.level(), 13);
     }
 

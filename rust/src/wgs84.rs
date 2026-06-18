@@ -58,7 +58,7 @@ impl Wgs84 {
     pub fn normalize(&mut self) {
         // Use rem (truncated remainder) to preserve sign, matching Python
         // math.fmod / C++ std::fmod behavior.
-        self.lon = self.lon % 360.0;
+        self.lon %= 360.0;
 
         // Snap a longitude close enough to +180 down to (180 - delta),
         // matching the C++ check against lonMax.
@@ -78,11 +78,7 @@ impl Wgs84 {
             self.lat = 90.0 - LAT_NDS_DELTA;
         }
 
-        if self.lat > 90.0 - LAT_NDS_DELTA {
-            self.lat = 90.0 - LAT_NDS_DELTA;
-        } else if self.lat < -90.0 {
-            self.lat = -90.0;
-        }
+        self.lat = self.lat.clamp(-90.0, 90.0 - LAT_NDS_DELTA);
     }
 
     /// Convert WGS84 coordinates to NDS integer coordinates.

@@ -35,23 +35,23 @@ type parityData struct {
 	} `json:"nds_to_wgs84"`
 
 	Morton []struct {
-		X         int32  `json:"x"`
-		Y         int32  `json:"y"`
-		Morton    string `json:"morton"`
-		DecodedX  int32  `json:"decoded_x"`
-		DecodedY  int32  `json:"decoded_y"`
+		X        int32  `json:"x"`
+		Y        int32  `json:"y"`
+		Morton   string `json:"morton"`
+		DecodedX int32  `json:"decoded_x"`
+		DecodedY int32  `json:"decoded_y"`
 	} `json:"morton"`
 
 	PackedTileFromIndex []struct {
-		MortonNumber          uint32   `json:"morton_number"`
-		Level                 int      `json:"level"`
-		Value                 int32    `json:"value"`
-		ComputedLevel         int      `json:"computed_level"`
-		ComputedMortonNumber  uint32   `json:"computed_morton_number"`
-		Size                  uint64   `json:"size"`
-		SW                    [2]int64 `json:"sw"`
-		NE                    [2]int64 `json:"ne"`
-		Center                [2]int64 `json:"center"`
+		MortonNumber         uint32   `json:"morton_number"`
+		Level                int      `json:"level"`
+		Value                int32    `json:"value"`
+		ComputedLevel        int      `json:"computed_level"`
+		ComputedMortonNumber uint32   `json:"computed_morton_number"`
+		Size                 uint64   `json:"size"`
+		SW                   [2]int64 `json:"sw"`
+		NE                   [2]int64 `json:"ne"`
+		Center               [2]int64 `json:"center"`
 	} `json:"packed_tile_from_index"`
 
 	TileNeighbours []struct {
@@ -64,11 +64,11 @@ type parityData struct {
 	} `json:"tile_neighbours"`
 
 	FromMortonAndLevel []struct {
-		X                    int32 `json:"x"`
-		Y                    int32 `json:"y"`
-		Level                int   `json:"level"`
-		Value                int32 `json:"value"`
-		ComputedLevel        int   `json:"computed_level"`
+		X                    int32  `json:"x"`
+		Y                    int32  `json:"y"`
+		Level                int    `json:"level"`
+		Value                int32  `json:"value"`
+		ComputedLevel        int    `json:"computed_level"`
 		ComputedMortonNumber uint32 `json:"computed_morton_number"`
 	} `json:"from_morton_and_level"`
 

@@ -24,7 +24,7 @@ import {
   NdsBoundingBox,
   getTileIdsForBoundingBox,
   boundingBoxFromTileIds,
-} from "@ndsev/ndslive-math";
+} from '@ndsev/ndslive-math';
 
 // WGS84 <-> NDS coordinates
 const munich = new Wgs84(11.585, 48.137); // lon, lat (degrees)
@@ -43,17 +43,8 @@ const ne = tile.northEastCorner(); // exclusive corner
 const east = tile.eastNeighbour(); // neighbour traversal (wraps at antimeridian)
 
 // Bounding boxes in NDS space
-const bbox = NdsBoundingBox.fromWgs84Corners(
-  new Wgs84(11.5, 48.1),
-  new Wgs84(11.7, 48.2),
-);
-const tiles = getTileIdsForBoundingBox(
-  bbox.minX,
-  bbox.minY,
-  bbox.maxX,
-  bbox.maxY,
-  13,
-);
+const bbox = NdsBoundingBox.fromWgs84Corners(new Wgs84(11.5, 48.1), new Wgs84(11.7, 48.2));
+const tiles = getTileIdsForBoundingBox(bbox.minX, bbox.minY, bbox.maxX, bbox.maxY, 13);
 const [minX, minY, maxX, maxY] = boundingBoxFromTileIds(tiles);
 ```
 
@@ -102,4 +93,7 @@ reference implementation.
 ## License
 
 MIT — see [LICENSE](./LICENSE).
+
+```
+
 ```
