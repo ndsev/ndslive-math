@@ -4,10 +4,10 @@ project(ndsmath-test)
 
 include(FetchContent)
 
-set (USED_CATCH2_VERSION "v3.4.0")
+set (USED_CATCH2_VERSION "v3.8.1")
 if(TARGET Catch2::Catch2WithMain)
     if(NOT ${Catch2_VERSION} VERSION_EQUAL ${USED_CATCH2_VERSION})
-        message(WARNING "Catch2 version mismatch: found ${Catch2_VERSION}, expected 3.4.0")
+        message(WARNING "Catch2 version mismatch: found ${Catch2_VERSION}, expected 3.8.1")
     endif()
 else()
     FetchContent_Declare(Catch2
@@ -16,11 +16,6 @@ else()
         GIT_SHALLOW ON)
     FetchContent_MakeAvailable(Catch2)
 endif()
-
-# Register each Catch2 TEST_CASE as its own ctest test so that a per-test
-# `ctest --timeout` can pinpoint a single hanging case (e.g. the MSVC-only hang
-# in test-packedtileid) instead of stalling on the whole executable.
-include(Catch)
 
 add_executable(test-packedtileid
   src/testpackedtileid.cpp)
@@ -46,6 +41,11 @@ target_link_libraries(test-ndsboundingbox
   glm::glm
   Catch2::Catch2WithMain)
 
-catch_discover_tests(test-packedtileid)
-catch_discover_tests(test-wgs84)
-catch_discover_tests(test-ndsboundingbox)
+add_test(NAME test-packedtileid
+  COMMAND "$<TARGET_FILE:test-packedtileid>")
+
+add_test(NAME test-wgs84
+  COMMAND "$<TARGET_FILE:test-wgs84>")
+
+add_test(NAME test-ndsboundingbox
+  COMMAND "$<TARGET_FILE:test-ndsboundingbox>")
