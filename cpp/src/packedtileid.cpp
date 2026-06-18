@@ -229,14 +229,17 @@ bool PackedTileId::operator<(const PackedTileId& other) const
     return value_ < other.value_;
 }
 
-uint32_t PackedTileId::value() const
+int32_t PackedTileId::value() const
 {
-    return value_;
+    // Stored unsigned for clean bit math; the NDS.Live API value is signed
+    // int32 (level-15 tiles are negative). Reinterpret the bit pattern.
+    return static_cast<int32_t>(value_);
 }
 
 PackedTileId::operator uint32_t() const
 {
-    return value();
+    // Unsigned bit pattern, used for hashing / std::set keys.
+    return value_;
 }
 
 PackedTileIds getTileIdsForBoundingBox(int32_t swX, int32_t swY, int32_t neX, int32_t neY, int level)

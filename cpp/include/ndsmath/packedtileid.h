@@ -82,8 +82,10 @@ public:
     bool operator!=(const PackedTileId& other) const;
     bool operator<(const PackedTileId& other) const;
 
-    //! Get the value.
-    uint32_t value() const;
+    //! Get the value as a signed 32-bit integer, per the NDS.Live standard.
+    //! Levels 0-14 are positive; level 15 tiles are negative (bit 31 set), a
+    //! deliberate signed-int32 "overflow" inherited from the original Java spec.
+    int32_t value() const;
 
     //! Conversion operator for hash function.
     operator uint32_t() const;

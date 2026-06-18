@@ -29,6 +29,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Changed
 - **Python:** added 3.14 to supported/tested versions; corrected the repository
   URLs and switched the license classifier to `MIT` in `pyproject.toml`.
+- **C++:** **BREAKING:** `PackedTileId::value()` now returns signed `int32` per
+  the NDS.Live standard (level-15 tiles are negative), instead of `uint32_t`.
+  Migrated the C++ test suite off Catch2 to a dependency-free harness that
+  validates against the shared parity vectors; added Windows to the C++ CI matrix.
 
 ## [v0.5.2] - 2026-04-27
 
