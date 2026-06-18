@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 import unittest
 import math  # Add math import
 from ndslive.math import Wgs84, PackedTileId, MortonCode, NdsBoundingBox

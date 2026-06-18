@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 // Copyright (c) Navigation Data Standard e.V. - See "LICENSE" file.
 
 #include "ndsmath/wgs84polygon.h"

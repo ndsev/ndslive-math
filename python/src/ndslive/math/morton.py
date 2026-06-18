@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 class MortonCode:
     """
     Implements Morton encoding (Z-order curve) for 2D coordinates.

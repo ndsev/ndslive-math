@@ -1,0 +1,21 @@
+[package]
+name = "ndslive-math"
+version = "0.5.2"
+edition = "2021"
+rust-version = "1.70"
+license = "MIT"
+description = "Coordinate math, packed tile IDs, and Morton (Z-order) codes for NDS.Live geographic tiling."
+repository = "https://github.com/ndsev/ndslive-math"
+homepage = "https://github.com/ndsev/ndslive-math"
+documentation = "https://docs.rs/ndslive-math"
+readme = "README.md"
+keywords = ["nds", "geospatial", "morton", "tiling", "wgs84"]
+categories = ["science::geo", "mathematics", "encoding"]
+
+[lib]
+name = "ndslive_math"
+path = "src/lib.rs"
+
+[dev-dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

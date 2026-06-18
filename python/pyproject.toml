@@ -15,19 +15,20 @@ requires-python = ">=3.10"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
-    "License :: Other/Proprietary License",
+    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
 ]
 dependencies = []
 
 [project.urls]
-Homepage = "https://github.com/ndsev/ndsmath"
-Repository = "https://github.com/ndsev/ndsmath"
+Homepage = "https://github.com/ndsev/ndslive-math"
+Repository = "https://github.com/ndsev/ndslive-math"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

@@ -19,5 +19,13 @@ env/
 .vscode/
 .idea/
 
+# Rust
+/rust/target/
+rust/Cargo.lock
+
 # Misc
 .DS_Store
+
+# Claude-specific files
+CLAUDE.md
+.claude/

@@ -1,0 +1,55 @@
+{
+  "name": "@ndsev/ndslive-math",
+  "version": "0.0.0",
+  "description": "Coordinate math, packed tile IDs, Morton codes, and bounding boxes for NDS.Live geographic tiling.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ndsev/ndslive-math"
+  },
+  "homepage": "https://github.com/ndsev/ndslive-math#readme",
+  "bugs": {
+    "url": "https://github.com/ndsev/ndslive-math/issues"
+  },
+  "keywords": [
+    "nds",
+    "nds.live",
+    "wgs84",
+    "morton",
+    "z-order",
+    "tile",
+    "geospatial",
+    "tiling"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage",
+    "test:node": "npm run build && node --test dist-test/"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^2.1.8",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}

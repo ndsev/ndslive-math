@@ -4,6 +4,32 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Project
+- **BREAKING (licensing):** Relicensed from the proprietary NDS license to **MIT**
+  with an explicit no-patent-grant clause. See `LICENSE`.
+- Open-sourcing preparation: added `CONTRIBUTING.md` (issues-only policy),
+  `SECURITY.md`, a root `LICENSE` with byte-identical per-language copies, and a
+  language-neutral golden parity-vector suite under `test-vectors/`.
+- CI now builds and tests **all** implementations — C++ (Linux/macOS/Windows),
+  Python 3.10–3.14, Java, JavaScript/TypeScript, Go, Rust — validates
+  cross-language parity, checks LICENSE consistency, and uploads coverage to
+  Codecov. Replaced the NDS Artifactory deploy with PyPI Trusted Publishing;
+  npm / crates.io / Maven Central publishing is wired but gated behind repo
+  variables until accounts are provisioned.
+- Added SPDX `MIT` headers across all source files.
+
+### Added
+- **Java** implementation (`java/`, Gradle; Maven coordinates `io.github.ndsev:ndslive-math`).
+- **JavaScript/TypeScript** implementation (`js/`, npm package `@ndsev/ndslive-math`).
+- **Go** implementation (`go/`, module `github.com/ndsev/ndslive-math/go`).
+- **Rust** implementation (`rust/`, crate `ndslive-math`).
+
+### Changed
+- **Python:** added 3.14 to supported/tested versions; corrected the repository
+  URLs and switched the license classifier to `MIT` in `pyproject.toml`.
+
 ## [v0.5.2] - 2026-04-27
 
 ### Changed

@@ -1,4 +1,4 @@
-name: ndsmath CI/CD
+name: ndslive-math CI/CD
 
 on:
   push:
@@ -8,114 +8,317 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
+  # ---------------------------------------------------------------------------
+  # Repo-hygiene gates
+  # ---------------------------------------------------------------------------
   check-changelog:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' && github.base_ref == 'main')
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - name: Validate CHANGELOG
       run: |
         if [ "${{ github.ref }}" = "refs/heads/main" ]; then
-          # ON MAIN: All entries must have dates (no unreleased allowed)
           UNRELEASED=$(grep -cE "^## \[v[0-9.]+\]$" CHANGELOG.md || true)
-
           if [ "$UNRELEASED" -gt 0 ]; then
             echo "ERROR: Found $UNRELEASED unreleased entries on main branch"
-            echo "Add release dates: ## [vX.Y.Z] - YYYY-MM-DD"
             grep -E "^## \[v[0-9.]+\]$" CHANGELOG.md
             exit 1
           fi
           echo "OK: All changelog entries have release dates"
         else
-          # ON PR: Check that CHANGELOG.md was modified
           if git diff --name-only origin/main...HEAD | grep -q "^CHANGELOG.md$"; then
             echo "OK: CHANGELOG.md has been modified"
           else
-            echo "WARNING: CHANGELOG.md was not modified"
-            echo "Please document your changes in CHANGELOG.md"
+            echo "ERROR: CHANGELOG.md was not modified. Please document your changes."
             exit 1
           fi
         fi
 
-  test-cpp:
+  check-license:
+    # Every per-language LICENSE copy must match the canonical root LICENSE.
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v3
-    - name: Install dependencies
+    - uses: actions/checkout@v4
+    - name: Verify LICENSE copies match root byte-for-byte
       run: |
-        sudo apt-get update
-        sudo apt-get install -y cmake build-essential
-    - name: Configure
-      run: |
-        mkdir -p build
-        cd build
-        cmake ../cpp -DCMAKE_BUILD_TYPE=Release
-    - name: Build
-      run: |
-        cd build
-        make -j$(nproc)
-    - name: Run tests
-      run: |
-        cd build
-        ctest --output-on-failure
+        fail=0
+        for d in python cpp java js go rust; do
+          if [ -f "$d/LICENSE" ]; then
+            if cmp -s LICENSE "$d/LICENSE"; then
+              echo "OK: $d/LICENSE"
+            else
+              echo "ERROR: $d/LICENSE differs from root LICENSE"; fail=1
+            fi
+          else
+            echo "WARNING: $d/LICENSE missing"
+          fi
+        done
+        exit $fail
 
+  check-parity-vectors:
+    # The committed golden vectors must equal what the Python reference produces.
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    - name: Regenerate vectors and fail on drift
+      run: |
+        PYTHONPATH=python/src python3 test-vectors/generate_vectors.py
+        if ! git diff --exit-code -- test-vectors/parity_vectors.json; then
+          echo "ERROR: parity_vectors.json is out of date. Regenerate and commit:"
+          echo "  PYTHONPATH=python/src python3 test-vectors/generate_vectors.py"
+          exit 1
+        fi
+        echo "OK: parity vectors are up to date"
+
+  # ---------------------------------------------------------------------------
+  # Per-language test suites (each validates against test-vectors/)
+  # ---------------------------------------------------------------------------
   test-python:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        python-version: ['3.10', '3.11', '3.12', '3.13']
-
+        python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+    - uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
+        allow-prereleases: true
+    - name: Install package (editable) + coverage
       run: |
-        python -m pip install --upgrade pip
-    - name: Install ndsmath
+        python -m pip install --upgrade pip build "setuptools-scm[toml]>=8" coverage
+        SETUPTOOLS_SCM_PRETEND_VERSION=$(python -m setuptools_scm) pip install -e ./python
+    - name: Run tests with coverage
       run: |
-        cp -r python/* .
-        pip install -e .
-    - name: Run tests
-      run: |
-        python -m unittest discover tests
-    - name: Cleanup test environment
-      run: |
-        git reset --hard HEAD
-        git clean -fd
+        coverage run --source=ndslive -m unittest discover -s python/tests -t .
+        coverage report -m
+        coverage xml -o coverage-python.xml
+    - name: Upload coverage to Codecov
+      if: matrix.python-version == '3.12'
+      uses: codecov/codecov-action@v4
+      with:
+        files: coverage-python.xml
+        flags: python
+        token: ${{ secrets.CODECOV_TOKEN }}
+        fail_ci_if_error: false
 
-  build-and-deploy-snapshot:
-    needs: [check-changelog, test-cpp, test-python]
-    runs-on: ubuntu-latest
-    if: |
-      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
-      (github.event_name == 'pull_request' && github.base_ref == 'main')
+  test-cpp:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - uses: ./.github/actions/python-build-deploy
-        with:
-          twine-username: ${{ secrets.NDS_ARTIFACTORY_USER }}
-          twine-password: ${{ secrets.NDS_ARTIFACTORY_TOKEN }}
+    - uses: actions/checkout@v4
+    - name: Configure
+      run: cmake -S cpp -B build -DCMAKE_BUILD_TYPE=Release
+    - name: Build
+      run: cmake --build build --config Release
+    - name: Test
+      run: ctest --test-dir build --output-on-failure -C Release
 
-  build-and-deploy-release:
-    needs: [test-cpp, test-python]
+  test-java:
     runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: '17'
+    - name: Build, test, coverage (Gradle)
+      working-directory: java
+      run: ./gradlew test jacocoTestReport jacocoTestCoverageVerification --no-daemon
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        files: java/build/reports/jacoco/test/jacocoTestReport.xml
+        flags: java
+        token: ${{ secrets.CODECOV_TOKEN }}
+        fail_ci_if_error: false
+
+  test-js:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: npm
+        cache-dependency-path: js/package-lock.json
+    - name: Install
+      working-directory: js
+      run: npm ci
+    - name: Build + test + coverage
+      working-directory: js
+      run: |
+        npm run build
+        npm run coverage
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        directory: js/coverage
+        flags: js
+        token: ${{ secrets.CODECOV_TOKEN }}
+        fail_ci_if_error: false
+
+  test-go:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-go@v5
+      with:
+        go-version: '1.22'
+    - name: Test with coverage
+      working-directory: go
+      run: |
+        go vet ./...
+        go test ./... -covermode=atomic -coverprofile=coverage.out
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        files: go/coverage.out
+        flags: go
+        token: ${{ secrets.CODECOV_TOKEN }}
+        fail_ci_if_error: false
+
+  test-rust:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: dtolnay/rust-toolchain@stable
+      with:
+        components: llvm-tools-preview
+    - name: Test
+      working-directory: rust
+      run: cargo test
+    - name: Coverage (cargo-llvm-cov)
+      working-directory: rust
+      run: |
+        cargo install cargo-llvm-cov --locked
+        cargo llvm-cov --lcov --output-path lcov.info
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        files: rust/lcov.info
+        flags: rust
+        token: ${{ secrets.CODECOV_TOKEN }}
+        fail_ci_if_error: false
+
+  # ---------------------------------------------------------------------------
+  # Publishing — replaces the old NDS Artifactory deploy.
+  #   * Pre-releases publish from `main`; releases publish from `vX.Y.Z` tags.
+  #   * Python uses PyPI Trusted Publishing (OIDC) — no stored token.
+  #   * npm / crates / Maven jobs are GATED on repo variables so they stay inert
+  #     until the corresponding account + credentials exist (see Appendix B/C of
+  #     OPEN_SOURCE_PLAN.md). Set the repo variable to 'true' to enable each.
+  # ---------------------------------------------------------------------------
+  publish-python-testpypi:
+    needs: [check-changelog, check-license, check-parity-vectors, test-python, test-cpp]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: testpypi
+    permissions:
+      id-token: write
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    - name: Build sdist + wheel
+      run: |
+        python -m pip install build "setuptools-scm[toml]>=8"
+        cp -r python/* .          # put pyproject beside .git so setuptools-scm sees tags
+        python -m build --outdir dist .
+    - name: Publish to TestPyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        repository-url: https://test.pypi.org/legacy/
+
+  publish-python-pypi:
+    needs: [check-changelog, check-license, check-parity-vectors, test-python, test-cpp]
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - uses: ./.github/actions/python-build-deploy
-        with:
-          twine-username: ${{ secrets.NDS_ARTIFACTORY_USER }}
-          twine-password: ${{ secrets.NDS_ARTIFACTORY_TOKEN }}
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    - name: Build sdist + wheel
+      run: |
+        python -m pip install build "setuptools-scm[toml]>=8"
+        cp -r python/* .          # put pyproject beside .git so setuptools-scm sees the tag
+        python -m build --outdir dist .
+    - name: Publish to PyPI (Trusted Publishing)
+      uses: pypa/gh-action-pypi-publish@release/v1
+
+  publish-npm:
+    needs: [test-js]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && vars.ENABLE_NPM_PUBLISH == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write   # npm provenance
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        registry-url: https://registry.npmjs.org
+    - name: Build + publish
+      working-directory: js
+      run: |
+        npm ci
+        npm run build
+        npm publish --provenance --access public
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  publish-crate:
+    needs: [test-rust]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && vars.ENABLE_CRATES_PUBLISH == 'true'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: dtolnay/rust-toolchain@stable
+    - name: Publish to crates.io
+      working-directory: rust
+      run: cargo publish --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+  publish-maven:
+    needs: [test-java]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && vars.ENABLE_MAVEN_PUBLISH == 'true'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: '17'
+    - name: Publish to Maven Central
+      working-directory: java
+      run: ./gradlew publish --no-daemon -PndslivemathVersion=${GITHUB_REF_NAME#v}
+      env:
+        ORG_GRADLE_PROJECT_signingKey: ${{ secrets.GPG_PRIVATE_KEY }}
+        ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_PASSPHRASE }}
+        ORG_GRADLE_PROJECT_centralUsername: ${{ secrets.MAVEN_CENTRAL_USER }}
+        ORG_GRADLE_PROJECT_centralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}

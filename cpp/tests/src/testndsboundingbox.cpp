@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 // Copyright (c) Navigation Data Standard e.V. - See "LICENSE" file.
 
 #include <catch2/catch_test_macros.hpp>
