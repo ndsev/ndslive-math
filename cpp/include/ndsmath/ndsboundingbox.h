@@ -5,7 +5,9 @@
 
 #include "wgs84.h"
 #include "packedtileid.h"
+#include <algorithm>
 #include <cstdint>
+#include <stdexcept>
 
 namespace ndsmath
 {
@@ -88,5 +90,42 @@ struct NdsBoundingBox
         return !(*this == other);
     }
 };
+
+//! Minimal bounding box in NDS coordinates that covers all the given tiles.
+//! The NE corner is the inclusive last interior point (exclusive corner minus
+//! one), matching getTileIdsForBoundingBox's inclusive coordinate treatment, so
+//! a single tile round-trips back to itself. Computed in 64-bit because the
+//! exclusive NE corner of a world-edge low-level tile reaches 2^31 / 2^30.
+//! @throws std::invalid_argument if tiles is empty.
+inline NdsBoundingBox boundingBoxFromTileIds(const PackedTileIds& tiles)
+{
+    if (tiles.empty())
+        throw std::invalid_argument("boundingBoxFromTileIds: tiles must not be empty");
+
+    int64_t minX = 0, minY = 0, maxX = 0, maxY = 0;
+    bool first = true;
+    for (const auto& tile : tiles)
+    {
+        int32_t sx, sy;
+        tile.southWestCorner().toNdsCoordinates(sx, sy);
+        const int64_t size = tile.size();
+        const int64_t neX = static_cast<int64_t>(sx) + size;
+        const int64_t neY = static_cast<int64_t>(sy) + size;
+        if (first)
+        {
+            minX = sx; minY = sy; maxX = neX; maxY = neY;
+            first = false;
+        }
+        else
+        {
+            minX = std::min<int64_t>(minX, sx);
+            minY = std::min<int64_t>(minY, sy);
+            maxX = std::max<int64_t>(maxX, neX);
+            maxY = std::max<int64_t>(maxY, neY);
+        }
+    }
+    return NdsBoundingBox(static_cast<int32_t>(minX), static_cast<int32_t>(minY),
+                          static_cast<int32_t>(maxX - 1), static_cast<int32_t>(maxY - 1));
+}
 
 } // namespace ndsmath

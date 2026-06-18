@@ -27,8 +27,10 @@ namespace ndsmath
         using vec2_t = typename glm::vec<2, T, glm::highp>;
         using prec = T;
 
-        static constexpr T lonNdsDelta = static_cast<T>(360.) / static_cast<T>( (2ll << 32) - 1 );
-        static constexpr T latNdsDelta = static_cast<T>(180.) / static_cast<T>( (2ll << 31) - 1 );
+        // One NDS coordinate unit in degrees, per spec: 360/2^32 (== 90/2^30)
+        // for longitude and 180/2^31 for latitude.
+        static constexpr T lonNdsDelta = static_cast<T>(360.) / static_cast<T>(1ll << 32);
+        static constexpr T latNdsDelta = static_cast<T>(180.) / static_cast<T>(1ll << 31);
         static constexpr T lonMin = static_cast<T>(-180.);
         static constexpr T lonMax = static_cast<T>(180.) - lonNdsDelta;
         static constexpr T latMin = static_cast<T>(-90.);

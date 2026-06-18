@@ -24,112 +24,81 @@ PackedTileId PackedTileId::fromTileIndex(uint32_t mortonNumber, int level)
     return PackedTileId(mortonNumber + (1 << (16 + level)));
 }
 
+namespace
+{
+// Deinterleave a tile's Morton number into its (x, y) tile-grid indices.
+// Per the NDS Morton scheme, X has (level+1) bits and Y has level bits.
+// Mirrors the Python reference's _deinterleave_morton.
+void deinterleaveMorton(uint32_t morton, int level, uint32_t& x, uint32_t& y)
+{
+    x = 0;
+    y = 0;
+    for (int i = 0; i < level; ++i)
+    {
+        if (morton & (1u << (2 * i)))     x |= (1u << i);
+        if (morton & (1u << (2 * i + 1))) y |= (1u << i);
+    }
+    if (morton & (1u << (2 * level)))     x |= (1u << level);  // extra X bit
+}
+
+// Inverse of deinterleaveMorton.
+uint32_t interleaveCoords(uint32_t x, uint32_t y, int level)
+{
+    uint32_t morton = 0;
+    for (int i = 0; i < level; ++i)
+    {
+        if (x & (1u << i)) morton |= (1u << (2 * i));
+        if (y & (1u << i)) morton |= (1u << (2 * i + 1));
+    }
+    if (x & (1u << level)) morton |= (1u << (2 * level));
+    return morton;
+}
+} // namespace
+
+// Neighbour traversal: deinterleave to (x, y) tile-grid indices, step by one
+// with wraparound, and reinterleave. Because the tile numbering follows the
+// two's-complement Morton ordering, an unsigned +/-1 with wrap is a correct
+// geographic step in every direction, including the antimeridian (X) and
+// pole (Y) wraps.
+
 PackedTileId PackedTileId::westNeighbour() const
 {
-    int level = this->level();
-    auto currentBit = 1u;
-
-    auto result = value_;
-
-    while (level >= 0)
-    {
-        if ((result & currentBit) != 0)
-        {
-            // Clear bit.
-            result &= ~currentBit;
-            break;
-        }
-        else
-        {
-            // Set bit and move to next level.
-            result |= currentBit;
-            level--;
-            currentBit <<= 2;
-        }
-    }
-
-    return PackedTileId(result);
+    const int lvl = level();
+    uint32_t x, y;
+    deinterleaveMorton(mortonNumber(), lvl, x, y);
+    const uint32_t maxX = (1u << (lvl + 1)) - 1;
+    x = (x - 1) & maxX;
+    return fromTileIndex(interleaveCoords(x, y, lvl), lvl);
 }
 
 PackedTileId PackedTileId::eastNeighbour() const
 {
-    int level = this->level();
-    auto currentBit = 1u;
-
-    auto result = value_;
-
-    while (level >= 0)
-    {
-        if ((result & currentBit) == 0)
-        {
-            // Set bit.
-            result |= currentBit;
-            break;
-        }
-        else
-        {
-            // Set bit and move to next level.
-            result &= ~currentBit;
-            level--;
-            currentBit <<= 2;
-        }
-    }
-
-    return PackedTileId(result);
+    const int lvl = level();
+    uint32_t x, y;
+    deinterleaveMorton(mortonNumber(), lvl, x, y);
+    const uint32_t maxX = (1u << (lvl + 1)) - 1;
+    x = (x + 1) & maxX;
+    return fromTileIndex(interleaveCoords(x, y, lvl), lvl);
 }
 
 PackedTileId PackedTileId::southNeighbour() const
 {
-    int level = this->level();
-    auto currentBit = 2u;
-
-    auto result = value_;
-
-    while (level >= 0)
-    {
-        if ((result & currentBit) != 0)
-        {
-            // Clear bit.
-            result &= ~currentBit;
-            break;
-        }
-        else
-        {
-            // Set bit and move to next level.
-            result |= currentBit;
-            level--;
-            currentBit <<= 2;
-        }
-    }
-
-    return PackedTileId(result);
+    const int lvl = level();
+    uint32_t x, y;
+    deinterleaveMorton(mortonNumber(), lvl, x, y);
+    const uint32_t maxY = (1u << lvl) - 1;
+    y = (y - 1) & maxY;
+    return fromTileIndex(interleaveCoords(x, y, lvl), lvl);
 }
 
 PackedTileId PackedTileId::northNeighbour() const
 {
-    int level = this->level();
-    auto currentBit = 2u;
-
-    auto result = value_;
-
-    while (level >= 0)
-    {
-        if ((result & currentBit) == 0)
-        {
-            // Set bit.
-            result |= currentBit;
-            break;
-        }
-        else
-        {
-            // Set bit and move to next level.
-            result &= ~currentBit;
-            level--;
-            currentBit <<= 2;
-        }
-    }
-
-    return PackedTileId(result);
+    const int lvl = level();
+    uint32_t x, y;
+    deinterleaveMorton(mortonNumber(), lvl, x, y);
+    const uint32_t maxY = (1u << lvl) - 1;
+    y = (y + 1) & maxY;
+    return fromTileIndex(interleaveCoords(x, y, lvl), lvl);
 }
 
 PackedTileId::PackedTileId(MortonCode mortonCode, const int level)
@@ -142,14 +111,16 @@ PackedTileId::PackedTileId(MortonCode mortonCode, const int level)
     int64_t xCoord2 = xCoord;
     int64_t yCoord2 = yCoord;
 
+    // Wrap negative coordinates into the unsigned range via two's complement
+    // (add 2^32 for x, 2^31 for y), matching the reference implementation.
     if (xCoord2 < 0)
     {
-        xCoord2 += std::numeric_limits<uint32_t>::max();
+        xCoord2 += (1LL << 32);
     }
 
     if (yCoord2 < 0)
     {
-        yCoord2 += std::numeric_limits<int32_t>::max();
+        yCoord2 += (1LL << 31);
     }
 
     int nLevel = 31 - level;

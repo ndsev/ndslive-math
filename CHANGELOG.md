@@ -33,6 +33,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   the NDS.Live standard (level-15 tiles are negative), instead of `uint32_t`.
   Migrated the C++ test suite off Catch2 to a dependency-free harness that
   validates against the shared parity vectors; added Windows to the C++ CI matrix.
+- **C++:** **BREAKING (behavior):** fixed spec-compliance bugs verified against
+  the normative tiling spec — north/south (and east/west) neighbour traversal
+  rewritten via deinterleave/wrap/reinterleave (the old bit-walk produced
+  out-of-range tile numbers); `lonNdsDelta`/`latNdsDelta` corrected to `360/2^32`
+  and `180/2^31` (were ~2× too small); `from_morton_and_level` now wraps negative
+  coordinates by `2^32`/`2^31` (was off by one). Added `boundingBoxFromTileIds`.
+  The C++ parity test now validates the full golden set.
 
 ## [v0.5.2] - 2026-04-27
 

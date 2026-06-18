@@ -5,12 +5,11 @@
 // Python reference). Integer results are checked exactly; floating-point within
 // the tolerance recorded in the file.
 //
-// Known C++ divergences from the reference are intentionally skipped here and
-// tracked as follow-ups (see README / OPEN_SOURCE_PLAN):
-//   * north/south neighbours (C++ algorithm differs from the reference)
-//   * bounding_box_from_tile_ids (not implemented in C++)
-//   * WGS84 normalization at the exact +-180 / +-90 boundary (delta epsilon
-//     differs); such rows are skipped in the wgs84 sections.
+// The only intentional skips are representation/edge limits, not bugs:
+//   * WGS84 normalization at the exact +-180 / +-90 boundary (out-of-canonical
+//     inputs); such rows are skipped in the wgs84 sections.
+//   * the exclusive NE corner of world-edge low-level tiles (reaches 2^31/2^30,
+//     outside the int32 NDS coordinate range).
 #include "test_harness.h"
 
 #include "ndsmath/wgs84.h"
@@ -124,13 +123,15 @@ int main()
         CHECK_EQ(static_cast<int64_t>(cy), r["center"][1].get<int64_t>());
     }
 
-    // 5. Neighbours: east/west only (north/south diverge in C++ - tracked)
+    // 5. Neighbours (all four directions)
     for (const auto& r : data["tile_neighbours"]) {
         uint32_t mortonNumber = r["morton_number"].get<uint32_t>();
         int level = r["level"].get<int>();
         PackedTileId t = PackedTileId::fromTileIndex(mortonNumber, level);
         CHECK_EQ(static_cast<int64_t>(t.westNeighbour().value()), r["west"].get<int64_t>());
         CHECK_EQ(static_cast<int64_t>(t.eastNeighbour().value()), r["east"].get<int64_t>());
+        CHECK_EQ(static_cast<int64_t>(t.southNeighbour().value()), r["south"].get<int64_t>());
+        CHECK_EQ(static_cast<int64_t>(t.northNeighbour().value()), r["north"].get<int64_t>());
     }
 
     // 6. from_morton_and_level (containing tile)
@@ -165,6 +166,19 @@ int main()
         NdsBoundingBox bb(b[0].get<int32_t>(), b[1].get<int32_t>(), b[2].get<int32_t>(), b[3].get<int32_t>());
         CHECK_EQ(ba.intersects(bb), r["intersects"].get<bool>());
         CHECK_EQ(ba.contains(bb), r["a_contains_b"].get<bool>());
+    }
+
+    // 8b. bounding_box_from_tile_ids
+    for (const auto& r : data["bbox_from_tiles"]) {
+        ndsmath::PackedTileIds tiles;
+        for (const auto& v : r["tile_values"])
+            tiles.push_back(PackedTileId(static_cast<uint32_t>(v.get<int64_t>())));
+        auto bbox = ndsmath::boundingBoxFromTileIds(tiles);
+        const auto& res = r["result"];
+        CHECK_EQ(static_cast<int64_t>(bbox.minX), res[0].get<int64_t>());
+        CHECK_EQ(static_cast<int64_t>(bbox.minY), res[1].get<int64_t>());
+        CHECK_EQ(static_cast<int64_t>(bbox.maxX), res[2].get<int64_t>());
+        CHECK_EQ(static_cast<int64_t>(bbox.maxY), res[3].get<int64_t>());
     }
 
     // 9. NdsBoundingBox::fromWgs84Corners
