@@ -4,25 +4,32 @@
 > **Working doc:** This file is scratch for the open-sourcing effort. Relocate to
 > `docs/` or delete before the repository goes public.
 
-## Implementation status (branch `feature/open-source-prep`)
+## Implementation status (branch `feature/open-source-prep`) — PR #19, **CI fully green** ✅
 
-**Done & locally verified:**
-- LICENSE migration (root + `python/` + `cpp/` copies from Appendix A); `pyproject.toml` classifier→MIT, URLs fixed, Python 3.14 added.
-- Shared parity vectors (`test-vectors/`) generated from the Python reference.
-- Python parity test added — **all Python tests pass (83)**.
-- **Java** port (`java/`, Gradle) — **41 tests pass, JaCoCo 96.5%**.
-- **JavaScript/TS** port (`js/`) — **158 tests pass, 100% coverage**.
-- SPDX `MIT` headers across 21 existing C++/Python files.
-- `CONTRIBUTING.md`, `SECURITY.md`; README rewritten; CHANGELOG updated.
-- CI rewritten: all 6 languages + parity/license checks + Codecov + PyPI/npm/crates/Maven publishing (Artifactory removed).
+**Done & CI-verified (all 15 jobs green):**
+- LICENSE migration: root + per-language copies (`python/`, `cpp/`, `java/`, `js/`, `go/`, `rust/`); MIT classifier; URLs fixed; Python 3.14. CI `check-license` enforces copies match root byte-for-byte.
+- Shared parity vectors (`test-vectors/`) from the Python reference; CI `check-parity-vectors` guards against drift.
+- **All six languages** implemented and tested against the golden vectors, green in CI: Python (3.10–3.14), C++ (Linux/macOS/Windows), Java (JaCoCo ≥95%), JS/TS (100%), Go, Rust.
+- C++ now consumes the parity vectors (Catch2 → dependency-free harness + header-only nlohmann/json); `PackedTileId::value()` fixed to **signed int32** per spec; Windows DLL co-located.
+- SPDX `MIT` headers across all sources (existing + new ports).
+- CI rewritten: 6-language matrix + parity/license checks + Codecov upload + per-job timeouts; Artifactory removed; publish jobs scaffolded (PyPI OIDC active path; npm/crates/Maven gated behind repo vars).
+- `CONTRIBUTING.md`, `SECURITY.md`; README rewritten (badges + domain primer); CHANGELOG updated.
 
-**Done but NOT yet compiled (no local toolchain — first real build happens in CI):**
-- **Go** port (`go/`) — hand-traced + re-simulated; ⬜ needs `go test` in CI.
-- **Rust** port (`rust/`) — hand-traced + re-simulated; ⬜ needs `cargo test` in CI.
+**Partial:**
+- Coverage uploaded to Codecov for Python/Java/JS/Go/Rust; hard **≥95% gate only on Java** (JaCoCo). C++ has no coverage instrumentation yet; no `codecov.yml` threshold for the others.
+
+**Not started:**
+- Lint/format/static analysis (ruff/mypy, clang-format/-tidy, spotless, `.pre-commit-config`, CodeQL, Dependabot).
+- Hosted docs site (GitHub Pages: Sphinx/Doxygen/Javadoc) + `examples/` dirs.
+- Actual distribution: nothing published. PyPI OIDC env, npm org, crates.io name reservation, Maven creds, Conan/vcpkg recipes, GitHub Release automation — mostly account-gated (Appendix B/C).
 
 **Skipped per maintainer:** Code of Conduct, PR template, issue templates, CODEOWNERS.
 
-**Still pending:** C++ does not yet consume the parity vectors (runs its own Catch2 tests); docs site (GitHub Pages); Conan/vcpkg recipes; registry account provisioning (Appendix B/C); push branch + open CI to truly validate Go/Rust.
+**Pre-publish cleanups:** remove `api_docs_review.md` (internal repo refs); optional `NOTICE`/THIRD-PARTY (GLM, nlohmann/json).
+
+**Open decisions:** copyright year (legal, Q1); Go module layout (Q10); Java Maven groupId (confirm with `ndsev` Maven team).
+
+**C++ spec-compliance fixes — DONE** (verified against the normative spec in `_ext/` + the full golden parity set): north/south (and east/west) neighbours rewritten via deinterleave/wrap/reinterleave; `boundingBoxFromTileIds` added; `lonNdsDelta`/`latNdsDelta` corrected to `360/2^32` / `180/2^31`; `from_morton_and_level` negative-coord off-by-one fixed; `value()` signed int32. The C++ parity test now validates the full golden set (only out-of-range representation edges skipped). Other languages were already parity-faithful to the (spec-correct) Python reference.
 
 This plan turns the private, association-internal `ndsmath` repo into a polished
 public open-source project. It is organized as decisions → open questions →
