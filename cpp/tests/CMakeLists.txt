@@ -17,6 +17,11 @@ else()
     FetchContent_MakeAvailable(Catch2)
 endif()
 
+# Register each Catch2 TEST_CASE as its own ctest test so that a per-test
+# `ctest --timeout` can pinpoint a single hanging case (e.g. the MSVC-only hang
+# in test-packedtileid) instead of stalling on the whole executable.
+include(Catch)
+
 add_executable(test-packedtileid
   src/testpackedtileid.cpp)
 
@@ -41,11 +46,6 @@ target_link_libraries(test-ndsboundingbox
   glm::glm
   Catch2::Catch2WithMain)
 
-add_test(NAME test-packedtileid
-  COMMAND "$<TARGET_FILE:test-packedtileid>")
-
-add_test(NAME test-wgs84
-  COMMAND "$<TARGET_FILE:test-wgs84>")
-
-add_test(NAME test-ndsboundingbox
-  COMMAND "$<TARGET_FILE:test-ndsboundingbox>")
+catch_discover_tests(test-packedtileid)
+catch_discover_tests(test-wgs84)
+catch_discover_tests(test-ndsboundingbox)
