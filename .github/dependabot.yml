@@ -1,0 +1,37 @@
+version: 2
+updates:
+  # GitHub Actions used by the workflows
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+
+  # Python (pyproject.toml)
+  - package-ecosystem: pip
+    directory: "/python"
+    schedule:
+      interval: weekly
+
+  # JavaScript / TypeScript (npm)
+  - package-ecosystem: npm
+    directory: "/js"
+    schedule:
+      interval: weekly
+
+  # Java (Gradle)
+  - package-ecosystem: gradle
+    directory: "/java"
+    schedule:
+      interval: weekly
+
+  # Go modules
+  - package-ecosystem: gomod
+    directory: "/go"
+    schedule:
+      interval: weekly
+
+  # Rust (Cargo)
+  - package-ecosystem: cargo
+    directory: "/rust"
+    schedule:
+      interval: weekly
