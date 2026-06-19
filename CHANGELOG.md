@@ -24,7 +24,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   patch coverage. Adopted formatters/linters across every language — Python
   (ruff), C++ (clang-format), Rust (rustfmt + clippy), Go (gofmt + vet),
   JavaScript/TS (ESLint + Prettier), Java (Spotless) — enforced by a CI `lint`
-  job. Existing code reformatted to match.
+  job. Existing code reformatted to match; Go and Rust test coverage raised
+  above the 95% gate.
 
 ### Added
 - **Java** implementation (`java/`, Gradle; Maven coordinates `io.github.ndsev:ndslive-math`).
