@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: BSD-3-Clause
 //! `ndslive-math` — coordinate math, packed tile IDs, and Morton (Z-order)
 //! codes for NDS.Live geographic tiling.
 //!

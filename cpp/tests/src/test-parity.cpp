@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: BSD-3-Clause
 //
 // Cross-language parity test: validates the C++ implementation against the
 // shared golden vectors in test-vectors/parity_vectors.json (generated from the

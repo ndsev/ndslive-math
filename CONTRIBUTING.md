@@ -73,4 +73,4 @@ carry a release date. Prefix breaking changes with `**BREAKING:**`.
 Match the surrounding code in each language. Public API names mirror the Python
 reference, adapted to each language's idioms (e.g. `to_nds_coordinates` in
 Python/Rust, `toNdsCoordinates` in Java/JS/Go). Every source file carries an
-`SPDX-License-Identifier: MIT` header.
+`SPDX-License-Identifier: BSD-3-Clause` header.

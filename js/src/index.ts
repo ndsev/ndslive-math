@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: BSD-3-Clause
 
 /**
  * `@ndsev/ndslive-math` — coordinate math, tile IDs, and Morton codes for

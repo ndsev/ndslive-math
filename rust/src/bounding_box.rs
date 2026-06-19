@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: BSD-3-Clause
 //! Axis-aligned bounding boxes in NDS coordinate space.
 //!
 //! Faithful port of `python/src/ndslive/math/bounding_box.py`.

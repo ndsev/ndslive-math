@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: BSD-3-Clause
 // Minimal dependency-free test harness for the C++ tests.
 //
 // We deliberately avoid an external unit-test framework: a tiny set of CHECK

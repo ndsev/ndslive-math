@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: BSD-3-Clause
 //! WGS84 coordinate point with NDS coordinate conversion and geodesic helpers.
 //!
 //! This is a faithful port of the Python reference implementation

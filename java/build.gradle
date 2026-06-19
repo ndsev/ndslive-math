@@ -88,8 +88,8 @@ publishing {
 
                 licenses {
                     license {
-                        name = 'MIT License'
-                        url = 'https://opensource.org/licenses/MIT'
+                        name = 'BSD 3-Clause License'
+                        url = 'https://opensource.org/licenses/BSD-3-Clause'
                     }
                 }
 

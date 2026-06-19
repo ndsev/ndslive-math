@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: BSD-3-Clause
 """ndslive.math — coordinate math, tile IDs, and Morton codes for NDS.Live.
 
 ``ndslive.math`` is the small set of geometry primitives shared by every

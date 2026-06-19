@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: BSD-3-Clause
 """Generate the language-neutral parity vectors for ndslive-math.
 
 These golden vectors are produced from the **Python reference implementation**

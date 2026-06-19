@@ -7,11 +7,11 @@
 ## Implementation status (branch `feature/open-source-prep`) — PR #19, **CI fully green** ✅
 
 **Done & CI-verified (all 15 jobs green):**
-- LICENSE migration: root + per-language copies (`python/`, `cpp/`, `java/`, `js/`, `go/`, `rust/`); MIT classifier; URLs fixed; Python 3.14. CI `check-license` enforces copies match root byte-for-byte.
+- LICENSE migration: root + per-language copies (`python/`, `cpp/`, `java/`, `js/`, `go/`, `rust/`); BSD-3-Clause classifier; URLs fixed; Python 3.14. CI `check-license` enforces copies match root byte-for-byte.
 - Shared parity vectors (`test-vectors/`) from the Python reference; CI `check-parity-vectors` guards against drift.
 - **All six languages** implemented and tested against the golden vectors, green in CI: Python (3.10–3.14), C++ (Linux/macOS/Windows), Java (JaCoCo ≥95%), JS/TS (100%), Go, Rust.
 - C++ now consumes the parity vectors (Catch2 → dependency-free harness + header-only nlohmann/json); `PackedTileId::value()` fixed to **signed int32** per spec; Windows DLL co-located.
-- SPDX `MIT` headers across all sources (existing + new ports).
+- SPDX `BSD-3-Clause` headers across all sources (existing + new ports).
 - CI rewritten: 6-language matrix + parity/license checks + Codecov upload + per-job timeouts; Artifactory removed; publish jobs scaffolded (PyPI OIDC active path; npm/crates/Maven gated behind repo vars).
 - `CONTRIBUTING.md`, `SECURITY.md`; README rewritten (badges + domain primer); CHANGELOG updated.
 
@@ -41,7 +41,7 @@ phased work, with a per-file licensing checklist at the end (the riskiest part).
 
 | Topic | Decision |
 |---|---|
-| **License** | MIT + an explicit no-patent-grant clause (canonical text from legal in [Appendix A](#appendix-a--canonical-license-text-from-legal)). Labeled as **`MIT`** in registry classifiers and `SPDX-License-Identifier` headers; the LICENSE file carries the patent carve-out. |
+| **License** | **BSD-3-Clause** (standard, no patent clause). SPDX `BSD-3-Clause` headers + `License :: OSI Approved :: BSD License` classifier. *Supersedes the earlier MIT-no-patent decision (per NDS legal, 2026-06-19); the MIT discussion in open question 1 / Appendix A below is historical.* |
 | **Contributions** | **Issues only.** External pull requests are *not* accepted; NDS implements requested changes internally. No CLA/DCO tooling needed. |
 | **Python support** | Add **3.14** to the support matrix and classifiers (currently 3.10–3.13). `requires-python` stays `>=3.10`. |
 | **Languages** | Existing: **C++, Python**. To add: **Java, JavaScript/TypeScript, Go, Rust** — all first-class, validated against shared parity vectors (Phase 1). |
@@ -251,7 +251,11 @@ Phase 2. Six languages total: C++, Python, Java, JavaScript/TS, Go, Rust.)*
 
 ---
 
-## Appendix A — Canonical LICENSE text (from legal)
+## Appendix A — Canonical LICENSE text (from legal) — SUPERSEDED
+
+> **Superseded 2026-06-19:** NDS legal moved the repo to standard **BSD-3-Clause**
+> (no patent clause). The MIT-no-patent text below is kept only as historical
+> record; the live license is the BSD-3-Clause text in `/LICENSE`.
 
 This is the exact, authoritative license text supplied by NDS legal. It is the
 source of truth for the root `LICENSE` file and any per-language copies. Do not

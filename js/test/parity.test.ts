@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: BSD-3-Clause
 
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';

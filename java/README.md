@@ -103,4 +103,4 @@ The publication version is taken from the `ndslivemathVersion` Gradle property
 
 ## License
 
-MIT — see [`LICENSE`](LICENSE).
+BSD-3-Clause — see [`LICENSE`](LICENSE).

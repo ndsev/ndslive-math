@@ -2,7 +2,7 @@
   "name": "@ndsev/ndslive-math",
   "version": "0.0.0",
   "description": "Coordinate math, packed tile IDs, Morton codes, and bounding boxes for NDS.Live geographic tiling.",
-  "license": "MIT",
+  "license": "BSD-3-Clause",
   "repository": {
     "type": "git",
     "url": "https://github.com/ndsev/ndslive-math"

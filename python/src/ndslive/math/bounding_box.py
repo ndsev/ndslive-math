@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: BSD-3-Clause
 """Bounding box utilities for NDS coordinate space."""
 
 from dataclasses import dataclass

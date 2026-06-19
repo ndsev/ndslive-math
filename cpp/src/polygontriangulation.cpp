@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: BSD-3-Clause
 // Copyright (c) Navigation Data Standard e.V. - See "LICENSE" file.
 
 #include "polygontriangulation.h"

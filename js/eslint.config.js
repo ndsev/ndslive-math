@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: BSD-3-Clause
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 

@@ -7,8 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Project
-- **BREAKING (licensing):** Relicensed from the proprietary NDS license to **MIT**
-  with an explicit no-patent-grant clause. See `LICENSE`.
+- **BREAKING (licensing):** Relicensed from the proprietary NDS license to
+  **BSD-3-Clause**. See `LICENSE`.
 - Open-sourcing preparation: added `CONTRIBUTING.md` (issues-only policy),
   `SECURITY.md`, a root `LICENSE` with byte-identical per-language copies, and a
   language-neutral golden parity-vector suite under `test-vectors/`.
@@ -18,7 +18,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   Codecov. Replaced the NDS Artifactory deploy with PyPI Trusted Publishing;
   npm / crates.io / Maven Central publishing is wired but gated behind repo
   variables until accounts are provisioned.
-- Added SPDX `MIT` headers across all source files.
+- Added SPDX `BSD-3-Clause` headers across all source files.
 - Static analysis & quality: **CodeQL** (Python, JS/TS, Go, Java, C++) and
   **Dependabot** (all ecosystems) workflows; **Codecov** gate at 95% project +
   patch coverage. Adopted formatters/linters across every language — Python
@@ -34,7 +34,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 - **Python:** added 3.14 to supported/tested versions; corrected the repository
-  URLs and switched the license classifier to `MIT` in `pyproject.toml`.
+  URLs and switched the license classifier to `BSD` in `pyproject.toml`.
 - **C++:** **BREAKING:** `PackedTileId::value()` now returns signed `int32` per
   the NDS.Live standard (level-15 tiles are negative), instead of `uint32_t`.
   Migrated the C++ test suite off Catch2 to a dependency-free harness that

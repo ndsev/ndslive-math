@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: BSD-3-Clause
 package io.github.ndsev.ndslivemath;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;

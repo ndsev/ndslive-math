@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: BSD-3-Clause
 """Validate the Python implementation against the shared golden parity vectors.
 
 The same ``test-vectors/parity_vectors.json`` is consumed by every language

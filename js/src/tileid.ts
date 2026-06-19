@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: BSD-3-Clause
 
 import { MortonCode } from './morton.js';
 import { Wgs84 } from './wgs84.js';

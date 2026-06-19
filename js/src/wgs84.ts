@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: BSD-3-Clause
 
 /**
  * Represents a point on the Earth's surface using the WGS84 coordinate system.

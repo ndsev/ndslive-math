@@ -81,4 +81,4 @@ cargo llvm-cov --all-features
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+BSD-3-Clause — see [LICENSE](LICENSE).

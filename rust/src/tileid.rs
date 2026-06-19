@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: BSD-3-Clause
 //! NDS.Live Packed Tile IDs and bounding-box tile enumeration.
 //!
 //! Faithful port of `python/src/ndslive/math/tileid.py`, cross-checked against

@@ -113,4 +113,4 @@ hand-written unit tests.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+BSD-3-Clause — see [LICENSE](LICENSE).

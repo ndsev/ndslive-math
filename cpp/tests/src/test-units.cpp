@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: BSD-3-Clause
 //
 // Focused C++ unit tests for edge cases not fully covered by the golden-vector
 // parity test (validity, level decoding, signed level-15 values, corners,

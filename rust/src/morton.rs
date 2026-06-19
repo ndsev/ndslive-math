@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: BSD-3-Clause
 //! Morton (Z-order) encoding for 2D NDS coordinates.
 //!
 //! Faithful port of `python/src/ndslive/math/morton.py` and cross-checked

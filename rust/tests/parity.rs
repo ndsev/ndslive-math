@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: BSD-3-Clause
 //! Golden parity tests: load `test-vectors/parity_vectors.json` (the
 //! language-neutral contract generated from the Python reference) and assert
 //! that this Rust port agrees bit-for-bit on integers and within tolerance on

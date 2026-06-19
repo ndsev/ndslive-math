@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: BSD-3-Clause
 
 const MASK_64 = (1n << 64n) - 1n;
 const BIT_63 = 1n << 63n;

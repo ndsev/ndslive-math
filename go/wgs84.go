@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: BSD-3-Clause
 
 // Package ndslivemath provides NDS.Live mathematical utilities for geographic
 // tiling: WGS84 coordinate handling, Morton (Z-order) codes, packed tile IDs

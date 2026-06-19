@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/ndsev/ndslive-math/actions/workflows/ci.yml/badge.svg)](https://github.com/ndsev/ndslive-math/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/ndsev/ndslive-math/branch/main/graph/badge.svg)](https://codecov.io/gh/ndsev/ndslive-math)
-[![License: MIT](https://img.shields.io/badge/license-MIT%20(no%20patent)-blue.svg)](LICENSE)
+[![License: BSD-3-Clause](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](LICENSE)
 [![PyPI](https://img.shields.io/pypi/v/ndslive-math.svg)](https://pypi.org/project/ndslive-math/)
 [![npm](https://img.shields.io/npm/v/@ndsev/ndslive-math.svg)](https://www.npmjs.com/package/@ndsev/ndslive-math)
 [![crates.io](https://img.shields.io/crates/v/ndslive-math.svg)](https://crates.io/crates/ndslive-math)
@@ -116,4 +116,4 @@ requests; changes are implemented by the NDS team. For security reports, see
 
 ## License
 
-MIT (with an explicit no-patent-grant clause). See [`LICENSE`](LICENSE).
+BSD-3-Clause. See [`LICENSE`](LICENSE).
