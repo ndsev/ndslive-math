@@ -32,6 +32,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **JavaScript/TypeScript** implementation (`js/`, npm package `@ndsev/ndslive-math`).
 - **Go** implementation (`go/`, module `github.com/ndsev/ndslive-math/go`).
 - **Rust** implementation (`rust/`, crate `ndslive-math`).
+- **C++:** CMake `install` + package-config (`find_package(ndsmath CONFIG)` →
+  `ndsmath::ndsmath`), and a **vcpkg** port in `cpp/vcpkg-port/` (usable as an
+  overlay port; upstream submission after the first public release). GLM is now
+  consumed via `find_package` when available, falling back to FetchContent.
 
 ### Changed
 - **Python:** added 3.14 to supported/tested versions; corrected the repository

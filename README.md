@@ -75,8 +75,12 @@ endif()
 > **Note:** the C++ target, include path (`<ndsmath/...>`), and `ndsmath`
 > namespace are unchanged for backward compatibility — only the repository name
 > is `ndslive-math`. The C++ library also depends on
-> [glm](https://github.com/g-truc/glm); add it to your project as well. Conan
-> Center and vcpkg packages are planned.
+> [glm](https://github.com/g-truc/glm); add it to your project as well.
+
+A **vcpkg** port is provided in [`cpp/vcpkg-port/`](cpp/vcpkg-port) (usable as an
+overlay port now; upstream-registry submission follows the first public release).
+The library also supports `install` + `find_package(ndsmath CONFIG)`. See
+[`cpp/README.md`](cpp/README.md) for all consumption options.
 
 ## Quick example (Python)
 
