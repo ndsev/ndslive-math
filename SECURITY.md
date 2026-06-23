@@ -14,7 +14,7 @@ Instead, report them privately via one of:
 
 - GitHub's [private vulnerability reporting](https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing-information-about-vulnerabilities/privately-reporting-a-security-vulnerability)
   (the **"Report a vulnerability"** button under the repository's *Security* tab), or
-- email **security@nds-association.org**.
+- email **support@nds-association.org**.
 
 Please include:
 
