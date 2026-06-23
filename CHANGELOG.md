@@ -15,9 +15,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - CI now builds and tests **all** implementations — C++ (Linux/macOS/Windows),
   Python 3.10–3.14, Java, JavaScript/TypeScript, Go, Rust — validates
   cross-language parity, checks LICENSE consistency, and uploads coverage to
-  Codecov. Replaced the NDS Artifactory deploy with PyPI Trusted Publishing;
-  npm / crates.io / Maven Central publishing is wired but gated behind repo
-  variables until accounts are provisioned.
+  Codecov. Replaced the NDS Artifactory deploy with public-registry publishing
+  (PyPI Trusted Publishing/OIDC, npm, crates.io, Maven Central); all publish
+  channels are wired but gated behind `ENABLE_*_PUBLISH` repo variables until the
+  accounts/OIDC trust are provisioned.
 - Added SPDX `BSD-3-Clause` headers across all source files.
 - Static analysis & quality: **CodeQL** (Python, JS/TS, Go, Java, C++) and
   **Dependabot** (all ecosystems) workflows; **Codecov** gate at 95% project +

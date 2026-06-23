@@ -295,16 +295,16 @@ jobs:
         fail_ci_if_error: false
 
   # ---------------------------------------------------------------------------
-  # Publishing — replaces the old NDS Artifactory deploy.
+  # Publishing.
   #   * Pre-releases publish from `main`; releases publish from `vX.Y.Z` tags.
   #   * Python uses PyPI Trusted Publishing (OIDC) — no stored token.
-  #   * npm / crates / Maven jobs are GATED on repo variables so they stay inert
-  #     until the corresponding account + credentials exist (see Appendix B/C of
-  #     OPEN_SOURCE_PLAN.md). Set the repo variable to 'true' to enable each.
+  #   * Every publish job is GATED on a repo variable (ENABLE_*_PUBLISH) so it
+  #     stays inert until the corresponding account/credentials/OIDC trust is set
+  #     up. Set the variable to 'true' to enable each channel.
   # ---------------------------------------------------------------------------
   publish-python-testpypi:
     needs: [check-changelog, check-license, check-parity-vectors, test-python, test-cpp]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.ENABLE_PYPI_PUBLISH == 'true'
     runs-on: ubuntu-latest
     environment: testpypi
     permissions:
@@ -328,7 +328,7 @@ jobs:
 
   publish-python-pypi:
     needs: [check-changelog, check-license, check-parity-vectors, test-python, test-cpp]
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && vars.ENABLE_PYPI_PUBLISH == 'true'
     runs-on: ubuntu-latest
     environment: pypi
     permissions:
