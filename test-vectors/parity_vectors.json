@@ -1,0 +1,1268 @@
+{
+  "_meta": {
+    "description": "Golden parity vectors for ndslive-math, generated from the Python reference implementation.",
+    "float_tolerance": 1e-06,
+    "source": "python/src/ndslive/math"
+  },
+  "wgs84_to_nds": [
+    {
+      "lon": 0.0,
+      "lat": 0.0,
+      "normalized_lon": 0.0,
+      "normalized_lat": 0.0,
+      "nds_x": 0,
+      "nds_y": 0
+    },
+    {
+      "lon": 13.404954,
+      "lat": 52.520008,
+      "normalized_lon": 13.404954,
+      "normalized_lat": 52.520008,
+      "nds_x": 159927330,
+      "nds_y": 626588102
+    },
+    {
+      "lon": 11.585,
+      "lat": 48.137,
+      "normalized_lon": 11.585,
+      "normalized_lat": 48.137,
+      "nds_x": 138214433,
+      "nds_y": 574296779
+    },
+    {
+      "lon": -122.4194,
+      "lat": 37.7749,
+      "normalized_lon": -122.4194,
+      "normalized_lat": 37.7749,
+      "nds_x": -1460520332,
+      "nds_y": 450672111
+    },
+    {
+      "lon": 151.2093,
+      "lat": -33.8688,
+      "normalized_lon": 151.2093,
+      "normalized_lat": -33.8688,
+      "nds_x": 1803997217,
+      "nds_y": -404070524
+    },
+    {
+      "lon": -43.1729,
+      "lat": -22.9068,
+      "normalized_lon": -43.1729,
+      "normalized_lat": -22.9068,
+      "nds_x": -515072760,
+      "nds_y": -273288770
+    },
+    {
+      "lon": 139.6917,
+      "lat": 35.6895,
+      "normalized_lon": 139.6917,
+      "normalized_lat": 35.6895,
+      "nds_x": 1666586897,
+      "nds_y": 425792320
+    },
+    {
+      "lon": -0.1276,
+      "lat": 51.5072,
+      "normalized_lon": -0.1276,
+      "normalized_lat": 51.5072,
+      "nds_x": -1522328,
+      "nds_y": 614504831
+    },
+    {
+      "lon": 179.9,
+      "lat": 0.0,
+      "normalized_lon": 179.9,
+      "normalized_lat": 0.0,
+      "nds_x": 2146290601,
+      "nds_y": 0
+    },
+    {
+      "lon": -179.9,
+      "lat": 0.0,
+      "normalized_lon": -179.9,
+      "normalized_lat": 0.0,
+      "nds_x": -2146290602,
+      "nds_y": 0
+    },
+    {
+      "lon": 180.0,
+      "lat": 90.0,
+      "normalized_lon": 179.99999991618097,
+      "normalized_lat": 89.99999991618097,
+      "nds_x": 2147483647,
+      "nds_y": 1073741823
+    },
+    {
+      "lon": -180.0,
+      "lat": -90.0,
+      "normalized_lon": -180.0,
+      "normalized_lat": -90.0,
+      "nds_x": -2147483648,
+      "nds_y": -1073741824
+    },
+    {
+      "lon": 179.999999,
+      "lat": 89.999999,
+      "normalized_lon": 179.999999,
+      "normalized_lat": 89.999999,
+      "nds_x": 2147483636,
+      "nds_y": 1073741812
+    },
+    {
+      "lon": -1e-06,
+      "lat": -1e-06,
+      "normalized_lon": -1e-06,
+      "normalized_lat": -1e-06,
+      "nds_x": -12,
+      "nds_y": -12
+    },
+    {
+      "lon": 360.5,
+      "lat": 0.0,
+      "normalized_lon": 0.5,
+      "normalized_lat": 0.0,
+      "nds_x": 5965232,
+      "nds_y": 0
+    },
+    {
+      "lon": -360.5,
+      "lat": 0.0,
+      "normalized_lon": -0.5,
+      "normalized_lat": 0.0,
+      "nds_x": -5965233,
+      "nds_y": 0
+    },
+    {
+      "lon": 90.0,
+      "lat": 45.0,
+      "normalized_lon": 90.0,
+      "normalized_lat": 45.0,
+      "nds_x": 1073741824,
+      "nds_y": 536870912
+    },
+    {
+      "lon": -90.0,
+      "lat": -45.0,
+      "normalized_lon": -90.0,
+      "normalized_lat": -45.0,
+      "nds_x": -1073741824,
+      "nds_y": -536870912
+    }
+  ],
+  "nds_to_wgs84": [
+    {
+      "x": 0,
+      "y": 0,
+      "lon": 0.0,
+      "lat": 0.0
+    },
+    {
+      "x": 1,
+      "y": 1,
+      "lon": 8.381903171539307e-08,
+      "lat": 8.381903171539307e-08
+    },
+    {
+      "x": -1,
+      "y": -1,
+      "lon": -8.381903171539307e-08,
+      "lat": -8.381903171539307e-08
+    },
+    {
+      "x": 1000000,
+      "y": 500000,
+      "lon": 0.08381903171539307,
+      "lat": 0.04190951585769653
+    },
+    {
+      "x": -1000000,
+      "y": -500000,
+      "lon": -0.08381903171539307,
+      "lat": -0.04190951585769653
+    },
+    {
+      "x": 2147483647,
+      "y": 1073741823,
+      "lon": 179.99999991618097,
+      "lat": 89.99999991618097
+    },
+    {
+      "x": -2147483648,
+      "y": -1073741824,
+      "lon": -180.0,
+      "lat": -90.0
+    },
+    {
+      "x": 123456789,
+      "y": -98765432,
+      "lon": 10.34802851267159,
+      "lat": -8.278422877192497
+    },
+    {
+      "x": -2000000000,
+      "y": 1000000000,
+      "lon": -167.63806343078613,
+      "lat": 83.81903171539307
+    }
+  ],
+  "morton": [
+    {
+      "x": 0,
+      "y": 0,
+      "morton": "0",
+      "decoded_x": 0,
+      "decoded_y": 0
+    },
+    {
+      "x": 1,
+      "y": 0,
+      "morton": "1",
+      "decoded_x": 1,
+      "decoded_y": 0
+    },
+    {
+      "x": 0,
+      "y": 1,
+      "morton": "2",
+      "decoded_x": 0,
+      "decoded_y": 1
+    },
+    {
+      "x": 1,
+      "y": 1,
+      "morton": "3",
+      "decoded_x": 1,
+      "decoded_y": 1
+    },
+    {
+      "x": 12345,
+      "y": 6789,
+      "morton": "126387555",
+      "decoded_x": 12345,
+      "decoded_y": 6789
+    },
+    {
+      "x": -12345,
+      "y": -6789,
+      "morton": "9223372036728388255",
+      "decoded_x": -12345,
+      "decoded_y": -6789
+    },
+    {
+      "x": 2147483647,
+      "y": 1073741823,
+      "morton": "2305843009213693951",
+      "decoded_x": 2147483647,
+      "decoded_y": 1073741823
+    },
+    {
+      "x": -2147483648,
+      "y": -1073741824,
+      "morton": "6917529027641081856",
+      "decoded_x": -2147483648,
+      "decoded_y": -1073741824
+    },
+    {
+      "x": 1000000000,
+      "y": -1000000000,
+      "morton": "2694675840375717888",
+      "decoded_x": 1000000000,
+      "decoded_y": -1000000000
+    }
+  ],
+  "packed_tile_from_index": [
+    {
+      "morton_number": 0,
+      "level": 0,
+      "value": 65536,
+      "computed_level": 0,
+      "computed_morton_number": 0,
+      "size": 2147483648,
+      "sw": [
+        0,
+        0
+      ],
+      "ne": [
+        2147483648,
+        2147483648
+      ],
+      "center": [
+        1073741824,
+        1073741824
+      ]
+    },
+    {
+      "morton_number": 1,
+      "level": 0,
+      "value": 65537,
+      "computed_level": 0,
+      "computed_morton_number": 1,
+      "size": 2147483648,
+      "sw": [
+        -2147483648,
+        0
+      ],
+      "ne": [
+        0,
+        2147483648
+      ],
+      "center": [
+        -1073741824,
+        1073741824
+      ]
+    },
+    {
+      "morton_number": 0,
+      "level": 1,
+      "value": 131072,
+      "computed_level": 1,
+      "computed_morton_number": 0,
+      "size": 1073741824,
+      "sw": [
+        0,
+        0
+      ],
+      "ne": [
+        1073741824,
+        1073741824
+      ],
+      "center": [
+        536870912,
+        536870912
+      ]
+    },
+    {
+      "morton_number": 3,
+      "level": 1,
+      "value": 131075,
+      "computed_level": 1,
+      "computed_morton_number": 3,
+      "size": 1073741824,
+      "sw": [
+        1073741824,
+        -1073741824
+      ],
+      "ne": [
+        2147483648,
+        0
+      ],
+      "center": [
+        1610612736,
+        -536870912
+      ]
+    },
+    {
+      "morton_number": 7,
+      "level": 1,
+      "value": 131079,
+      "computed_level": 1,
+      "computed_morton_number": 7,
+      "size": 1073741824,
+      "sw": [
+        -1073741824,
+        -1073741824
+      ],
+      "ne": [
+        0,
+        0
+      ],
+      "center": [
+        -536870912,
+        -536870912
+      ]
+    },
+    {
+      "morton_number": 0,
+      "level": 2,
+      "value": 262144,
+      "computed_level": 2,
+      "computed_morton_number": 0,
+      "size": 536870912,
+      "sw": [
+        0,
+        0
+      ],
+      "ne": [
+        536870912,
+        536870912
+      ],
+      "center": [
+        268435456,
+        268435456
+      ]
+    },
+    {
+      "morton_number": 4,
+      "level": 2,
+      "value": 262148,
+      "computed_level": 2,
+      "computed_morton_number": 4,
+      "size": 536870912,
+      "sw": [
+        1073741824,
+        0
+      ],
+      "ne": [
+        1610612736,
+        536870912
+      ],
+      "center": [
+        1342177280,
+        268435456
+      ]
+    },
+    {
+      "morton_number": 31,
+      "level": 2,
+      "value": 262175,
+      "computed_level": 2,
+      "computed_morton_number": 31,
+      "size": 536870912,
+      "sw": [
+        -536870912,
+        -536870912
+      ],
+      "ne": [
+        0,
+        0
+      ],
+      "center": [
+        -268435456,
+        -268435456
+      ]
+    },
+    {
+      "morton_number": 0,
+      "level": 13,
+      "value": 536870912,
+      "computed_level": 13,
+      "computed_morton_number": 0,
+      "size": 262144,
+      "sw": [
+        0,
+        0
+      ],
+      "ne": [
+        262144,
+        262144
+      ],
+      "center": [
+        131072,
+        131072
+      ]
+    },
+    {
+      "morton_number": 12345,
+      "level": 13,
+      "value": 536883257,
+      "computed_level": 13,
+      "computed_morton_number": 12345,
+      "size": 262144,
+      "sw": [
+        18087936,
+        18350080
+      ],
+      "ne": [
+        18350080,
+        18612224
+      ],
+      "center": [
+        18219008,
+        18481152
+      ]
+    },
+    {
+      "morton_number": 0,
+      "level": 14,
+      "value": 1073741824,
+      "computed_level": 14,
+      "computed_morton_number": 0,
+      "size": 131072,
+      "sw": [
+        0,
+        0
+      ],
+      "ne": [
+        131072,
+        131072
+      ],
+      "center": [
+        65536,
+        65536
+      ]
+    },
+    {
+      "morton_number": 1048576,
+      "level": 14,
+      "value": 1074790400,
+      "computed_level": 14,
+      "computed_morton_number": 1048576,
+      "size": 131072,
+      "sw": [
+        134217728,
+        0
+      ],
+      "ne": [
+        134348800,
+        131072
+      ],
+      "center": [
+        134283264,
+        65536
+      ]
+    },
+    {
+      "morton_number": 0,
+      "level": 15,
+      "value": -2147483648,
+      "computed_level": 15,
+      "computed_morton_number": 0,
+      "size": 65536,
+      "sw": [
+        0,
+        0
+      ],
+      "ne": [
+        65536,
+        65536
+      ],
+      "center": [
+        32768,
+        32768
+      ]
+    },
+    {
+      "morton_number": 2147483647,
+      "level": 15,
+      "value": -1,
+      "computed_level": 15,
+      "computed_morton_number": 2147483647,
+      "size": 65536,
+      "sw": [
+        -65536,
+        -65536
+      ],
+      "ne": [
+        0,
+        0
+      ],
+      "center": [
+        -32768,
+        -32768
+      ]
+    },
+    {
+      "morton_number": 1234567,
+      "level": 15,
+      "value": -2146249081,
+      "computed_level": 15,
+      "computed_morton_number": 1234567,
+      "size": 65536,
+      "sw": [
+        81985536,
+        26804224
+      ],
+      "ne": [
+        82051072,
+        26869760
+      ],
+      "center": [
+        82018304,
+        26836992
+      ]
+    }
+  ],
+  "tile_neighbours": [
+    {
+      "morton_number": 0,
+      "level": 1,
+      "west": 131077,
+      "east": 131073,
+      "south": 131074,
+      "north": 131074
+    },
+    {
+      "morton_number": 3,
+      "level": 1,
+      "west": 131074,
+      "east": 131078,
+      "south": 131073,
+      "north": 131073
+    },
+    {
+      "morton_number": 7,
+      "level": 1,
+      "west": 131078,
+      "east": 131074,
+      "south": 131077,
+      "north": 131077
+    },
+    {
+      "morton_number": 0,
+      "level": 2,
+      "west": 262165,
+      "east": 262145,
+      "south": 262154,
+      "north": 262146
+    },
+    {
+      "morton_number": 4,
+      "level": 2,
+      "west": 262145,
+      "east": 262149,
+      "south": 262158,
+      "north": 262150
+    },
+    {
+      "morton_number": 31,
+      "level": 2,
+      "west": 262174,
+      "east": 262154,
+      "south": 262173,
+      "north": 262165
+    },
+    {
+      "morton_number": 0,
+      "level": 13,
+      "west": 626349397,
+      "east": 536870913,
+      "south": 581610154,
+      "north": 536870914
+    },
+    {
+      "morton_number": 12345,
+      "level": 13,
+      "west": 536883256,
+      "east": 536883260,
+      "south": 536883251,
+      "north": 536883259
+    },
+    {
+      "morton_number": 0,
+      "level": 14,
+      "west": 1431655765,
+      "east": 1073741825,
+      "south": 1252698794,
+      "north": 1073741826
+    },
+    {
+      "morton_number": 1048576,
+      "level": 14,
+      "west": 1074091349,
+      "east": 1074790401,
+      "south": 1253747370,
+      "north": 1074790402
+    },
+    {
+      "morton_number": 0,
+      "level": 15,
+      "west": -715827883,
+      "east": -2147483647,
+      "south": -1431655766,
+      "north": -2147483646
+    },
+    {
+      "morton_number": 2147483647,
+      "level": 15,
+      "west": -2,
+      "east": -1431655766,
+      "south": -3,
+      "north": -715827883
+    },
+    {
+      "morton_number": 1234567,
+      "level": 15,
+      "west": -2146249082,
+      "east": -2146249070,
+      "south": -2146249083,
+      "north": -2146249075
+    }
+  ],
+  "from_morton_and_level": [
+    {
+      "x": 0,
+      "y": 0,
+      "level": 0,
+      "value": 65536,
+      "computed_level": 0,
+      "computed_morton_number": 0
+    },
+    {
+      "x": 1000000,
+      "y": 500000,
+      "level": 5,
+      "value": 2097152,
+      "computed_level": 5,
+      "computed_morton_number": 0
+    },
+    {
+      "x": 123456789,
+      "y": 98765432,
+      "level": 13,
+      "value": 537099156,
+      "computed_level": 13,
+      "computed_morton_number": 228244
+    },
+    {
+      "x": -1000000,
+      "y": -500000,
+      "level": 10,
+      "value": 69206015,
+      "computed_level": 10,
+      "computed_morton_number": 2097151
+    },
+    {
+      "x": 2147483647,
+      "y": 1073741823,
+      "level": 15,
+      "value": -1610612737,
+      "computed_level": 15,
+      "computed_morton_number": 536870911
+    }
+  ],
+  "tiles_for_bbox": [
+    {
+      "sw_x": 0,
+      "sw_y": 0,
+      "ne_x": 268435456,
+      "ne_y": 268435456,
+      "level": 3,
+      "tile_values": [
+        524288,
+        524289,
+        524290,
+        524291
+      ]
+    },
+    {
+      "sw_x": 1000000,
+      "sw_y": 500000,
+      "ne_x": 2000000,
+      "ne_y": 1500000,
+      "level": 8,
+      "tile_values": [
+        16777216
+      ]
+    },
+    {
+      "sw_x": 0,
+      "sw_y": 0,
+      "ne_x": 2147483647,
+      "ne_y": 1073741823,
+      "level": 1,
+      "tile_values": [
+        131072,
+        131073
+      ]
+    }
+  ],
+  "bbox_from_tiles": [
+    {
+      "tile_values": [
+        131072
+      ],
+      "result": [
+        0,
+        0,
+        1073741823,
+        1073741823
+      ]
+    },
+    {
+      "tile_values": [
+        131075
+      ],
+      "result": [
+        1073741824,
+        -1073741824,
+        2147483647,
+        -1
+      ]
+    },
+    {
+      "tile_values": [
+        131079
+      ],
+      "result": [
+        -1073741824,
+        -1073741824,
+        -1,
+        -1
+      ]
+    },
+    {
+      "tile_values": [
+        262144
+      ],
+      "result": [
+        0,
+        0,
+        536870911,
+        536870911
+      ]
+    },
+    {
+      "tile_values": [
+        262148
+      ],
+      "result": [
+        1073741824,
+        0,
+        1610612735,
+        536870911
+      ]
+    },
+    {
+      "tile_values": [
+        262175
+      ],
+      "result": [
+        -536870912,
+        -536870912,
+        -1,
+        -1
+      ]
+    },
+    {
+      "tile_values": [
+        536870912
+      ],
+      "result": [
+        0,
+        0,
+        262143,
+        262143
+      ]
+    },
+    {
+      "tile_values": [
+        536883257
+      ],
+      "result": [
+        18087936,
+        18350080,
+        18350079,
+        18612223
+      ]
+    },
+    {
+      "tile_values": [
+        1073741824
+      ],
+      "result": [
+        0,
+        0,
+        131071,
+        131071
+      ]
+    },
+    {
+      "tile_values": [
+        1074790400
+      ],
+      "result": [
+        134217728,
+        0,
+        134348799,
+        131071
+      ]
+    },
+    {
+      "tile_values": [
+        -2147483648
+      ],
+      "result": [
+        0,
+        0,
+        65535,
+        65535
+      ]
+    },
+    {
+      "tile_values": [
+        -1
+      ],
+      "result": [
+        -65536,
+        -65536,
+        -1,
+        -1
+      ]
+    },
+    {
+      "tile_values": [
+        -2146249081
+      ],
+      "result": [
+        81985536,
+        26804224,
+        82051071,
+        26869759
+      ]
+    }
+  ],
+  "nds_bbox_ops": [
+    {
+      "a": [
+        0,
+        0,
+        100,
+        100
+      ],
+      "b": [
+        0,
+        0,
+        100,
+        100
+      ],
+      "intersects": true,
+      "a_contains_b": true
+    },
+    {
+      "a": [
+        0,
+        0,
+        100,
+        100
+      ],
+      "b": [
+        50,
+        50,
+        150,
+        150
+      ],
+      "intersects": true,
+      "a_contains_b": false
+    },
+    {
+      "a": [
+        0,
+        0,
+        100,
+        100
+      ],
+      "b": [
+        200,
+        200,
+        300,
+        300
+      ],
+      "intersects": false,
+      "a_contains_b": false
+    },
+    {
+      "a": [
+        0,
+        0,
+        100,
+        100
+      ],
+      "b": [
+        10,
+        10,
+        20,
+        20
+      ],
+      "intersects": true,
+      "a_contains_b": true
+    },
+    {
+      "a": [
+        50,
+        50,
+        150,
+        150
+      ],
+      "b": [
+        0,
+        0,
+        100,
+        100
+      ],
+      "intersects": true,
+      "a_contains_b": false
+    },
+    {
+      "a": [
+        50,
+        50,
+        150,
+        150
+      ],
+      "b": [
+        50,
+        50,
+        150,
+        150
+      ],
+      "intersects": true,
+      "a_contains_b": true
+    },
+    {
+      "a": [
+        50,
+        50,
+        150,
+        150
+      ],
+      "b": [
+        200,
+        200,
+        300,
+        300
+      ],
+      "intersects": false,
+      "a_contains_b": false
+    },
+    {
+      "a": [
+        50,
+        50,
+        150,
+        150
+      ],
+      "b": [
+        10,
+        10,
+        20,
+        20
+      ],
+      "intersects": false,
+      "a_contains_b": false
+    },
+    {
+      "a": [
+        200,
+        200,
+        300,
+        300
+      ],
+      "b": [
+        0,
+        0,
+        100,
+        100
+      ],
+      "intersects": false,
+      "a_contains_b": false
+    },
+    {
+      "a": [
+        200,
+        200,
+        300,
+        300
+      ],
+      "b": [
+        50,
+        50,
+        150,
+        150
+      ],
+      "intersects": false,
+      "a_contains_b": false
+    },
+    {
+      "a": [
+        200,
+        200,
+        300,
+        300
+      ],
+      "b": [
+        200,
+        200,
+        300,
+        300
+      ],
+      "intersects": true,
+      "a_contains_b": true
+    },
+    {
+      "a": [
+        200,
+        200,
+        300,
+        300
+      ],
+      "b": [
+        10,
+        10,
+        20,
+        20
+      ],
+      "intersects": false,
+      "a_contains_b": false
+    },
+    {
+      "a": [
+        10,
+        10,
+        20,
+        20
+      ],
+      "b": [
+        0,
+        0,
+        100,
+        100
+      ],
+      "intersects": true,
+      "a_contains_b": false
+    },
+    {
+      "a": [
+        10,
+        10,
+        20,
+        20
+      ],
+      "b": [
+        50,
+        50,
+        150,
+        150
+      ],
+      "intersects": false,
+      "a_contains_b": false
+    },
+    {
+      "a": [
+        10,
+        10,
+        20,
+        20
+      ],
+      "b": [
+        200,
+        200,
+        300,
+        300
+      ],
+      "intersects": false,
+      "a_contains_b": false
+    },
+    {
+      "a": [
+        10,
+        10,
+        20,
+        20
+      ],
+      "b": [
+        10,
+        10,
+        20,
+        20
+      ],
+      "intersects": true,
+      "a_contains_b": true
+    }
+  ],
+  "nds_bbox_from_wgs84": [
+    {
+      "sw": [
+        11.5,
+        48.1
+      ],
+      "ne": [
+        11.7,
+        48.2
+      ],
+      "min_x": 137200344,
+      "min_y": 573855352,
+      "max_x": 139586437,
+      "max_y": 575048399
+    },
+    {
+      "sw": [
+        -1.0,
+        -1.0
+      ],
+      "ne": [
+        1.0,
+        1.0
+      ],
+      "min_x": -11930465,
+      "min_y": -11930465,
+      "max_x": 11930464,
+      "max_y": 11930464
+    },
+    {
+      "sw": [
+        13.0,
+        52.0
+      ],
+      "ne": [
+        14.0,
+        53.0
+      ],
+      "min_x": 155096041,
+      "min_y": 620384164,
+      "max_x": 167026505,
+      "max_y": 632314629
+    }
+  ],
+  "distance_bearing": [
+    {
+      "a": [
+        13.404954,
+        52.520008
+      ],
+      "b": [
+        11.585,
+        48.137
+      ],
+      "distance_m": 504156.1098834727,
+      "bearing_rad": -2.870160368204311
+    },
+    {
+      "a": [
+        0.0,
+        0.0
+      ],
+      "b": [
+        0.0,
+        1.0
+      ],
+      "distance_m": 111194.94060719275,
+      "bearing_rad": 0.0
+    },
+    {
+      "a": [
+        -122.4194,
+        37.7749
+      ],
+      "b": [
+        139.6917,
+        35.6895
+      ],
+      "distance_m": 8270715.179304948,
+      "bearing_rad": -0.9887754030378343
+    }
+  ],
+  "nds_distance_to_meters": [
+    {
+      "nds_x": 1048576,
+      "nds_y": 1048576,
+      "at_latitude": 0.0,
+      "width_m": 9783.984375,
+      "height_m": 9783.984375
+    },
+    {
+      "nds_x": 262144,
+      "nds_y": 262144,
+      "at_latitude": 48.137,
+      "width_m": 1632.3398001473868,
+      "height_m": 2445.99609375
+    },
+    {
+      "nds_x": 4194304,
+      "nds_y": 4194304,
+      "at_latitude": 60.0,
+      "width_m": 19567.968750000004,
+      "height_m": 39135.9375
+    }
+  ]
+}

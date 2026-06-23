@@ -4,48 +4,39 @@ project(ndsmath-test)
 
 include(FetchContent)
 
-set (USED_CATCH2_VERSION "v3.4.0")
-if(TARGET Catch2::Catch2WithMain)
-    if(NOT ${Catch2_VERSION} VERSION_EQUAL ${USED_CATCH2_VERSION})
-        message(WARNING "Catch2 version mismatch: found ${Catch2_VERSION}, expected 3.4.0")
-    endif()
-else()
-    FetchContent_Declare(Catch2
-        GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-        GIT_TAG "${USED_CATCH2_VERSION}"
+# Header-only JSON parser for the golden-vector parity test. Replaces Catch2
+# (which hung at startup on the Windows/MSVC CI runner); a header-only library
+# has no test-framework runtime and no separate DLL to locate.
+set(USED_JSON_VERSION "v3.11.3")
+if(NOT TARGET nlohmann_json::nlohmann_json)
+    FetchContent_Declare(nlohmann_json
+        GIT_REPOSITORY https://github.com/nlohmann/json.git
+        GIT_TAG "${USED_JSON_VERSION}"
         GIT_SHALLOW ON)
-    FetchContent_MakeAvailable(Catch2)
+    FetchContent_MakeAvailable(nlohmann_json)
 endif()
 
-add_executable(test-packedtileid
-  src/testpackedtileid.cpp)
+# Absolute path to the shared parity vectors, baked in at configure time.
+get_filename_component(NDSMATH_REPO_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../.." ABSOLUTE)
 
-target_link_libraries(test-packedtileid
-  ndsmath
-  glm::glm
-  Catch2::Catch2WithMain)
+add_executable(test-units src/test-units.cpp)
+target_link_libraries(test-units ndsmath glm::glm)
 
-add_executable(test-wgs84
-  src/testwgs84.cpp)
+add_executable(test-parity src/test-parity.cpp)
+target_link_libraries(test-parity ndsmath glm::glm nlohmann_json::nlohmann_json)
+target_compile_definitions(test-parity PRIVATE
+    PARITY_VECTORS_PATH="${NDSMATH_REPO_ROOT}/test-vectors/parity_vectors.json")
 
-target_link_libraries(test-wgs84
-  ndsmath
-  glm::glm
-  Catch2::Catch2WithMain)
+# On Windows the loader does not use rpath, so the shared ndsmath.dll must sit
+# next to each test executable for it to start. Copy runtime DLLs post-build.
+if(WIN32)
+    foreach(t test-units test-parity)
+        add_custom_command(TARGET ${t} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    $<TARGET_RUNTIME_DLLS:${t}> $<TARGET_FILE_DIR:${t}>
+            COMMAND_EXPAND_LISTS)
+    endforeach()
+endif()
 
-add_executable(test-ndsboundingbox
-  src/testndsboundingbox.cpp)
-
-target_link_libraries(test-ndsboundingbox
-  ndsmath
-  glm::glm
-  Catch2::Catch2WithMain)
-
-add_test(NAME test-packedtileid
-  COMMAND "$<TARGET_FILE:test-packedtileid>")
-
-add_test(NAME test-wgs84
-  COMMAND "$<TARGET_FILE:test-wgs84>")
-
-add_test(NAME test-ndsboundingbox
-  COMMAND "$<TARGET_FILE:test-ndsboundingbox>")
+add_test(NAME units COMMAND test-units)
+add_test(NAME parity COMMAND test-parity)

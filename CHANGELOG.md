@@ -4,6 +4,55 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Project
+- **BREAKING (licensing):** Relicensed from the proprietary NDS license to
+  **BSD-3-Clause**. See `LICENSE`.
+- Open-sourcing preparation: added `CONTRIBUTING.md` (issues-only policy),
+  `SECURITY.md`, a root `LICENSE` with byte-identical per-language copies, and a
+  language-neutral golden parity-vector suite under `test-vectors/`.
+- CI now builds and tests **all** implementations — C++ (Linux/macOS/Windows),
+  Python 3.10–3.14, Java, JavaScript/TypeScript, Go, Rust — validates
+  cross-language parity, checks LICENSE consistency, and uploads coverage to
+  Codecov. Replaced the NDS Artifactory deploy with public-registry publishing
+  (PyPI Trusted Publishing/OIDC, npm, crates.io, Maven Central); all publish
+  channels are wired but gated behind `ENABLE_*_PUBLISH` repo variables until the
+  accounts/OIDC trust are provisioned.
+- Added SPDX `BSD-3-Clause` headers across all source files.
+- Static analysis & quality: **CodeQL** (Python, JS/TS, Go, Java, C++) and
+  **Dependabot** (all ecosystems) workflows; **Codecov** gate at 95% project +
+  patch coverage. Adopted formatters/linters across every language — Python
+  (ruff), C++ (clang-format), Rust (rustfmt + clippy), Go (gofmt + vet),
+  JavaScript/TS (ESLint + Prettier), Java (Spotless) — enforced by a CI `lint`
+  job. Existing code reformatted to match; Go and Rust test coverage raised
+  above the 95% gate.
+
+### Added
+- **Java** implementation (`java/`, Gradle; Maven coordinates `io.github.ndsev:ndslive-math`).
+- **JavaScript/TypeScript** implementation (`js/`, npm package `@ndsev/ndslive-math`).
+- **Go** implementation (`go/`, module `github.com/ndsev/ndslive-math/go`).
+- **Rust** implementation (`rust/`, crate `ndslive-math`).
+- **C++:** CMake `install` + package-config (`find_package(ndsmath CONFIG)` →
+  `ndsmath::ndsmath`), and a **vcpkg** port in `cpp/vcpkg-port/` (usable as an
+  overlay port; upstream submission after the first public release). GLM is now
+  consumed via `find_package` when available, falling back to FetchContent.
+
+### Changed
+- **Python:** added 3.14 to supported/tested versions; corrected the repository
+  URLs and switched the license classifier to `BSD` in `pyproject.toml`.
+- **C++:** **BREAKING:** `PackedTileId::value()` now returns signed `int32` per
+  the NDS.Live standard (level-15 tiles are negative), instead of `uint32_t`.
+  Migrated the C++ test suite off Catch2 to a dependency-free harness that
+  validates against the shared parity vectors; added Windows to the C++ CI matrix.
+- **C++:** **BREAKING (behavior):** fixed spec-compliance bugs verified against
+  the normative tiling spec — north/south (and east/west) neighbour traversal
+  rewritten via deinterleave/wrap/reinterleave (the old bit-walk produced
+  out-of-range tile numbers); `lonNdsDelta`/`latNdsDelta` corrected to `360/2^32`
+  and `180/2^31` (were ~2× too small); `from_morton_and_level` now wraps negative
+  coordinates by `2^32`/`2^31` (was off by one). Added `boundingBoxFromTileIds`.
+  The C++ parity test now validates the full golden set.
+
 ## [v0.5.2] - 2026-04-27
 
 ### Changed

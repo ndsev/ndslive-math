@@ -1,7 +1,8 @@
+# SPDX-License-Identifier: BSD-3-Clause
 import unittest
-import math  # Add math import
-from ndslive.math import Wgs84, PackedTileId, MortonCode, NdsBoundingBox
-from ndslive.math.tileid import get_tile_ids_for_bounding_box, bounding_box_from_tile_ids
+
+from ndslive.math import MortonCode, NdsBoundingBox, PackedTileId, Wgs84
+from ndslive.math.tileid import bounding_box_from_tile_ids, get_tile_ids_for_bounding_box
 
 
 def print_level1_grid(current_morton, neighbor_morton=None, direction=""):
@@ -23,16 +24,18 @@ def print_level1_grid(current_morton, neighbor_morton=None, direction=""):
     # Level 1 tile labels (format: level0-level1)
     labels = [
         ["1-00", "1-01", "0-00", "0-01"],  # Y=0 (top row)
-        ["1-10", "1-11", "0-10", "0-11"]   # Y=1 (bottom row)
+        ["1-10", "1-11", "0-10", "0-11"],  # Y=1 (bottom row)
     ]
     # Morton numbers for each position (geographic order)
     morton_grid = [
         [4, 5, 0, 1],  # Y=0: X=2,3,0,1
-        [6, 7, 2, 3]   # Y=1: X=2,3,0,1
+        [6, 7, 2, 3],  # Y=1: X=2,3,0,1
     ]
 
-    print(f"\nLevel 1 Grid - Current tile: {current_morton}, "
-          f"Expected {direction} neighbor: {neighbor_morton}")
+    print(
+        f"\nLevel 1 Grid - Current tile: {current_morton}, "
+        f"Expected {direction} neighbor: {neighbor_morton}"
+    )
     print("=" * 60)
 
     # Top border
@@ -57,9 +60,9 @@ def print_level1_grid(current_morton, neighbor_morton=None, direction=""):
         for col in range(4):
             morton = morton_grid[row][col]
             if morton == current_morton:
-                line += f"  [X]  |"
+                line += "  [X]  |"
             elif morton == neighbor_morton:
-                line += f"  [*]  |"
+                line += "  [*]  |"
             else:
                 line += f"   {morton}   |"
         print(line)
@@ -70,6 +73,7 @@ def print_level1_grid(current_morton, neighbor_morton=None, direction=""):
         else:
             print("  +-------+-------++-------+-------+")
     print()
+
 
 class TestWgs84(unittest.TestCase):
     def test_initialization(self):
@@ -97,27 +101,39 @@ class TestWgs84(unittest.TestCase):
         self.assertAlmostEqual(Wgs84(10.0, 0).x, 10.0, places=12)
         self.assertAlmostEqual(Wgs84(-10.0, 0).x, -10.0, places=12)
         # Boundaries
-        self.assertAlmostEqual(Wgs84(-180.0, 0).x, -180.0, places=12) # Should stay -180
-        self.assertAlmostEqual(Wgs84(180.0, 0).x, 180.0 - Wgs84.LON_NDS_DELTA, places=12) # Should become ~180 - delta
-        self.assertAlmostEqual(Wgs84(180.0 - Wgs84.LON_NDS_DELTA / 2, 0).x, 180.0 - Wgs84.LON_NDS_DELTA, places=12) # Close to 180
+        self.assertAlmostEqual(Wgs84(-180.0, 0).x, -180.0, places=12)  # Should stay -180
+        self.assertAlmostEqual(
+            Wgs84(180.0, 0).x, 180.0 - Wgs84.LON_NDS_DELTA, places=12
+        )  # Should become ~180 - delta
+        self.assertAlmostEqual(
+            Wgs84(180.0 - Wgs84.LON_NDS_DELTA / 2, 0).x, 180.0 - Wgs84.LON_NDS_DELTA, places=12
+        )  # Close to 180
         # Wrapping
-        self.assertAlmostEqual(Wgs84(190.0, 0).x, -170.0, places=12) # 190 -> -170
-        self.assertAlmostEqual(Wgs84(-190.0, 0).x, 170.0, places=12) # -190 -> 170
-        self.assertAlmostEqual(Wgs84(370.0, 0).x, 10.0, places=12) # 370 -> 10
-        self.assertAlmostEqual(Wgs84(-370.0, 0).x, -10.0, places=12) # -370 -> -10
-        self.assertAlmostEqual(Wgs84(540.0, 0).x, 180.0 - Wgs84.LON_NDS_DELTA, places=12) # 540 -> 180 -> ~180 - delta
-        self.assertAlmostEqual(Wgs84(-540.0, 0).x, -180.0, places=12) # -540 -> -180
+        self.assertAlmostEqual(Wgs84(190.0, 0).x, -170.0, places=12)  # 190 -> -170
+        self.assertAlmostEqual(Wgs84(-190.0, 0).x, 170.0, places=12)  # -190 -> 170
+        self.assertAlmostEqual(Wgs84(370.0, 0).x, 10.0, places=12)  # 370 -> 10
+        self.assertAlmostEqual(Wgs84(-370.0, 0).x, -10.0, places=12)  # -370 -> -10
+        self.assertAlmostEqual(
+            Wgs84(540.0, 0).x, 180.0 - Wgs84.LON_NDS_DELTA, places=12
+        )  # 540 -> 180 -> ~180 - delta
+        self.assertAlmostEqual(Wgs84(-540.0, 0).x, -180.0, places=12)  # -540 -> -180
 
         # Test latitude normalization
         # Within range
         self.assertAlmostEqual(Wgs84(0, 80.0).y, 80.0, places=12)
         self.assertAlmostEqual(Wgs84(0, -80.0).y, -80.0, places=12)
         # Boundaries and clamping
-        self.assertAlmostEqual(Wgs84(0, -90.0).y, -90.0, places=12) # Min lat
-        self.assertAlmostEqual(Wgs84(0, 90.0).y, 90.0 - Wgs84.LAT_NDS_DELTA, places=12) # Max lat becomes 90 - delta
-        self.assertAlmostEqual(Wgs84(0, 90.0 - Wgs84.LAT_NDS_DELTA / 2).y, 90.0 - Wgs84.LAT_NDS_DELTA, places=12) # Close to 90
-        self.assertAlmostEqual(Wgs84(0, 100.0).y, 90.0 - Wgs84.LAT_NDS_DELTA, places=12) # Above 90 - delta gets clamped
-        self.assertAlmostEqual(Wgs84(0, -100.0).y, -90.0, places=12) # Below -90 gets clamped
+        self.assertAlmostEqual(Wgs84(0, -90.0).y, -90.0, places=12)  # Min lat
+        self.assertAlmostEqual(
+            Wgs84(0, 90.0).y, 90.0 - Wgs84.LAT_NDS_DELTA, places=12
+        )  # Max lat becomes 90 - delta
+        self.assertAlmostEqual(
+            Wgs84(0, 90.0 - Wgs84.LAT_NDS_DELTA / 2).y, 90.0 - Wgs84.LAT_NDS_DELTA, places=12
+        )  # Close to 90
+        self.assertAlmostEqual(
+            Wgs84(0, 100.0).y, 90.0 - Wgs84.LAT_NDS_DELTA, places=12
+        )  # Above 90 - delta gets clamped
+        self.assertAlmostEqual(Wgs84(0, -100.0).y, -90.0, places=12)  # Below -90 gets clamped
 
     def test_distance_calculation(self):
         point1 = Wgs84(0, 0)
@@ -200,6 +216,7 @@ class TestWgs84(unittest.TestCase):
         self.assertGreaterEqual(wgs.x, -180.0)
         self.assertGreaterEqual(wgs.y, -90.0)
 
+
 class TestPackedTileId(unittest.TestCase):
     def test_levels(self):
         """Port of 'PackedTileId levels' test"""
@@ -211,14 +228,14 @@ class TestPackedTileId(unittest.TestCase):
     def test_tile_number(self):
         """Port of 'PackedTileId tile number' test"""
         TILE_LEVEL_13 = 13
-        LEVEL13_TILE_LEN_NDS_UNITS = 1 << (32-(TILE_LEVEL_13+1))
+        LEVEL13_TILE_LEN_NDS_UNITS = 1 << (32 - (TILE_LEVEL_13 + 1))
         size = LEVEL13_TILE_LEN_NDS_UNITS
 
         test_data = [
-            (1 * size//2, 1 * size//2, TILE_LEVEL_13, 0),
-            (3 * size//2, 1 * size//2, TILE_LEVEL_13, 1),
-            (1 * size//2, 3 * size//2, TILE_LEVEL_13, 2),
-            (3 * size//2, 3 * size//2, TILE_LEVEL_13, 3)
+            (1 * size // 2, 1 * size // 2, TILE_LEVEL_13, 0),
+            (3 * size // 2, 1 * size // 2, TILE_LEVEL_13, 1),
+            (1 * size // 2, 3 * size // 2, TILE_LEVEL_13, 2),
+            (3 * size // 2, 3 * size // 2, TILE_LEVEL_13, 3),
         ]
 
         for _, _, level, expected_tile_num in test_data:
@@ -251,11 +268,11 @@ class TestPackedTileId(unittest.TestCase):
 
         # Test various levels and morton numbers
         test_cases = [
-            (0, 1),   # First tile at level 1
-            (3, 1),   # Last tile at level 1 (4^1 - 1 = 3)
+            (0, 1),  # First tile at level 1
+            (3, 1),  # Last tile at level 1 (4^1 - 1 = 3)
             (0, 13),  # First tile at level 13
             (15, 2),  # Last tile at level 2 (4^2 - 1 = 15)
-            (100, 10), # Arbitrary tile at level 10
+            (100, 10),  # Arbitrary tile at level 10
         ]
 
         for morton_number, level in test_cases:
@@ -481,11 +498,11 @@ class TestPackedTileId(unittest.TestCase):
     def test_level15_roundtrip(self):
         """Test creating level 15 tiles from signed values and getting correct morton."""
         test_cases = [
-            (0, -2147483648),                    # Morton 0
-            (1, -2147483647),                    # Morton 1
-            (1000000, -2146483648),              # Mid-range morton
-            (100000000, -2047483648),            # Larger morton
-            ((1 << 31) - 1, -1),                 # Max morton
+            (0, -2147483648),  # Morton 0
+            (1, -2147483647),  # Morton 1
+            (1000000, -2146483648),  # Mid-range morton
+            (100000000, -2047483648),  # Larger morton
+            ((1 << 31) - 1, -1),  # Max morton
         ]
 
         for morton, expected_value in test_cases:
@@ -519,7 +536,9 @@ class TestPackedTileId(unittest.TestCase):
                 if level <= 10:  # Keep test fast for lower levels
                     max_morton = (1 << (2 * level + 1)) - 1
                     tile_max = PackedTileId.from_tile_index(max_morton, level)
-                    self.assertGreaterEqual(tile_max.value, 0, f"Level {level} max morton should be positive")
+                    self.assertGreaterEqual(
+                        tile_max.value, 0, f"Level {level} max morton should be positive"
+                    )
 
     def test_level15_neighbors(self):
         """Neighbor functions should work correctly with level 15 negative values."""
@@ -681,7 +700,7 @@ class TestMortonCode(unittest.TestCase):
         """Test coordinate wrapping behavior"""
         # Test values that should wrap around
         x_over = (1 << 32) + 100  # Should wrap to 100
-        y_over = (1 << 31) + 50   # Should wrap to 50
+        y_over = (1 << 31) + 50  # Should wrap to 50
 
         morton = MortonCode.from_nds_coordinates(x_over, y_over)
         x_back, y_back = morton.to_nds_coordinates()
@@ -693,10 +712,10 @@ class TestMortonCode(unittest.TestCase):
         """Test specific bit patterns to verify interleaving"""
         # Test with power of 2 values to check bit interleaving
         test_cases = [
-            (1, 1),      # 0b1, 0b1
-            (2, 2),      # 0b10, 0b10
-            (4, 4),      # 0b100, 0b100
-            (8, 8),      # 0b1000, 0b1000
+            (1, 1),  # 0b1, 0b1
+            (2, 2),  # 0b10, 0b10
+            (4, 4),  # 0b100, 0b100
+            (8, 8),  # 0b1000, 0b1000
         ]
 
         for x, y in test_cases:
@@ -735,50 +754,54 @@ class TestBoundingBoxToTileIds(unittest.TestCase):
         ne_x = 132907007  # northeast longitude
         ne_y = 572784639  # northeast latitude
         level = 13
-        
+
         # Expected tile ID
         expected_tile_id = 545379780
-        
+
         # Get tile IDs for the bounding box
         tile_ids = get_tile_ids_for_bounding_box(sw_x, sw_y, ne_x, ne_y, level)
-        
+
         # Check that the expected tile ID is in the result
         tile_values = [tile.value for tile in tile_ids]
-        self.assertIn(expected_tile_id, tile_values, 
-                      f"Expected tile ID {expected_tile_id} not found in {tile_values}")
-        
+        self.assertIn(
+            expected_tile_id,
+            tile_values,
+            f"Expected tile ID {expected_tile_id} not found in {tile_values}",
+        )
+
         # Verify the bounding box is contained within a single tile at level 13
-        self.assertEqual(len(tile_ids), 1, 
-                         f"Expected 1 tile at level {level}, but got {len(tile_ids)}")
-        
+        self.assertEqual(
+            len(tile_ids), 1, f"Expected 1 tile at level {level}, but got {len(tile_ids)}"
+        )
+
     def test_bounding_box_multiple_tiles(self):
         """Test bounding box that spans multiple tiles."""
         # Create a bounding box that spans 2x2 tiles
         tile_size = 1 << (31 - 13)  # Size of a level 13 tile
-        
+
         # Start at tile boundary
         sw_x = 0
         sw_y = 0
         # End just inside the neighboring tiles
         ne_x = tile_size + 1
         ne_y = tile_size + 1
-        
+
         tile_ids = get_tile_ids_for_bounding_box(sw_x, sw_y, ne_x, ne_y, 13)
-        
+
         # Should get exactly 4 tiles (2x2)
         self.assertEqual(len(tile_ids), 4)
-        
+
     def test_single_point_bounding_box(self):
         """Test bounding box with same SW and NE corners."""
         x = 132644864
         y = 572522496
         level = 13
-        
+
         tile_ids = get_tile_ids_for_bounding_box(x, y, x, y, level)
-        
+
         # Should get exactly 1 tile
         self.assertEqual(len(tile_ids), 1)
-        
+
     def test_negative_coordinates(self):
         """Test bounding box with negative coordinates."""
         sw_x = -132644864
@@ -786,17 +809,17 @@ class TestBoundingBoxToTileIds(unittest.TestCase):
         ne_x = -132644864 + 100000
         ne_y = -572522496 + 100000
         level = 10
-        
+
         tile_ids = get_tile_ids_for_bounding_box(sw_x, sw_y, ne_x, ne_y, level)
-        
+
         # Should get at least one tile
         self.assertGreaterEqual(len(tile_ids), 1)
-        
+
         # Verify all tiles have valid IDs
         for tile in tile_ids:
             self.assertGreater(tile.value, 0)
             self.assertEqual(tile.level(), level)
-    
+
     def test_ground_truth_verification(self):
         """Test with known ground truth data."""
         # Given bounding box and expected results
@@ -805,18 +828,16 @@ class TestBoundingBoxToTileIds(unittest.TestCase):
         ne_x = -208540811
         ne_y = 175239411
         level = 13
-        
+
         # Expected tile IDs from ground truth
-        expected_tile_ids = {
-            626579086, 626579087, 626579098, 626579120, 626579109, 626579108
-        }
-        
+        expected_tile_ids = {626579086, 626579087, 626579098, 626579120, 626579109, 626579108}
+
         # Get tile IDs for the bounding box
         tile_ids = get_tile_ids_for_bounding_box(sw_x, sw_y, ne_x, ne_y, level)
-        
+
         # Should get exactly 6 tiles
         self.assertEqual(len(tile_ids), 6)
-        
+
         # Verify all expected tiles are found
         found_ids = {tile.value for tile in tile_ids}
         self.assertEqual(found_ids, expected_tile_ids)
@@ -844,7 +865,11 @@ class TestBoundingBoxFromTileIds(unittest.TestCase):
 
         # Verify inverse property: get_tile_ids_for_bounding_box returns only this tile
         result_tiles = get_tile_ids_for_bounding_box(sw_x, sw_y, ne_x, ne_y, level)
-        self.assertEqual(len(result_tiles), 1, f"Expected 1 tile, got {len(result_tiles)}: {[t.value for t in result_tiles]}")
+        self.assertEqual(
+            len(result_tiles),
+            1,
+            f"Expected 1 tile, got {len(result_tiles)}: {[t.value for t in result_tiles]}",
+        )
         self.assertEqual(result_tiles[0].value, tile_id.value)
 
     def test_multiple_adjacent_tiles(self):
@@ -854,7 +879,7 @@ class TestBoundingBoxFromTileIds(unittest.TestCase):
             PackedTileId(545554681),
             PackedTileId(545554683),
             PackedTileId(545554684),
-            PackedTileId(545554686)
+            PackedTileId(545554686),
         ]
 
         sw_x, sw_y, ne_x, ne_y = bounding_box_from_tile_ids(tile_ids)
@@ -902,7 +927,7 @@ class TestBoundingBoxFromTileIds(unittest.TestCase):
         # Munich tile and Berlin tile (from test fixture)
         tile_ids = [
             PackedTileId(545554681),  # Munich region
-            PackedTileId(545666600)   # Berlin region
+            PackedTileId(545666600),  # Berlin region
         ]
 
         sw_x, sw_y, ne_x, ne_y = bounding_box_from_tile_ids(tile_ids)
@@ -1152,5 +1177,5 @@ class TestDistanceConversions(unittest.TestCase):
         self.assertAlmostEqual(height60, heightEq, delta=100.0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

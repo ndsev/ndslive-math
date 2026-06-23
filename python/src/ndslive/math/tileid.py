@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: BSD-3-Clause
 from .morton import MortonCode
 
 
@@ -50,6 +51,7 @@ class PackedTileId:
 
     All constructors validate inputs and raise ValueError for invalid tile IDs.
     """
+
     def __init__(self, value=0):
         """
         Construct a PackedTileId from a tile ID value.
@@ -147,8 +149,7 @@ class PackedTileId:
         max_morton = (1 << (2 * level + 1)) - 1
         if not (0 <= morton_number <= max_morton):
             raise ValueError(
-                f"Invalid morton number {morton_number} for level {level} "
-                f"(allowed: 0-{max_morton})"
+                f"Invalid morton number {morton_number} for level {level} (allowed: 0-{max_morton})"
             )
 
         value = morton_number + (1 << (16 + level))
@@ -183,25 +184,25 @@ class PackedTileId:
 
         # Get NDS coordinates from morton code
         x_coord, y_coord = morton_code.to_nds_coordinates()
-        
+
         # Handle negative coordinates
         if x_coord < 0:
-            x_coord += (1 << 32)
-        
+            x_coord += 1 << 32
+
         if y_coord < 0:
-            y_coord += (1 << 31)
-        
+            y_coord += 1 << 31
+
         # Calculate tile coordinates
         n_level = 31 - level
         n_x = x_coord >> n_level
         n_y = y_coord >> n_level
-        
+
         # Create morton code from tile coordinates
         temp = MortonCode.from_nds_coordinates(n_x, n_y)
-        
+
         # Calculate packed tile ID value
         value = temp.value() + (1 << (16 + level))
-        
+
         return cls(value)
 
     def level(self):
@@ -319,12 +320,12 @@ class PackedTileId:
         # Morton bits are interleaved as: X0 Y0 X1 Y1 ... X{level} Y{level-1} X{level}
         for i in range(level):
             if morton & (1 << (2 * i)):
-                x |= (1 << i)
+                x |= 1 << i
             if morton & (1 << (2 * i + 1)):
-                y |= (1 << i)
+                y |= 1 << i
         # Extract the extra X bit
         if morton & (1 << (2 * level)):
-            x |= (1 << level)
+            x |= 1 << level
         return x, y
 
     def _interleave_coords(self, x, y, level):
@@ -345,12 +346,12 @@ class PackedTileId:
         # Interleave level bits from each coordinate
         for i in range(level):
             if x & (1 << i):
-                morton |= (1 << (2 * i))
+                morton |= 1 << (2 * i)
             if y & (1 << i):
-                morton |= (1 << (2 * i + 1))
+                morton |= 1 << (2 * i + 1)
         # Add the extra X bit
         if x & (1 << level):
-            morton |= (1 << (2 * level))
+            morton |= 1 << (2 * level)
         return morton
 
     def west_neighbour(self):
@@ -495,9 +496,9 @@ class PackedTileId:
                 # Extract 2 bits for this level
                 shift_amount = bits - 1 - (2 * lev)
                 two_bits = (morton_num >> shift_amount) & 0b11
-                parts.append(format(two_bits, '02b'))
+                parts.append(format(two_bits, "02b"))
 
-            return '-'.join(parts)
+            return "-".join(parts)
 
         # Print header with current tile info
         print(f"\nTileID: {self.value}")
@@ -532,7 +533,9 @@ class PackedTileId:
 
         # Dimensions at tile's center latitude
         width_m, height_m = self.dimensions_in_meters()
-        print(f"Tile Size: {format_distance(width_m)} × {format_distance(height_m)} (at {center_wgs.y:.1f}°)")
+        print(
+            f"Tile Size: {format_distance(width_m)} × {format_distance(height_m)} (at {center_wgs.y:.1f}°)"
+        )
 
         # Dimensions at equator for reference
         tile_size = self.size()
@@ -665,39 +668,39 @@ class PackedTileId:
 def get_tile_ids_for_bounding_box(sw_x, sw_y, ne_x, ne_y, level):
     """
     Get all tile IDs that intersect with a bounding box defined by NDS coordinates.
-    
+
     Args:
         sw_x: South-west corner X coordinate (longitude) in NDS coordinates
         sw_y: South-west corner Y coordinate (latitude) in NDS coordinates
         ne_x: North-east corner X coordinate (longitude) in NDS coordinates
         ne_y: North-east corner Y coordinate (latitude) in NDS coordinates
         level: Tile level (0-15)
-    
+
     Returns:
         List of PackedTileId objects that intersect with the bounding box
     """
     tile_ids = []
-    
+
     # Calculate tile size at this level
     tile_size = 1 << (31 - level)
-    
+
     # Calculate tile indices for the bounding box corners
     # We need to handle the coordinate system properly
     start_tile_x = sw_x // tile_size
     start_tile_y = sw_y // tile_size
     end_tile_x = ne_x // tile_size
     end_tile_y = ne_y // tile_size
-    
+
     # Iterate through all tiles in the bounding box
     for tile_y in range(start_tile_y, end_tile_y + 1):
         for tile_x in range(start_tile_x, end_tile_x + 1):
             # Calculate the south-west corner of this tile
             tile_sw_x = tile_x * tile_size
             tile_sw_y = tile_y * tile_size
-            
+
             # Create morton code from the tile's south-west corner
             morton = MortonCode.from_nds_coordinates(tile_sw_x, tile_sw_y)
-            
+
             # Create the packed tile ID
             tile_id = PackedTileId.from_morton_and_level(morton, level)
             tile_ids.append(tile_id)

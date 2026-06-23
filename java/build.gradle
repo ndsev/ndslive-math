@@ -1,0 +1,111 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'jacoco'
+    id 'com.diffplug.spotless' version '6.25.0'
+}
+
+group = 'io.github.ndsev'
+// Version is overridable via -Pversion=X.Y.Z; defaults to a development version.
+version = project.findProperty('ndslivemathVersion') ?: '0.1.0-SNAPSHOT'
+
+description = 'NDS.Live mathematical utilities for Java: WGS84 coordinates, Packed Tile IDs, Morton codes, and NDS bounding boxes.'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+    withJavadocJar()
+    withSourcesJar()
+}
+
+repositories {
+    mavenCentral()
+}
+
+spotless {
+    java {
+        target 'src/**/*.java'
+        // Eclipse JDT formatter: self-contained (no javac internals), so it
+        // works across JDKs including very new ones. google/palantir-java-format
+        // depend on javac internals and break on JDK 25+.
+        eclipse()
+        importOrder()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}
+
+dependencies {
+    // org.json: minimal JSON parsing for the parity-vector test suite (test only).
+    testImplementation 'org.json:json:20240303'
+    testImplementation platform('org.junit:junit-bom:5.10.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform()
+    // Make the repo-root test-vectors discoverable regardless of the working dir.
+    systemProperty 'parity.vectors',
+        new File(rootDir, '../test-vectors/parity_vectors.json').absolutePath
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+jacocoTestCoverageVerification {
+    dependsOn test
+    violationRules {
+        rule {
+            limit {
+                counter = 'INSTRUCTION'
+                value = 'COVEREDRATIO'
+                minimum = 0.95
+            }
+        }
+    }
+}
+
+check.dependsOn jacocoTestCoverageVerification
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifactId = 'ndslive-math'
+
+            pom {
+                name = 'ndslive-math'
+                description = project.description
+                url = 'https://github.com/ndsev/ndslive-math'
+
+                licenses {
+                    license {
+                        name = 'BSD 3-Clause License'
+                        url = 'https://opensource.org/licenses/BSD-3-Clause'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = 'ndsev'
+                        name = 'Navigation Data Standard (NDS) e.V.'
+                    }
+                }
+
+                scm {
+                    connection = 'scm:git:https://github.com/ndsev/ndslive-math.git'
+                    developerConnection = 'scm:git:ssh://git@github.com/ndsev/ndslive-math.git'
+                    url = 'https://github.com/ndsev/ndslive-math'
+                }
+            }
+        }
+    }
+}

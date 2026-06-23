@@ -19,5 +19,17 @@ env/
 .vscode/
 .idea/
 
+# Rust
+/rust/target/
+rust/Cargo.lock
+
 # Misc
 .DS_Store
+
+# Claude-specific files
+CLAUDE.md
+.claude/
+
+# Local spec / reference material (normative spec used to verify behavior;
+# not part of the published repo)
+_ext/

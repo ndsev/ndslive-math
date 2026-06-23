@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: BSD-3-Clause
 // Copyright (c) Navigation Data Standard e.V. - See "LICENSE" file.
 
 #include "polygontriangulation.h"
@@ -12,17 +13,21 @@ HighPrecWgs84 PolygonTriangulation::normalize(const HighPrecWgs84 &p)
     return (n != 0.0) ? HighPrecWgs84(p / n) : HighPrecWgs84(0.0, 0.0);
 }
 
-bool PolygonTriangulation::isConvex(const HighPrecWgs84 &p1, const HighPrecWgs84 &p2, const HighPrecWgs84 &p3)
+bool PolygonTriangulation::isConvex(const HighPrecWgs84 &p1, const HighPrecWgs84 &p2,
+                                    const HighPrecWgs84 &p3)
 {
-    return (p3.dy() - p1.dy()) * (p2.dx() - p1.dx())- (p3.dx() - p1.dx()) * (p2.dy() - p1.dy()) > 0.0;
+    return (p3.dy() - p1.dy()) * (p2.dx() - p1.dx()) - (p3.dx() - p1.dx()) * (p2.dy() - p1.dy()) >
+           0.0;
 }
 
-bool PolygonTriangulation::isInside(const HighPrecWgs84 &p1, const HighPrecWgs84 &p2, const HighPrecWgs84 &p3, const HighPrecWgs84 &p)
+bool PolygonTriangulation::isInside(const HighPrecWgs84 &p1, const HighPrecWgs84 &p2,
+                                    const HighPrecWgs84 &p3, const HighPrecWgs84 &p)
 {
-    return (!isConvex(p1, p, p2) && !isConvex(p2,p,p3) && !isConvex(p3,p,p1));
+    return (!isConvex(p1, p, p2) && !isConvex(p2, p, p3) && !isConvex(p3, p, p1));
 }
 
-void PolygonTriangulation::updateVertex(PartitionVertex *v, PartitionVertex *vertices, int numVertices)
+void PolygonTriangulation::updateVertex(PartitionVertex *v, PartitionVertex *vertices,
+                                        int numVertices)
 {
     PartitionVertex *v1 = v->previous;
     PartitionVertex *v3 = v->next;
@@ -58,7 +63,8 @@ void PolygonTriangulation::updateVertex(PartitionVertex *v, PartitionVertex *ver
     }
 }
 
-HighPrecWgs84Polygon PolygonTriangulation::triangulateByEarClipping(const HighPrecWgs84Polygon &polygon)
+HighPrecWgs84Polygon
+PolygonTriangulation::triangulateByEarClipping(const HighPrecWgs84Polygon &polygon)
 {
     PartitionVertex *vertices = nullptr;
     PartitionVertex *ear = nullptr;
@@ -120,7 +126,7 @@ HighPrecWgs84Polygon PolygonTriangulation::triangulateByEarClipping(const HighPr
 
         if (!earFound)
         {
-            delete [] vertices;
+            delete[] vertices;
             return HighPrecWgs84Polygon(HighPrecWgs84Polygon::UNKNOWN);
         }
 
@@ -152,7 +158,7 @@ HighPrecWgs84Polygon PolygonTriangulation::triangulateByEarClipping(const HighPr
         }
     }
 
-    delete [] vertices;
+    delete[] vertices;
     return result;
 }
 

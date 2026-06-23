@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: BSD-3-Clause
 // Copyright (c) Navigation Data Standard e.V. - See "LICENSE" file.
 
 #pragma once
@@ -9,8 +10,7 @@ namespace ndsmath
 {
 
 // Forward declarations.
-template<typename T = double>
-class Wgs84;
+template <typename T = double> class Wgs84;
 
 //! Class representing a morton code and providing some methods
 //! to convert a morton code. This class does not produce any
@@ -18,16 +18,10 @@ class Wgs84;
 class MortonCode
 {
 public:
-    MortonCode(uint64_t mortonCode) :
-        mortonCode_(mortonCode)
-    {
-    }
+    MortonCode(uint64_t mortonCode) : mortonCode_(mortonCode) {}
 
     //! Get the morton code.
-    inline uint64_t value() const
-    {
-        return mortonCode_;
-    }
+    inline uint64_t value() const { return mortonCode_; }
 
     //! Convert morton code to nds coordinates.
     inline void toNdsCoordinates(int32_t &x, int32_t &y) const
@@ -72,21 +66,21 @@ public:
         int64_t bit = 1;
         uint64_t mortonCode = 0;
 
-        while(x >= xBase)
+        while (x >= xBase)
             x -= (1ULL << 32);
 
-        while(x < -xBase)
-            x+= (1ULL << 32);
+        while (x < -xBase)
+            x += (1ULL << 32);
 
-        while(y >= yBase)
+        while (y >= yBase)
             y -= (1ULL << 31);
 
-        while(y < -yBase)
+        while (y < -yBase)
             y += (1ULL << 31);
 
         y <<= 1;
 
-        for(int i = 0; i < 31; i++)
+        for (int i = 0; i < 31; i++)
         {
             mortonCode |= x & bit;
             x <<= 1;

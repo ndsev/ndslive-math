@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: BSD-3-Clause
 """ndslive.math — coordinate math, tile IDs, and Morton codes for NDS.Live.
 
 ``ndslive.math`` is the small set of geometry primitives shared by every
@@ -59,10 +60,10 @@ Version info
     :data:`__version__`.
 """
 
-from .tileid import PackedTileId, get_tile_ids_for_bounding_box, bounding_box_from_tile_ids
-from .morton import MortonCode
-from .wgs84 import Wgs84
 from .bounding_box import NdsBoundingBox
+from .morton import MortonCode
+from .tileid import PackedTileId, bounding_box_from_tile_ids, get_tile_ids_for_bounding_box
+from .wgs84 import Wgs84
 
 try:
     from ._version import __version__

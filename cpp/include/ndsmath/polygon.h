@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: BSD-3-Clause
 // Copyright (c) Navigation Data Standard e.V. - See "LICENSE" file.
 
 #pragma once
@@ -10,8 +11,7 @@ namespace ndsmath
 //! The `Polygon` template class manages a set of vertices and supports different polygon types,
 //! such as simple polygons, triangle lists, and triangle structures. It provides methods
 //! for adding vertices, checking the orientation, and validating the polygon.
-template<class Vector>
-class Polygon
+template <class Vector> class Polygon
 {
     using Position = typename Vector::value_type;
 
@@ -47,27 +47,19 @@ public:
     };
 
     //! Constructor.
-    Polygon(PolygonType polygonType = UNKNOWN) :
-        polygonType_(polygonType),
-        vertices_()
-    {
-    }
+    Polygon(PolygonType polygonType = UNKNOWN) : polygonType_(polygonType), vertices_() {}
 
     //! Constructor with vertices
-    Polygon(PolygonType polygonType, const Vector &vertices) :
-        polygonType_(polygonType),
-        vertices_(vertices)
+    Polygon(PolygonType polygonType, const Vector &vertices)
+        : polygonType_(polygonType), vertices_(vertices)
     {
     }
 
     //! Add a vertice.
-    void addVertex(const Position &position)
-    {
-        vertices_.push_back(position);
-    }
+    void addVertex(const Position &position) { vertices_.push_back(position); }
 
     //! Add a list of vertices.
-    void addVertices(const Vector& vertices)
+    void addVertices(const Vector &vertices)
     {
         for (auto it = vertices.begin(); it != vertices.end(); ++it)
         {
@@ -76,53 +68,33 @@ public:
     }
 
     //! Array subscript operator.
-    Position& operator[](const int index)
-    {
-        return vertices_[index];
-    }
+    Position &operator[](const int index) { return vertices_[index]; }
 
     //! Const array subscript operator.
-    const Position& operator[](const int index) const
-    {
-        return vertices_[index];
-    }
+    const Position &operator[](const int index) const { return vertices_[index]; }
 
     //! Get the polygon type.
-    PolygonType type() const
-    {
-        return polygonType_;
-    }
+    PolygonType type() const { return polygonType_; }
 
     //! Set the polygon type.
-    void setType(PolygonType polygonType)
-    {
-        polygonType_ = polygonType;
-    }
+    void setType(PolygonType polygonType) { polygonType_ = polygonType; }
 
     //! Is this a valid polygon?
-    virtual bool isValid() const
-    {
-        return !vertices_.empty();
-    }
+    virtual bool isValid() const { return !vertices_.empty(); }
 
     //! Get the list of vertices.
-    const Vector& vertices() const
-    {
-        return vertices_;
-    }
+    const Vector &vertices() const { return vertices_; }
 
     //! Get the list of vertices.
-    Vector& vertices()
-    {
-        return vertices_;
-    }
+    Vector &vertices() { return vertices_; }
 
     //! Get the orientation of the polygon. Only works for simple polygons
     //! and triangle lists with a single element. For all other polygons,
     //! INVALID_ORIENTATION will be returned.
     Orientation orientation() const
     {
-        if (polygonType_ != SIMPLE_POLYGON && (polygonType_ != TRIANGLE_LIST || vertices_.size() != 3))
+        if (polygonType_ != SIMPLE_POLYGON &&
+            (polygonType_ != TRIANGLE_LIST || vertices_.size() != 3))
         {
             return INVALID_ORIENTATION;
         }
@@ -136,7 +108,8 @@ public:
                 nextIndex = 0;
             }
 
-            area += vertices_[i].dx() * vertices_[nextIndex].dy() - vertices_[i].dy() * vertices_[nextIndex].dx();
+            area += vertices_[i].dx() * vertices_[nextIndex].dy() -
+                    vertices_[i].dy() * vertices_[nextIndex].dx();
         }
 
         if (area > 0)
