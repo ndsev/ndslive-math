@@ -27,6 +27,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   JavaScript/TS (ESLint + Prettier), Java (Spotless) — enforced by a CI `lint`
   job. Existing code reformatted to match; Go and Rust test coverage raised
   above the 95% gate.
+- CI: exempt Dependabot PRs from the `check-changelog` job (dependency bumps
+  don't carry user-facing changelog entries).
 
 ### Added
 - **Java** implementation (`java/`, Gradle; Maven coordinates `io.github.ndsev:ndslive-math`).
