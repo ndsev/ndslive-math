@@ -1,4 +1,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
+from __future__ import annotations
+
 from .morton import MortonCode
 
 
@@ -52,7 +54,7 @@ class PackedTileId:
     All constructors validate inputs and raise ValueError for invalid tile IDs.
     """
 
-    def __init__(self, value=0):
+    def __init__(self, value: int = 0) -> None:
         """
         Construct a PackedTileId from a tile ID value.
 
@@ -89,7 +91,7 @@ class PackedTileId:
         self._validate()
 
     @property
-    def value(self):
+    def value(self) -> int:
         """
         Get the tile ID value as signed int32 per NDS.Live standard.
 
@@ -120,7 +122,7 @@ class PackedTileId:
         return self._value
 
     @classmethod
-    def from_tile_index(cls, morton_number, level):
+    def from_tile_index(cls, morton_number: int, level: int) -> PackedTileId:
         """
         Create a PackedTileId directly from a tile morton number and level.
 
@@ -156,7 +158,7 @@ class PackedTileId:
         return cls(value)
 
     @classmethod
-    def from_morton_and_level(cls, morton_code, level):
+    def from_morton_and_level(cls, morton_code: MortonCode, level: int) -> PackedTileId:
         """
         Create a PackedTileId that contains the point encoded by a MortonCode.
 
@@ -205,7 +207,7 @@ class PackedTileId:
 
         return cls(value)
 
-    def level(self):
+    def level(self) -> int:
         """
         Level of the tile (0..15)
         """
@@ -216,13 +218,13 @@ class PackedTileId:
             level += 1
         return level
 
-    def size(self):
+    def size(self) -> int:
         """
         Size of the tile in NDS coordinate units.
         """
         return 1 << (31 - self.level())
 
-    def dimensions_in_meters(self):
+    def dimensions_in_meters(self) -> tuple[float, float]:
         """
         Get tile dimensions in meters.
 
@@ -241,7 +243,7 @@ class PackedTileId:
 
         return Wgs84.nds_distance_to_meters(tile_size, tile_size, center_wgs.y)
 
-    def center(self):
+    def center(self) -> tuple[int, int]:
         """
         Returns the center of the tile in NDS coordinates.
         """
@@ -249,14 +251,14 @@ class PackedTileId:
         half_size = self.size() // 2
         return x + half_size, y + half_size
 
-    def south_west_corner(self):
+    def south_west_corner(self) -> tuple[int, int]:
         """
         Returns the south-west corner of the tile in NDS coordinates.
         """
         morton_number = self.morton_number()
         return MortonCode(morton_number << (63 - (2 * self.level() + 1))).to_nds_coordinates()
 
-    def north_east_corner(self):
+    def north_east_corner(self) -> tuple[int, int]:
         """
         Returns the north-east corner of the tile in NDS coordinates.
         """
@@ -264,7 +266,7 @@ class PackedTileId:
         size = self.size()
         return x + size, y + size
 
-    def morton_number(self):
+    def morton_number(self) -> int:
         """
         Returns the Morton number of the tile, calculated by subtracting
         the level-specific offset from the packed tile ID value.
@@ -272,7 +274,7 @@ class PackedTileId:
         tile_level = self.level()
         return self._value - (1 << (16 + tile_level))
 
-    def _validate(self):
+    def _validate(self) -> None:
         """
         Validates this PackedTileId.
 
@@ -301,7 +303,7 @@ class PackedTileId:
                 f"exceeds valid range for level {tile_level} (allowed: 0-{max_morton})"
             )
 
-    def _deinterleave_morton(self, morton, level):
+    def _deinterleave_morton(self, morton: int, level: int) -> tuple[int, int]:
         """
         Extract X and Y coordinates from morton number.
 
@@ -328,7 +330,7 @@ class PackedTileId:
             x |= 1 << level
         return x, y
 
-    def _interleave_coords(self, x, y, level):
+    def _interleave_coords(self, x: int, y: int, level: int) -> int:
         """
         Create morton number from X and Y coordinates.
 
@@ -354,7 +356,7 @@ class PackedTileId:
             morton |= 1 << (2 * level)
         return morton
 
-    def west_neighbour(self):
+    def west_neighbour(self) -> PackedTileId:
         """
         Returns the tile to the west of this tile at the same level.
 
@@ -380,7 +382,7 @@ class PackedTileId:
 
         return PackedTileId.from_tile_index(new_morton, level)
 
-    def east_neighbour(self):
+    def east_neighbour(self) -> PackedTileId:
         """
         Returns the tile to the east of this tile at the same level.
 
@@ -403,7 +405,7 @@ class PackedTileId:
         new_morton = self._interleave_coords(x, y, level)
         return PackedTileId.from_tile_index(new_morton, level)
 
-    def south_neighbour(self):
+    def south_neighbour(self) -> PackedTileId:
         """
         Returns the tile to the south of this tile at the same level.
 
@@ -426,7 +428,7 @@ class PackedTileId:
         new_morton = self._interleave_coords(x, y, level)
         return PackedTileId.from_tile_index(new_morton, level)
 
-    def north_neighbour(self):
+    def north_neighbour(self) -> PackedTileId:
         """
         Returns the tile to the north of this tile at the same level.
 
@@ -449,7 +451,7 @@ class PackedTileId:
         new_morton = self._interleave_coords(x, y, level)
         return PackedTileId.from_tile_index(new_morton, level)
 
-    def print_with_neighbors(self, radius=1):
+    def print_with_neighbors(self, radius: int = 1) -> None:
         """
         Print a debug visualization showing this tile and its neighbors.
 
@@ -646,26 +648,32 @@ class PackedTileId:
         south_label = "South".center(len(border))
         print(f"  {south_label}")
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"PackedTileId(value={self.value})"
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, PackedTileId):
+            return NotImplemented
         return self._value == other._value
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
+        if not isinstance(other, PackedTileId):
+            return NotImplemented
         return self._value != other._value
 
-    def __lt__(self, other):
+    def __lt__(self, other: PackedTileId) -> bool:
         return self._value < other._value
 
-    def __int__(self):
+    def __int__(self) -> int:
         """
         Convert to integer (returns signed int32 per NDS.Live standard).
         """
         return self.value
 
 
-def get_tile_ids_for_bounding_box(sw_x, sw_y, ne_x, ne_y, level):
+def get_tile_ids_for_bounding_box(
+    sw_x: int, sw_y: int, ne_x: int, ne_y: int, level: int
+) -> list[PackedTileId]:
     """
     Get all tile IDs that intersect with a bounding box defined by NDS coordinates.
 
@@ -708,7 +716,9 @@ def get_tile_ids_for_bounding_box(sw_x, sw_y, ne_x, ne_y, level):
     return tile_ids
 
 
-def bounding_box_from_tile_ids(tile_ids):
+def bounding_box_from_tile_ids(
+    tile_ids: list[PackedTileId | int],
+) -> tuple[int, int, int, int]:
     """
     Create a tight bounding box from a list of tile IDs.
 
