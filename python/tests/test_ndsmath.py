@@ -82,6 +82,14 @@ class TestWgs84(unittest.TestCase):
         self.assertEqual(point.y, 20.0)
         self.assertEqual(point.z, 30.0)
 
+    def test_equality_with_foreign_type(self):
+        """__eq__ returns NotImplemented for non-Wgs84 operands (so they compare unequal)."""
+        point = Wgs84(13.4, 52.5)
+        self.assertFalse(point == 42)
+        self.assertFalse(point == "not a point")
+        # The dunder itself signals NotImplemented so Python can try the reflected op.
+        self.assertIs(point.__eq__(42), NotImplemented)
+
     def test_normalization_basic(self):
         # Test basic normalization cases from original test
         point = Wgs84(lon=190.0, lat=100.0)
@@ -593,6 +601,17 @@ class TestPackedTileId(unittest.TestCase):
 
         # Less than (should compare unsigned internally)
         self.assertLess(tile1, tile2)  # morton 0 < morton 1
+
+    def test_comparison_with_foreign_type(self):
+        """__eq__/__ne__ return NotImplemented for non-PackedTileId operands."""
+        tile = PackedTileId.from_tile_index(0, 13)
+        self.assertFalse(tile == 123)
+        self.assertFalse(tile == "not a tile")
+        self.assertTrue(tile != 123)
+        self.assertTrue(tile != object())
+        # The dunders themselves signal NotImplemented.
+        self.assertIs(tile.__eq__(123), NotImplemented)
+        self.assertIs(tile.__ne__(123), NotImplemented)
 
     def test_level15_int_conversion(self):
         """Test that __int__ returns signed value for level 15."""
