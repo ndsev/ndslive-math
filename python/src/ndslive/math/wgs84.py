@@ -1,4 +1,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
+from __future__ import annotations
+
 import math
 
 
@@ -12,7 +14,7 @@ class Wgs84:
     LON_NDS_DELTA = 360 / (2**32 - 1)
     LAT_NDS_DELTA = 180 / (2**31 - 1)
 
-    def __init__(self, lon=0.0, lat=0.0, alt=0.0):
+    def __init__(self, lon: float = 0.0, lat: float = 0.0, alt: float = 0.0) -> None:
         """Construct a WGS84 point in degrees.
 
         Args:
@@ -25,7 +27,7 @@ class Wgs84:
         self.z = alt
         self.normalize()
 
-    def normalize(self):
+    def normalize(self) -> None:
         """Wrap longitude into ``[-180, 180)`` and clamp latitude into ``[-90, 90)``.
 
         Called automatically by ``__init__``; call explicitly after mutating
@@ -68,7 +70,7 @@ class Wgs84:
         elif self.y < -90.0:
             self.y = -90.0  # Clamp to min lat
 
-    def to_nds_coordinates(self):
+    def to_nds_coordinates(self) -> tuple[int, int]:
         """
         Convert WGS84 coordinates to NDS integer coordinates.
 
@@ -84,7 +86,7 @@ class Wgs84:
         return x_nds, y_nds
 
     @staticmethod
-    def from_nds_coordinates(x, y):
+    def from_nds_coordinates(x: int, y: int) -> Wgs84:
         """Construct a :class:`Wgs84` point from NDS integer coordinates.
 
         Inverse of :meth:`to_nds_coordinates`.
@@ -104,7 +106,9 @@ class Wgs84:
         return Wgs84(lon, lat)
 
     @staticmethod
-    def degrees_to_meters(lon_degrees, lat_degrees, at_latitude):
+    def degrees_to_meters(
+        lon_degrees: float, lat_degrees: float, at_latitude: float
+    ) -> tuple[float, float]:
         """
         Convert degree distances to meters at a given latitude.
 
@@ -127,7 +131,9 @@ class Wgs84:
         return (lon_meters, lat_meters)
 
     @staticmethod
-    def nds_distance_to_meters(nds_x_distance, nds_y_distance, at_latitude):
+    def nds_distance_to_meters(
+        nds_x_distance: int, nds_y_distance: int, at_latitude: float
+    ) -> tuple[float, float]:
         """
         Convert NDS coordinate distances to meters at a given latitude.
 
@@ -144,7 +150,7 @@ class Wgs84:
 
         return Wgs84.degrees_to_meters(lon_degrees, lat_degrees, at_latitude)
 
-    def to_degree_minutes_seconds(self):
+    def to_degree_minutes_seconds(self) -> tuple[str, str]:
         """Format this point as degrees-minutes-seconds strings.
 
         Returns:
@@ -152,7 +158,7 @@ class Wgs84:
             ``"DD° MM' SS.ss\\" N|S"`` and ``"DDD° MM' SS.ss\\" E|W"``.
         """
 
-        def convert(value):
+        def convert(value: float) -> str:
             degrees = int(value)
             minutes = int((value - degrees) * 60)
             seconds = (value - degrees - minutes / 60) * 3600
@@ -162,7 +168,7 @@ class Wgs84:
         lon = convert(abs(self.x)) + (" W" if self.x < 0 else " E")
         return lat, lon
 
-    def distance_to(self, other):
+    def distance_to(self, other: Wgs84) -> float:
         """Great-circle distance to another point, computed via the haversine formula.
 
         Args:
@@ -184,7 +190,7 @@ class Wgs84:
         c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
         return self.EARTH_RADIUS_IN_METERS * c
 
-    def bearing_from(self, other):
+    def bearing_from(self, other: Wgs84) -> float:
         """Initial bearing (forward azimuth) from ``other`` toward this point.
 
         Args:
@@ -202,22 +208,24 @@ class Wgs84:
         )
         return math.atan2(y, x)
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Wgs84):
+            return NotImplemented
         return math.isclose(self.x, other.x, rel_tol=1e-12) and math.isclose(
             self.y, other.y, rel_tol=1e-12
         )
 
-    def __add__(self, other):
+    def __add__(self, other: Wgs84) -> Wgs84:
         return Wgs84(self.x + other.x, self.y + other.y)
 
-    def __sub__(self, other):
+    def __sub__(self, other: Wgs84) -> Wgs84:
         return Wgs84(self.x - other.x, self.y - other.y)
 
-    def __mul__(self, other):
+    def __mul__(self, other: Wgs84) -> Wgs84:
         return Wgs84(self.x * other.x, self.y * other.y)
 
-    def __truediv__(self, other):
+    def __truediv__(self, other: Wgs84) -> Wgs84:
         return Wgs84(self.x / other.x, self.y / other.y)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Wgs84(lon={self.x}, lat={self.y})"

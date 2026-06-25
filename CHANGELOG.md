@@ -43,6 +43,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Changed
 - **Python:** added 3.14 to supported/tested versions; corrected the repository
   URLs and switched the license classifier to `BSD` in `pyproject.toml`.
+- **Python:** added type hints across the public API and a `py.typed` marker
+  (PEP 561, shipped in the wheel) so downstream type checkers use them; added a
+  mypy gate to the CI `lint` job.
 - **JS/TS:** upgraded the dev toolchain to ESLint 10, Vitest 4, and TypeScript 6
   (consolidates the individual Dependabot JS bumps); removed a dead store in
   `morton.ts` flagged by ESLint 10's `no-useless-assignment` (no behavior change).

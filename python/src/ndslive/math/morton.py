@@ -1,11 +1,14 @@
 # SPDX-License-Identifier: BSD-3-Clause
+from __future__ import annotations
+
+
 class MortonCode:
     """
     Implements Morton encoding (Z-order curve) for 2D coordinates.
     Provides methods to convert between NDS coordinates and Morton codes.
     """
 
-    def __init__(self, morton_code=0):
+    def __init__(self, morton_code: int = 0) -> None:
         """Construct a MortonCode from a raw 64-bit code value.
 
         Most callers use :meth:`from_nds_coordinates` instead; this
@@ -18,7 +21,7 @@ class MortonCode:
         self.morton_code = morton_code & ((1 << 64) - 1)  # Ensure 64-bit unsigned
 
     @staticmethod
-    def from_nds_coordinates(x, y):
+    def from_nds_coordinates(x: int, y: int) -> MortonCode:
         """Encode NDS integer coordinates into a Morton (Z-order) code.
 
         Inverse of :meth:`to_nds_coordinates`.
@@ -66,7 +69,7 @@ class MortonCode:
 
         return MortonCode(morton_code)
 
-    def to_nds_coordinates(self):
+    def to_nds_coordinates(self) -> tuple[int, int]:
         """Decode this Morton code back into NDS integer coordinates.
 
         Inverse of :meth:`from_nds_coordinates`.
@@ -97,9 +100,9 @@ class MortonCode:
 
         return x, y
 
-    def value(self):
+    def value(self) -> int:
         """Get the morton code value (matches C++ API)."""
         return self.morton_code
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"MortonCode(value={self.morton_code})"

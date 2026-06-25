@@ -97,12 +97,15 @@ jobs:
     - uses: actions/setup-python@v6
       with:
         python-version: '3.12'
-    - name: Install ruff + clang-format
-      run: pip install ruff "clang-format==20.1.7"
+    - name: Install ruff + clang-format + mypy
+      run: pip install ruff "clang-format==20.1.7" mypy
     - name: Python — ruff check + format
       run: |
         ruff check --config python/pyproject.toml python/ test-vectors/
         ruff format --check --config python/pyproject.toml python/ test-vectors/
+    - name: Python — mypy
+      working-directory: python
+      run: mypy
     - name: C++ — clang-format
       run: |
         CF=$(python3 -c "import clang_format, os; print(os.path.join(os.path.dirname(clang_format.__file__), 'data', 'bin', 'clang-format'))")
