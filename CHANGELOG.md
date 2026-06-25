@@ -36,6 +36,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   `MortonCode::fromWgs84Coordinates`) to keep C++ above the coverage gate.
 
 ### Added
+- **Geometry layer in all six languages.** Ported the previously C++-only
+  `Polygon` (orientation), `Wgs84AABB` (axis-aligned bounding box: contains /
+  intersects / corners / tile coverage / antimeridian split), `Wgs84Polygon`
+  (separating-axis collision, bounding box, median) and ear-clipping
+  `PolygonTriangulation` to Python, Java, JavaScript/TypeScript, Go, and Rust.
+  The deterministic operations are bit-locked across languages by new
+  `parity_vectors.json` sections; triangulation is unit-tested per language
+  (its output ordering is not canonical).
 - **Java** implementation (`java/`, Gradle; Maven coordinates `io.github.ndsev:ndslive-math`).
 - **JavaScript/TypeScript** implementation (`js/`, npm package `@ndsev/ndslive-math`).
 - **Go** implementation (`go/`, module `github.com/ndsev/ndslive-math/go`).
