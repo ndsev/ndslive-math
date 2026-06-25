@@ -116,7 +116,7 @@ jobs:
         cargo clippy --manifest-path rust/Cargo.toml --all-targets -- -D warnings
 
     # Go (gofmt + vet)
-    - uses: actions/setup-go@v5
+    - uses: actions/setup-go@v6
       with:
         go-version: '1.22'
     - name: Go — gofmt + vet
@@ -254,7 +254,7 @@ jobs:
     timeout-minutes: 15
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/setup-go@v5
+    - uses: actions/setup-go@v6
       with:
         go-version: '1.22'
     - name: Test with coverage
