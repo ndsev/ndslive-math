@@ -56,14 +56,30 @@ Bounding boxes
     coordinate space, with ``intersects`` / ``contains`` predicates and
     constructors from a tile or from WGS84 corners.
 
+Geometry layer
+    :class:`Polygon` — generic vertex container with ``orientation``
+    (with :class:`Orientation` / :class:`PolygonType` enums).
+    :class:`Wgs84Polygon` — WGS84 polygon with bounding box (``aa_bb``),
+    centroid (``median``) and SAT collision (``collides_with``).
+    :class:`Wgs84Aabb` — WGS84 axis-aligned bounding box with corner /
+    center accessors, ``contains`` / ``intersects`` and antimeridian
+    handling.
+    :class:`PolygonTriangulation` — ear-clipping triangulation.
+    :class:`Vec2` — raw, un-normalized 2D extent used for AABB sizes.
+
 Version info
     :data:`__version__`.
 """
 
 from .bounding_box import NdsBoundingBox
 from .morton import MortonCode
+from .polygon import Orientation, Polygon, PolygonType
 from .tileid import PackedTileId, bounding_box_from_tile_ids, get_tile_ids_for_bounding_box
+from .triangulation import PolygonTriangulation
+from .vec2 import Vec2
 from .wgs84 import Wgs84
+from .wgs84_aabb import Wgs84Aabb
+from .wgs84_polygon import Wgs84Polygon
 
 try:
     from ._version import __version__
@@ -82,6 +98,14 @@ __all__ = [
     "bounding_box_from_tile_ids",
     # Bounding boxes
     "NdsBoundingBox",
+    # Geometry layer
+    "Polygon",
+    "Orientation",
+    "PolygonType",
+    "Wgs84Polygon",
+    "Wgs84Aabb",
+    "PolygonTriangulation",
+    "Vec2",
     # Version info
     "__version__",
 ]
