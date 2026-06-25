@@ -93,12 +93,11 @@ int main()
         CHECK_NEAR(bb.size().y, 4.0, 1e-9);
 
         // operator==
-        HighPrecWgs84Polygon same(
-            {HighPrecWgs84(0, 0), HighPrecWgs84(4, 0), HighPrecWgs84(0, 4)});
+        HighPrecWgs84Polygon same({HighPrecWgs84(0, 0), HighPrecWgs84(4, 0), HighPrecWgs84(0, 4)});
         HighPrecWgs84Polygon diffVert(
             {HighPrecWgs84(0, 0), HighPrecWgs84(4, 0), HighPrecWgs84(1, 4)});
-        HighPrecWgs84Polygon quad({HighPrecWgs84(0, 0), HighPrecWgs84(4, 0), HighPrecWgs84(4, 4),
-                                   HighPrecWgs84(0, 4)});
+        HighPrecWgs84Polygon quad(
+            {HighPrecWgs84(0, 0), HighPrecWgs84(4, 0), HighPrecWgs84(4, 4), HighPrecWgs84(0, 4)});
         CHECK(tri == same);
         CHECK(!(tri == diffVert)); // same size, different vertex
         CHECK(!(tri == quad));     // different size
@@ -194,17 +193,16 @@ int main()
         CHECK_EQ(rt.vertices().size(), static_cast<size_t>(3));
 
         // Convex quad (CCW) → 2 triangles.
-        HighPrecWgs84Polygon quad({HighPrecWgs84(0, 0), HighPrecWgs84(4, 0), HighPrecWgs84(4, 4),
-                                   HighPrecWgs84(0, 4)});
+        HighPrecWgs84Polygon quad(
+            {HighPrecWgs84(0, 0), HighPrecWgs84(4, 0), HighPrecWgs84(4, 4), HighPrecWgs84(0, 4)});
         auto rq = tri.triangulateByEarClipping(quad);
         CHECK(rq.type() == HighPrecWgs84Polygon::TRIANGLE_LIST);
         CHECK_EQ(rq.vertices().size(), static_cast<size_t>(6));
 
         // Concave polygon with a reflex vertex (2,2) → 3 triangles; exercises
         // the non-convex / isInside() == true paths in updateVertex().
-        HighPrecWgs84Polygon concave({HighPrecWgs84(0, 0), HighPrecWgs84(4, 0),
-                                      HighPrecWgs84(4, 4), HighPrecWgs84(2, 2),
-                                      HighPrecWgs84(0, 4)});
+        HighPrecWgs84Polygon concave({HighPrecWgs84(0, 0), HighPrecWgs84(4, 0), HighPrecWgs84(4, 4),
+                                      HighPrecWgs84(2, 2), HighPrecWgs84(0, 4)});
         auto rc = tri.triangulateByEarClipping(concave);
         CHECK(rc.type() == HighPrecWgs84Polygon::TRIANGLE_LIST);
         CHECK_EQ(rc.vertices().size(), static_cast<size_t>(9));
