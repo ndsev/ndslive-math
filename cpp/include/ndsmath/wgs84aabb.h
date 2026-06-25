@@ -150,8 +150,17 @@ public:
     /// Determine whether this bounding rect has an intersection with another bounding rect.
     inline bool intersects(Wgs84AABB<T> const &other) const
     {
-        return contains(other.sw()) || contains(other.ne()) || contains(other.se()) ||
-               contains(other.nw()) || other.intersects(*this);
+        // Axis-aligned interval-overlap test on longitude and latitude. The
+        // previous version only compared corner containment, which (a) missed
+        // cross-shaped overlaps where neither box holds a corner of the other,
+        // and (b) for any such pair — including fully disjoint boxes — recursed
+        // through `other.intersects(*this)` until the stack overflowed.
+        const T aMaxX = sw_.longitude() + size_.x;
+        const T aMaxY = sw_.latitude() + size_.y;
+        const T bMaxX = other.sw().longitude() + other.size().x;
+        const T bMaxY = other.sw().latitude() + other.size().y;
+        return sw_.longitude() <= bMaxX && aMaxX >= other.sw().longitude() &&
+               sw_.latitude() <= bMaxY && aMaxY >= other.sw().latitude();
     }
 
 private:

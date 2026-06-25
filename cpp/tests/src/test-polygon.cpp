@@ -150,6 +150,19 @@ int main()
         Wgs84AABB<double> over(HighPrecWgs84(10, 15), Vec2(20.0, 10.0));
         CHECK(box.intersects(over));
 
+        // Disjoint boxes do not intersect — and must not recurse forever.
+        Wgs84AABB<double> faraway(HighPrecWgs84(100, 60), Vec2(5.0, 5.0));
+        CHECK(!box.intersects(faraway));
+        CHECK(!faraway.intersects(box)); // symmetric
+
+        // Cross-shaped overlap: neither box holds a corner of the other, yet
+        // they overlap (x in [8,10], y in [14,16]). The old corner test missed
+        // this and recursed; the interval test reports the true intersection.
+        Wgs84AABB<double> wide(HighPrecWgs84(-5, 14), Vec2(40.0, 2.0));
+        Wgs84AABB<double> tall(HighPrecWgs84(8, 0), Vec2(2.0, 40.0));
+        CHECK(wide.intersects(tall));
+        CHECK(tall.intersects(wide));
+
         CHECK(!box.containsAntiMeridian());
 
         // A box straddling +180° splits into two normalized halves.

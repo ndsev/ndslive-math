@@ -66,6 +66,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   coordinates by `2^32`/`2^31` (was off by one). Added `boundingBoxFromTileIds`.
   The C++ parity test now validates the full golden set.
 
+### Fixed
+- **C++:** `Wgs84AABB::intersects()` could recurse until the stack overflowed for
+  any box pair where neither box held a corner of the other (fully disjoint boxes
+  *and* cross-shaped overlaps), and also returned the wrong answer for
+  cross-shaped overlaps. Replaced the corner-containment logic with a standard
+  axis-aligned interval-overlap test (O(1), non-recursive).
+
 ## [v0.5.2] - 2026-04-27
 
 ### Changed
