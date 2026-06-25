@@ -29,6 +29,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   above the 95% gate.
 - CI: exempt Dependabot PRs from the `check-changelog` job (dependency bumps
   don't carry user-facing changelog entries).
+- Coverage: added C++ instrumentation (a `NDSMATH_COVERAGE` CMake option +
+  `gcovr` on Ubuntu) and a JS `lcov` reporter, so **all six** languages now
+  upload to Codecov (previously only Python, Java, Go, and Rust).
 
 ### Added
 - **Java** implementation (`java/`, Gradle; Maven coordinates `io.github.ndsev:ndslive-math`).

@@ -8,7 +8,9 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       include: ['src/**/*.ts'],
-      reporter: ['text', 'html'],
+      // 'lcov' (coverage/lcov.info) is what Codecov parses; without it the
+      // `js` flag upload finds no machine-readable report and stays empty.
+      reporter: ['text', 'html', 'lcov'],
     },
   },
 });

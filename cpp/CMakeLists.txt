@@ -20,6 +20,7 @@ endif()
 
 option(NDSMATH_BUILD_TESTS "Build ndsmath tests" ${_ndsmath_is_top})
 option(NDSMATH_INSTALL "Generate ndsmath install + package-config rules" ${_ndsmath_is_top})
+option(NDSMATH_COVERAGE "Instrument the library and tests for coverage (gcov/llvm-cov)" OFF)
 
 # --- GLM (public dependency) -----------------------------------------------
 # Prefer a packaged/system GLM (vcpkg, find_package); fall back to FetchContent
@@ -91,6 +92,14 @@ target_link_libraries(ndsmath PUBLIC glm::glm)
 # Public headers use C++20 (concepts/requires), so consumers must compile as
 # C++20 too. PUBLIC propagates the requirement through the exported interface.
 target_compile_features(ndsmath PUBLIC cxx_std_20)
+
+# Coverage instrumentation — opt-in, CI only (never installed). PUBLIC so the
+# test targets that link ndsmath are instrumented too, capturing the header-only
+# code (wgs84.h, ndsboundingbox.h, …) where it is actually exercised.
+if(NDSMATH_COVERAGE AND NOT MSVC)
+  target_compile_options(ndsmath PUBLIC --coverage -O0 -g)
+  target_link_options(ndsmath PUBLIC --coverage)
+endif()
 
 set_target_properties(ndsmath PROPERTIES
   VERSION ${PROJECT_VERSION}
