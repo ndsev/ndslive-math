@@ -33,12 +33,25 @@
 
 pub mod bounding_box;
 pub mod morton;
+pub mod polygon;
+pub mod polygon_triangulation;
 pub mod tileid;
+pub mod vec2;
 pub mod wgs84;
+pub mod wgs84_aabb;
+pub mod wgs84_polygon;
 
 pub use bounding_box::NdsBoundingBox;
 pub use morton::MortonCode;
+pub use polygon::{Orientation, Polygon, PolygonType};
+pub use polygon_triangulation::PolygonTriangulation;
 pub use tileid::{
     bounding_box_from_tile_ids, get_tile_ids_for_bounding_box, PackedTileId, TileIdError,
 };
-pub use wgs84::{Wgs84, EARTH_RADIUS_IN_METERS, LAT_NDS_DELTA, LON_NDS_DELTA, METERS_PER_DEGREE};
+pub use vec2::Vec2;
+pub use wgs84::{
+    Wgs84, EARTH_RADIUS_IN_METERS, LAT_MAX, LAT_MIN, LAT_NDS_DELTA, LAT_NDS_DELTA_POW2, LON_MAX,
+    LON_MIN, LON_NDS_DELTA, LON_NDS_DELTA_POW2, METERS_PER_DEGREE,
+};
+pub use wgs84_aabb::Wgs84Aabb;
+pub use wgs84_polygon::Wgs84Polygon;

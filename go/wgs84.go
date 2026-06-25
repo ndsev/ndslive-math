@@ -35,6 +35,29 @@ var (
 	LatNdsDelta = 180.0 / float64((uint64(1)<<31)-1)
 )
 
+// Geometry-layer constants mirroring the C++ Wgs84<double> static members
+// (cpp/include/ndsmath/wgs84.h). These intentionally use a power-of-two
+// denominator (2^32 / 2^31) rather than LonNdsDelta / LatNdsDelta above (which
+// use 2^32 - 1 / 2^31 - 1). The difference shows up in the 13th significant
+// digit, but it is load-bearing for the geometry layer: Wgs84AABB antimeridian
+// handling and tile-from-index construction must match the C++ reference
+// bit-for-bit. Do NOT reuse LonNdsDelta / LatNdsDelta in the geometry layer.
+var (
+	// LonNdsDeltaPow2 is 360 / 2^32 (== 8.381903171539307e-08).
+	LonNdsDeltaPow2 = 360.0 / math.Exp2(32)
+	// LatNdsDeltaPow2 is 180 / 2^31 (== 8.381903171539307e-08, numerically
+	// equal to LonNdsDeltaPow2).
+	LatNdsDeltaPow2 = 180.0 / math.Exp2(31)
+	// LonMin is the minimum longitude (-180).
+	LonMin = -180.0
+	// LonMax is the maximum longitude (180 - LonNdsDeltaPow2 == 179.99999991618097).
+	LonMax = 180.0 - LonNdsDeltaPow2
+	// LatMin is the minimum latitude (-90).
+	LatMin = -90.0
+	// LatMax is the maximum latitude (90 - LatNdsDeltaPow2).
+	LatMax = 90.0 - LatNdsDeltaPow2
+)
+
 // Wgs84 represents a point on the Earth's surface using the WGS84 coordinate
 // system. Lon (X) and Lat (Y) are in degrees; Alt (Z) is meters above the
 // WGS84 ellipsoid.
@@ -107,6 +130,40 @@ func Wgs84FromNdsCoordinates(x, y int32) Wgs84 {
 	lon := float64(x) * lonMultiplier
 	lat := float64(y) * latMultiplier
 	return NewWgs84(lon, lat, 0.0)
+}
+
+// Wgs84FromMortonCode constructs a Wgs84 point (with Alt=0) from a Morton code.
+//
+// This mirrors the C++ Wgs84<double>::fromMortonCode
+// (cpp/include/ndsmath/wgs84.h). Note that it scales BOTH the NDS x (longitude)
+// and the NDS y (latitude) by the same factor 360 / 2^32 — unlike
+// Wgs84FromNdsCoordinates, which scales latitude by 180 / 2^31. This difference
+// is intentional in the reference and is relied upon by the geometry layer
+// (e.g. the Wgs84AABB tile-from-index constructor); do not "fix" it.
+func Wgs84FromMortonCode(mortonCode MortonCode) Wgs84 {
+	bitScaling := 360.0 / math.Exp2(32)
+	x, y := mortonCode.ToNdsCoordinates()
+	return NewWgs84(float64(x)*bitScaling, float64(y)*bitScaling, 0.0)
+}
+
+// Longitude returns the longitude (X) in degrees. Mirrors the C++ accessor.
+func (w Wgs84) Longitude() float64 { return w.Lon }
+
+// Latitude returns the latitude (Y) in degrees. Mirrors the C++ accessor.
+func (w Wgs84) Latitude() float64 { return w.Lat }
+
+// Dx returns the X (longitude) component. Mirrors the C++ dx() accessor.
+func (w Wgs84) Dx() float64 { return w.Lon }
+
+// Dy returns the Y (latitude) component. Mirrors the C++ dy() accessor.
+func (w Wgs84) Dy() float64 { return w.Lat }
+
+// Sub returns the component-wise difference of this point and other, then
+// re-normalizes the result (longitude wrap, latitude clamp). It mirrors the
+// re-normalizing Wgs84 operator- of the C++/Python reference, which the
+// ear-clipping triangulation relies on.
+func (w Wgs84) Sub(other Wgs84) Wgs84 {
+	return NewWgs84(w.Lon-other.Lon, w.Lat-other.Lat, 0.0)
 }
 
 // DegreesToMeters converts degree distances to meters at a given latitude.
