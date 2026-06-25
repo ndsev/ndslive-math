@@ -93,7 +93,6 @@ export class MortonCode {
     }
 
     x |= mortonCode & bit;
-    mortonCode >>= 1n;
 
     if (y >= YBASE) {
       y -= 1n << 31n;
