@@ -209,12 +209,12 @@ describe('Wgs84Polygon', () => {
     expect(bb.size().y).toBe(0);
   });
 
-  it('median preserves the lon/lat swap quirk for asymmetric polygons', () => {
+  it('median returns the centroid for asymmetric polygons', () => {
     const p = new Wgs84Polygon(undefined, [new Wgs84(0, 0), new Wgs84(30, 0), new Wgs84(0, 60)]);
     const med = p.median();
-    // mean_lon = 10, mean_lat = 20, but the result swaps them.
-    expect(med.longitude()).toBeCloseTo(20, 9);
-    expect(med.latitude()).toBeCloseTo(10, 9);
+    // mean_lon = 10, mean_lat = 20.
+    expect(med.longitude()).toBeCloseTo(10, 9);
+    expect(med.latitude()).toBeCloseTo(20, 9);
   });
 
   it('equals is order-sensitive and length-sensitive', () => {

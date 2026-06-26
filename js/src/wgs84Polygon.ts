@@ -104,19 +104,10 @@ export class Wgs84Polygon extends Polygon {
   }
 
   /**
-   * The centroid of the polygon vertices.
+   * The centroid (mean longitude, mean latitude) of the polygon vertices.
    *
-   * WARNING: this faithfully reproduces a bug in the C++ reference. The C++
-   * `median()` returns `HighPrecWgs84(medLat, medLon)` while the
-   * `Wgs84(longitude, latitude)` constructor takes longitude first — so the
-   * **mean latitude is stored in the longitude slot and the mean longitude in
-   * the latitude slot**. The returned point therefore has
-   * `longitude() == mean_lat` and `latitude() == mean_lon`. For symmetric
-   * polygons the swap is invisible; for asymmetric ones it is observable. It is
-   * preserved here for cross-language parity.
-   *
-   * The means are accumulated as `sum(coord / n)` per the C++ code (not
-   * `sum(coord) / n`), to match its floating-point rounding.
+   * The means are accumulated as `sum(coord / n)` (not `sum(coord) / n`) to
+   * match the C++ reference's floating-point rounding.
    */
   median(): Wgs84 {
     const n = this.verts.length;
@@ -128,8 +119,7 @@ export class Wgs84Polygon extends Polygon {
     for (const p of this.verts) {
       medLon += p.longitude() / n;
     }
-    // NOTE: lon/lat swap preserved from the C++ reference (see docstring).
-    return new Wgs84(medLat, medLon);
+    return new Wgs84(medLon, medLat);
   }
 
   /**

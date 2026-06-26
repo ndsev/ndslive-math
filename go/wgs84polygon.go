@@ -111,19 +111,9 @@ func (p Wgs84Polygon) AaBb() Wgs84AABB {
 	return NewWgs84AABB(NewWgs84(minLon, minLat, 0.0), Vec2{X: maxLon - minLon, Y: maxLat - minLat})
 }
 
-// Median returns the centroid of the polygon vertices.
-//
-// WARNING: this faithfully reproduces a bug in the C++ reference. The C++
-// median() returns HighPrecWgs84(medLat, medLon) while the
-// Wgs84(longitude, latitude) constructor takes longitude first — so the mean
-// latitude is stored in the longitude slot and the mean longitude in the
-// latitude slot. The returned point therefore has Longitude() == mean_lat and
-// Latitude() == mean_lon. For symmetric polygons the swap is invisible; for
-// asymmetric ones it is observable. It is preserved here for cross-language
-// parity.
-//
-// The means are accumulated as sum(coord / n) per the C++ code (not
-// sum(coord) / n), to match its floating-point rounding.
+// Median returns the centroid (mean longitude, mean latitude) of the polygon
+// vertices. The means are accumulated as sum(coord / n) (not sum(coord) / n) to
+// match the C++ reference's floating-point rounding.
 func (p Wgs84Polygon) Median() Wgs84 {
 	n := float64(len(p.vertices))
 	medLat := 0.0
@@ -134,8 +124,7 @@ func (p Wgs84Polygon) Median() Wgs84 {
 	for _, v := range p.vertices {
 		medLon += v.Longitude() / n
 	}
-	// NOTE: lon/lat swap preserved from the C++ reference (see doc comment).
-	return NewWgs84(medLat, medLon, 0.0)
+	return NewWgs84(medLon, medLat, 0.0)
 }
 
 // CollidesWith reports whether this polygon collides with other (via the

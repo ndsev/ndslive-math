@@ -98,21 +98,10 @@ class Wgs84Polygon(Polygon):
         return Wgs84Aabb(Wgs84(min_lon, min_lat), Vec2(max_lon - min_lon, max_lat - min_lat))
 
     def median(self) -> Wgs84:
-        """The centroid of the polygon vertices.
+        """The centroid (mean longitude, mean latitude) of the polygon vertices.
 
-        .. warning::
-
-            This faithfully reproduces a bug in the C++ reference. The C++
-            ``median()`` returns ``HighPrecWgs84(medLat, medLon)`` while the
-            ``Wgs84(longitude, latitude)`` constructor takes longitude first —
-            so the **mean latitude is stored in the longitude slot and the mean
-            longitude in the latitude slot**. The returned point therefore has
-            ``longitude() == mean_lat`` and ``latitude() == mean_lon``. For
-            symmetric polygons the swap is invisible; for asymmetric ones it is
-            observable. It is preserved here for cross-language parity.
-
-        The means are accumulated as ``sum(coord / n)`` per the C++ code (not
-        ``sum(coord) / n``), to match its floating-point rounding.
+        The means are accumulated as ``sum(coord / n)`` (not ``sum(coord) / n``)
+        to match the C++ reference's floating-point rounding.
         """
         n = len(self._vertices)
         med_lat = 0.0
@@ -121,8 +110,7 @@ class Wgs84Polygon(Polygon):
         med_lon = 0.0
         for p in self._vertices:
             med_lon += p.longitude() / n
-        # NOTE: lon/lat swap preserved from the C++ reference (see docstring).
-        return Wgs84(med_lat, med_lon)
+        return Wgs84(med_lon, med_lat)
 
     def collides_with(self, other: Wgs84Polygon) -> bool:
         """Whether this polygon collides with ``other`` (Separating-Axis Theorem).

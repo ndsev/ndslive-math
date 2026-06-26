@@ -80,6 +80,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   *and* cross-shaped overlaps), and also returned the wrong answer for
   cross-shaped overlaps. Replaced the corner-containment logic with a standard
   axis-aligned interval-overlap test (O(1), non-recursive).
+- **All languages:** `Wgs84Polygon.median()` returned its result with longitude
+  and latitude swapped (the C++ reference built `Wgs84(meanLat, meanLon)` against
+  a `(lon, lat)` constructor). It now returns a correct `(meanLon, meanLat)`
+  centroid in every language, locked by the `wgs84_polygon` parity vectors.
 
 ## [v0.5.2] - 2026-04-27
 

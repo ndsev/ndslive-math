@@ -2895,8 +2895,8 @@
         30.0,
         60.0
       ],
-      "median_lon": 20.0,
-      "median_lat": 10.0
+      "median_lon": 10.0,
+      "median_lat": 20.0
     },
     {
       "name": "quad",
@@ -2959,8 +2959,8 @@
         1.0,
         1.0
       ],
-      "median_lon": 52.5,
-      "median_lat": 13.5
+      "median_lon": 13.5,
+      "median_lat": 52.5
     },
     {
       "name": "invalid_two_vertices",
@@ -2983,8 +2983,8 @@
         0.0,
         0.0
       ],
-      "median_lon": 0.0,
-      "median_lat": 0.5
+      "median_lon": 0.5,
+      "median_lat": 0.0
     }
   ],
   "wgs84_polygon_collision": [

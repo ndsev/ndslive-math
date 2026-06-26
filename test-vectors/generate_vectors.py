@@ -536,7 +536,7 @@ def main():
         )
     data["polygon_orientation"] = rows
 
-    # 16. Wgs84Polygon: aaBb, median (lon/lat swap quirk), is_valid.
+    # 16. Wgs84Polygon: aaBb, median (centroid), is_valid.
     rows = []
     for name, verts in WGS84_POLYGON_CASES:
         poly = Wgs84Polygon(vertices=[Wgs84(lon, lat) for lon, lat in verts])
@@ -549,7 +549,6 @@ def main():
                 "is_valid": poly.is_valid(),
                 "aabb_sw": _pt(bb.sw()),
                 "aabb_size": [bb.size().x, bb.size().y],
-                # median preserves the C++ lon/lat swap; report both accessors.
                 "median_lon": med.longitude(),
                 "median_lat": med.latitude(),
             }

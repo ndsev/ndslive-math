@@ -581,11 +581,11 @@ class UnitTests {
 	}
 
 	@Test
-	void wgs84PolygonMedianSwapQuirk() {
-		// Asymmetric triangle locks the lon/lat swap: mean_lon=10, mean_lat=20.
+	void wgs84PolygonMedianCentroid() {
+		// Centroid of an asymmetric triangle: mean_lon=10, mean_lat=20.
 		Wgs84 m = new Wgs84Polygon(Arrays.asList(new Wgs84(0, 0), new Wgs84(30, 0), new Wgs84(0, 60))).median();
-		assertEquals(20.0, m.longitude(), 1e-9);
-		assertEquals(10.0, m.latitude(), 1e-9);
+		assertEquals(10.0, m.longitude(), 1e-9);
+		assertEquals(20.0, m.latitude(), 1e-9);
 	}
 
 	@Test

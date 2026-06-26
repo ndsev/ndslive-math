@@ -154,25 +154,14 @@ public final class Wgs84Polygon extends Polygon {
 	}
 
 	/**
-	 * The centroid of the polygon vertices.
+	 * The centroid (mean longitude, mean latitude) of the polygon vertices.
 	 *
 	 * <p>
-	 * <strong>Warning:</strong> this faithfully reproduces a bug in the C++
-	 * reference. The C++ {@code median()} returns {@code HighPrecWgs84(medLat,
-	 * medLon)} while the {@code Wgs84(longitude, latitude)} constructor takes
-	 * longitude first — so the <strong>mean latitude is stored in the longitude
-	 * slot and the mean longitude in the latitude slot</strong>. The returned point
-	 * therefore has {@code longitude() == mean_lat} and {@code latitude() ==
-	 * mean_lon}. For symmetric polygons the swap is invisible; for asymmetric ones
-	 * it is observable. It is preserved here for cross-language parity.
+	 * The means are accumulated as {@code sum(coord / n)} (not
+	 * {@code sum(coord) / n}) to match the C++ reference's floating-point rounding.
 	 * </p>
 	 *
-	 * <p>
-	 * The means are accumulated as {@code sum(coord / n)} per the C++ code (not
-	 * {@code sum(coord) / n}), to match its floating-point rounding.
-	 * </p>
-	 *
-	 * @return the (lon/lat-swapped) centroid point
+	 * @return the centroid point
 	 */
 	public Wgs84 median() {
 		int n = this.vertices.size();
@@ -184,8 +173,7 @@ public final class Wgs84Polygon extends Polygon {
 		for (Wgs84 p : this.vertices) {
 			medLon += p.longitude() / n;
 		}
-		// NOTE: lon/lat swap preserved from the C++ reference (see Javadoc).
-		return new Wgs84(medLat, medLon);
+		return new Wgs84(medLon, medLat);
 	}
 
 	/**

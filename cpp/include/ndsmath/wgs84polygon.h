@@ -107,7 +107,7 @@ struct HighPrecWgs84Polygon : public Polygon<std::vector<HighPrecWgs84>>
         auto addLon = [this](double s, const HighPrecWgs84 &p)
         { return s + p.longitude() / vertices_.size(); };
         auto medLon = std::accumulate(vertices_.begin(), vertices_.end(), 0., addLon);
-        return HighPrecWgs84(medLat, medLon);
+        return HighPrecWgs84(medLon, medLat);
     }
 
 private:

@@ -163,13 +163,11 @@ class TestWgs84Polygon(unittest.TestCase):
         self.assertAlmostEqual(m.longitude(), 2.0, places=12)
         self.assertAlmostEqual(m.latitude(), 2.0, places=12)
 
-    def test_median_asymmetric_swap_quirk(self):
-        # Asymmetric polygon locks in the (deliberately preserved) lon/lat swap:
-        # mean_lon = 10, mean_lat = 20, but the result has longitude == mean_lat
-        # and latitude == mean_lon.
+    def test_median_asymmetric(self):
+        # Centroid of an asymmetric polygon: mean_lon = 10, mean_lat = 20.
         m = Wgs84Polygon(vertices=[Wgs84(0, 0), Wgs84(30, 0), Wgs84(0, 60)]).median()
-        self.assertAlmostEqual(m.longitude(), 20.0, places=12)
-        self.assertAlmostEqual(m.latitude(), 10.0, places=12)
+        self.assertAlmostEqual(m.longitude(), 10.0, places=12)
+        self.assertAlmostEqual(m.latitude(), 20.0, places=12)
 
     def test_earth_wrapping_poly_structure(self):
         earth = Wgs84Polygon.earth_wrapping_poly()

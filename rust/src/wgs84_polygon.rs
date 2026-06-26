@@ -157,21 +157,10 @@ impl Wgs84Polygon {
         )
     }
 
-    /// The centroid of the polygon vertices.
+    /// The centroid (mean longitude, mean latitude) of the polygon vertices.
     ///
-    /// # Warning
-    ///
-    /// This faithfully reproduces a bug in the C++ reference. The C++
-    /// `median()` returns `HighPrecWgs84(medLat, medLon)` while the
-    /// `Wgs84(longitude, latitude)` constructor takes longitude first — so the
-    /// **mean latitude is stored in the longitude slot and the mean longitude
-    /// in the latitude slot**. The returned point therefore has
-    /// `lon == mean_lat` and `lat == mean_lon`. For symmetric polygons the swap
-    /// is invisible; for asymmetric ones it is observable. It is preserved here
-    /// for cross-language parity.
-    ///
-    /// The means are accumulated as `sum(coord / n)` per the C++ code (not
-    /// `sum(coord) / n`), to match its floating-point rounding.
+    /// The means are accumulated as `sum(coord / n)` (not `sum(coord) / n`) to
+    /// match the C++ reference's floating-point rounding.
     pub fn median(&self) -> Wgs84 {
         let vs = self.inner.vertices();
         let n = vs.len() as f64;
@@ -183,8 +172,7 @@ impl Wgs84Polygon {
         for p in vs {
             med_lon += p.lon / n;
         }
-        // NOTE: lon/lat swap preserved from the C++ reference (see docs).
-        Wgs84::new(med_lat, med_lon)
+        Wgs84::new(med_lon, med_lat)
     }
 
     /// Whether this polygon collides with `other` (Separating-Axis Theorem).
@@ -327,13 +315,12 @@ mod tests {
     }
 
     #[test]
-    fn median_swap_quirk() {
-        // Asymmetric triangle: mean_lon = 10, mean_lat = 20, but the result
-        // swaps them: lon == 20, lat == 10.
+    fn median_centroid() {
+        // Asymmetric triangle: mean_lon = 10, mean_lat = 20.
         let tri = Wgs84Polygon::from_vertices(pts(&[(0.0, 0.0), (30.0, 0.0), (0.0, 60.0)]));
         let m = tri.median();
-        assert!((m.lon - 20.0).abs() < 1e-9);
-        assert!((m.lat - 10.0).abs() < 1e-9);
+        assert!((m.lon - 10.0).abs() < 1e-9);
+        assert!((m.lat - 20.0).abs() < 1e-9);
     }
 
     #[test]
