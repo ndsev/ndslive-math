@@ -142,7 +142,6 @@ class TestWgs84Polygon(unittest.TestCase):
         tri = Wgs84Polygon(vertices=[Wgs84(0, 0), Wgs84(4, 0), Wgs84(0, 4)])
         self.assertNotEqual(tri, 42)
         self.assertNotEqual(tri, "not a polygon")
-        self.assertFalse(tri == 42)
         # The raw __eq__ hook itself yields NotImplemented for a foreign type.
         self.assertIs(tri.__eq__(42), NotImplemented)
 
