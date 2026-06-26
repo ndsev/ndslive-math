@@ -356,6 +356,24 @@ class UnitTests {
 		assertTrue(a.toString().contains("Vec2"));
 	}
 
+	@Test
+	void vec2EqualsShortCircuitsOnX() {
+		// Differing x must make equals() false via the FIRST Double.compare
+		// (the (1,3) case in vec2EqualsHashCodeToString only differs in y, so it
+		// never exercises the x-mismatch side of the && in equals()).
+		Vec2 a = new Vec2(1.0, 2.0);
+		assertNotEquals(a, new Vec2(5.0, 2.0));
+		// And a vector differing in both components is still not equal.
+		assertNotEquals(a, new Vec2(5.0, 9.0));
+	}
+
+	@Test
+	void vec2ToStringContainsComponents() {
+		String s = new Vec2(3.5, -4.25).toString();
+		assertTrue(s.contains("3.5"));
+		assertTrue(s.contains("-4.25"));
+	}
+
 	// --- Polygon ---
 
 	@Test
@@ -467,12 +485,40 @@ class UnitTests {
 	}
 
 	@Test
+	void aabbValidRejectsEachOutOfRangeSize() {
+		// valid() is `size.x>=0 && size.y>=0 && size.x<=360 && size.y<=180`.
+		// aabbInvalidBoxNotClamped only fails the first clause (size.x<0). These
+		// cover the remaining three clauses' false sides individually.
+		// size.y < 0 (third clause fails)
+		assertFalse(new Wgs84Aabb(new Wgs84(0, 0), new Vec2(10, -1)).valid());
+		// size.x > 360 (second clause fails)
+		assertFalse(new Wgs84Aabb(new Wgs84(0, 0), new Vec2(361, 10)).valid());
+		// size.y > 180 (fourth clause fails)
+		assertFalse(new Wgs84Aabb(new Wgs84(0, 0), new Vec2(10, 181)).valid());
+		// Boundary values (size.x==360, size.y==180) are still valid.
+		assertTrue(new Wgs84Aabb(new Wgs84(0, -90), new Vec2(360, 180)).valid());
+	}
+
+	@Test
 	void aabbContainsInclusive() {
 		Wgs84Aabb box = new Wgs84Aabb(new Wgs84(0, 10), new Vec2(20, 10));
 		assertTrue(box.contains(new Wgs84(5, 15)));
 		assertFalse(box.contains(new Wgs84(50, 50)));
 		assertTrue(box.contains(new Wgs84(0, 10)));
 		assertTrue(box.contains(new Wgs84(20, 20)));
+	}
+
+	@Test
+	void aabbContainsLatitudeOutOfRange() {
+		// (50,50) above short-circuits on the longitude clause, so the latitude
+		// comparisons in contains() never see a false. Use points whose longitude
+		// is inside the box but whose latitude is out of range, to take the
+		// latitude clauses' false branches.
+		Wgs84Aabb box = new Wgs84Aabb(new Wgs84(0, 10), new Vec2(20, 10));
+		// longitude in [0,20], latitude below 10
+		assertFalse(box.contains(new Wgs84(5, 5)));
+		// longitude in [0,20], latitude above 20
+		assertFalse(box.contains(new Wgs84(5, 25)));
 	}
 
 	@Test
@@ -616,6 +662,29 @@ class UnitTests {
 		assertFalse(apart.collidesWith(tri));
 	}
 
+	@Test
+	void wgs84PolygonEqualsForeignTypeNotEqual() {
+		// equals() against a non-Wgs84Polygon must report not-equal (the
+		// `instanceof` false branch), mirroring Python's NotImplemented.
+		Wgs84Polygon poly = new Wgs84Polygon(Arrays.asList(new Wgs84(0, 0), new Wgs84(4, 0), new Wgs84(0, 4)));
+		assertNotEquals(poly, Integer.valueOf(3));
+		assertNotEquals(poly, "not a polygon");
+	}
+
+	@Test
+	void wgs84PolygonCollisionSeparatedByOtherAxis() {
+		// self and other overlap on both the x- and y-ranges, so self's
+		// axis-aligned edge normals find NO separating axis (first SAT pass
+		// areSeparate(other, this) returns false). They are only separated along
+		// other's own diagonal edge-normal, so the SECOND SAT pass
+		// areSeparate(other, other) finds the separating axis and collidesWith
+		// must return false via that second check (line ~203-204).
+		Wgs84Polygon self = new Wgs84Polygon(
+				Arrays.asList(new Wgs84(0, 0), new Wgs84(10, 0), new Wgs84(10, 10), new Wgs84(0, 10)));
+		Wgs84Polygon other = new Wgs84Polygon(Arrays.asList(new Wgs84(13, 9), new Wgs84(9, 13), new Wgs84(15, 15)));
+		assertFalse(self.collidesWith(other));
+	}
+
 	// --- PolygonTriangulation (UNIT only; not in parity vectors) ---
 
 	@Test
@@ -661,5 +730,49 @@ class UnitTests {
 		Wgs84Polygon notSimple = new Wgs84Polygon(Polygon.PolygonType.TRIANGLE_LIST,
 				Arrays.asList(new Wgs84(0, 0), new Wgs84(4, 0), new Wgs84(0, 4)));
 		assertEquals(Polygon.PolygonType.UNKNOWN, tri.triangulateByEarClipping(notSimple).type());
+	}
+
+	@Test
+	void triangulationClockwiseWindingFindsNoEar() {
+		// A CLOCKWISE (wrong-winding) simple polygon of >= 4 vertices: every
+		// vertex is non-convex, so isEar is never set, no ear is ever found, and
+		// triangulation bails out returning the UNKNOWN polygon type (the
+		// "!earFound -> return UNKNOWN" branch in the ear-clipping loop).
+		PolygonTriangulation tri = new PolygonTriangulation();
+		Wgs84Polygon cw = new Wgs84Polygon(
+				Arrays.asList(new Wgs84(0, 0), new Wgs84(0, 4), new Wgs84(4, 4), new Wgs84(4, 0)));
+		assertEquals(Polygon.PolygonType.UNKNOWN, tri.triangulateByEarClipping(cw).type());
+	}
+
+	@Test
+	void triangulationAsymmetricConvexEarTieBreak() {
+		// An asymmetric convex quad whose candidate ears have DIFFERENT angles
+		// exercises the "pick the more-extruded ear" branch
+		// (angle[j] > angle[ear]). The vertices are ordered so a LATER ear (v2)
+		// has a strictly larger angle than the first-found ear (v0/v1), which is
+		// what forces the '>' comparison to evaluate true and reassign `ear`.
+		// A symmetric quad has equal angles and never takes that '>' branch.
+		// Trapezoid [(2,0),(8,0),(10,5),(0,5)]: ear angles are
+		// [-0.371, -0.371, +0.371, +0.371], so v2 beats the running best v0.
+		PolygonTriangulation tri = new PolygonTriangulation();
+		Wgs84Polygon asym = new Wgs84Polygon(
+				Arrays.asList(new Wgs84(2, 0), new Wgs84(8, 0), new Wgs84(10, 5), new Wgs84(0, 5)));
+		Wgs84Polygon r = tri.triangulateByEarClipping(asym);
+		assertEquals(Polygon.PolygonType.TRIANGLE_LIST, r.type());
+		assertEquals(6, r.vertices().size());
+	}
+
+	@Test
+	void triangulationDuplicateVertexHitsZeroLengthEdgeGuard() {
+		// A duplicate consecutive vertex produces a zero-length edge. When the
+		// updateVertex step normalizes that edge vector, the internal normalize()
+		// hits its n == 0 guard and returns (0, 0) instead of dividing by zero.
+		// Triangulation still completes (4 input vertices -> 3*(4-2) = 6).
+		PolygonTriangulation tri = new PolygonTriangulation();
+		Wgs84Polygon dup = new Wgs84Polygon(
+				Arrays.asList(new Wgs84(0, 0), new Wgs84(0, 0), new Wgs84(4, 0), new Wgs84(0, 4)));
+		Wgs84Polygon r = tri.triangulateByEarClipping(dup);
+		assertEquals(Polygon.PolygonType.TRIANGLE_LIST, r.type());
+		assertEquals(6, r.vertices().size());
 	}
 }

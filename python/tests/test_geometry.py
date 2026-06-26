@@ -62,6 +62,15 @@ class TestPolygon(unittest.TestCase):
         self.assertFalse(Polygon(PolygonType.SIMPLE_POLYGON).is_valid())
         self.assertTrue(Polygon(PolygonType.SIMPLE_POLYGON, [Wgs84(0, 0)]).is_valid())
 
+    def test_setitem_and_len(self):
+        # Exercise __setitem__ (index assignment) and __len__ directly.
+        p = Polygon(PolygonType.SIMPLE_POLYGON, [Wgs84(0, 0), Wgs84(1, 0), Wgs84(0, 1)])
+        self.assertEqual(len(p), 3)  # __len__
+        p[0] = Wgs84(9, 9)  # __setitem__
+        self.assertAlmostEqual(p[0].longitude(), 9.0, places=12)
+        self.assertAlmostEqual(p[0].latitude(), 9.0, places=12)
+        self.assertEqual(len(p), 3)  # length unchanged after replacement
+
     def test_orientation_ccw(self):
         p = Polygon(PolygonType.SIMPLE_POLYGON, [Wgs84(0, 0), Wgs84(1, 0), Wgs84(0, 1)])
         self.assertEqual(p.orientation(), Orientation.COUNTERCLOCKWISE)
@@ -127,6 +136,16 @@ class TestWgs84Polygon(unittest.TestCase):
         self.assertNotEqual(tri, diff_vert)  # same size, different vertex
         self.assertNotEqual(tri, quad)  # different size
 
+    def test_equality_with_foreign_type(self):
+        # Comparing against a non-polygon returns NotImplemented from __eq__,
+        # so Python falls back to identity → reports not-equal.
+        tri = Wgs84Polygon(vertices=[Wgs84(0, 0), Wgs84(4, 0), Wgs84(0, 4)])
+        self.assertNotEqual(tri, 42)
+        self.assertNotEqual(tri, "not a polygon")
+        self.assertFalse(tri == 42)
+        # The raw __eq__ hook itself yields NotImplemented for a foreign type.
+        self.assertIs(tri.__eq__(42), NotImplemented)
+
     def test_aabb_triangle(self):
         bb = Wgs84Polygon(vertices=[Wgs84(0, 0), Wgs84(4, 0), Wgs84(0, 4)]).aa_bb()
         self.assertAlmostEqual(bb.sw().longitude(), 0.0, delta=TOL)
@@ -190,6 +209,19 @@ class TestWgs84Polygon(unittest.TestCase):
         apart = Wgs84Polygon(vertices=[Wgs84(20, 20), Wgs84(24, 20), Wgs84(20, 24)])
         self.assertFalse(tri.collides_with(apart))
         self.assertFalse(apart.collides_with(tri))
+
+    def test_collides_with_separated_only_on_other_axis(self):
+        # `other` overlaps the square on BOTH x- and y-ranges (so none of the
+        # square's axis-aligned edge normals separate it — first SAT pass fails
+        # to find a separating axis), but it is separated along one of its OWN
+        # diagonal edge normals. collides_with must therefore return False via
+        # the SECOND separating-axis pass (axes from `other`'s edges).
+        square = Wgs84Polygon(vertices=[Wgs84(0, 0), Wgs84(10, 0), Wgs84(10, 10), Wgs84(0, 10)])
+        corner_tri = Wgs84Polygon(vertices=[Wgs84(13, 9), Wgs84(9, 13), Wgs84(15, 15)])
+        # First pass (square's axes) finds no separation; second pass does.
+        self.assertFalse(square._are_separate(corner_tri, square))
+        self.assertTrue(square._are_separate(corner_tri, corner_tri))
+        self.assertFalse(square.collides_with(corner_tri))
 
 
 class TestWgs84Aabb(unittest.TestCase):
@@ -379,6 +411,38 @@ class TestPolygonTriangulation(unittest.TestCase):
         self.assertEqual(len(result.vertices()), 9)  # 3 * (5 - 2)
         self._assert_triangles_tile(concave, result)
 
+    def test_clockwise_polygon_no_ear_found(self):
+        # A simple polygon wound CLOCKWISE has no convex vertices under the
+        # CCW-assuming convexity test, so no ear is ever found. The main loop's
+        # "ear_found is False" guard returns the UNKNOWN polygon type.
+        cw_square = Wgs84Polygon(vertices=[Wgs84(0, 0), Wgs84(0, 4), Wgs84(4, 4), Wgs84(4, 0)])
+        result = self.tri.triangulate_by_ear_clipping(cw_square)
+        self.assertEqual(result.type(), PolygonType.UNKNOWN)
+        self.assertEqual(len(result.vertices()), 0)
+
+    def test_asymmetric_convex_quad_angle_tiebreak(self):
+        # An irregular (asymmetric) convex quad whose ears have DIFFERENT
+        # angles. Vertex 0 is a sharp corner (small angle) and is selected as
+        # the first ear; a later vertex is a flatter corner with a strictly
+        # greater angle, so the "pick the more-extruded ear" tie-break branch
+        # (vertices[j].angle > vertices[ear].angle) fires. A symmetric quad has
+        # equal angles and never triggers it.
+        asym = Wgs84Polygon(vertices=[Wgs84(0, 0), Wgs84(5, -2), Wgs84(10, 0), Wgs84(5, 8)])
+        result = self.tri.triangulate_by_ear_clipping(asym)
+        self.assertEqual(result.type(), PolygonType.TRIANGLE_LIST)
+        self.assertEqual(len(result.vertices()), 6)  # 3 * (4 - 2)
+        self._assert_triangles_tile(asym, result)
+
+    def test_duplicate_consecutive_vertex_zero_length_edge(self):
+        # A duplicate consecutive vertex creates a zero-length edge. When the
+        # internal vector for that edge is normalized, its length is 0, so the
+        # normalize guard returns (0, 0) instead of dividing by zero.
+        dup = Wgs84Polygon(vertices=[Wgs84(0, 0), Wgs84(0, 0), Wgs84(4, 0), Wgs84(0, 4)])
+        result = self.tri.triangulate_by_ear_clipping(dup)
+        # Still produces a triangle list (the degenerate vertex is absorbed).
+        self.assertEqual(result.type(), PolygonType.TRIANGLE_LIST)
+        self.assertEqual(len(result.vertices()), 6)  # 3 * (4 - 2)
+
     def _assert_triangles_tile(self, polygon: Wgs84Polygon, result: Wgs84Polygon) -> None:
         """The union of output triangles must cover the polygon area exactly."""
         verts = result.vertices()
@@ -407,6 +471,10 @@ class TestVec2(unittest.TestCase):
     def test_iter_unpacking(self):
         x, y = Vec2(7.0, 8.0)
         self.assertEqual((x, y), (7.0, 8.0))
+
+    def test_str_repr(self):
+        # __str__ produces a "Vec2(x=..., y=...)" string.
+        self.assertEqual(str(Vec2(7.0, 8.0)), "Vec2(x=7.0, y=8.0)")
 
 
 class TestWgs84GeometrySupport(unittest.TestCase):
