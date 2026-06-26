@@ -46,6 +46,9 @@ namespaces = true
 write_to = "src/ndslive/math/_version.py"
 local_scheme = "no-local-version"
 fallback_version = "0.0.0+unknown"
+# Only consider v-prefixed release tags; ignore the go/* module tags (e.g.
+# go/v1.0.0) which otherwise break version detection for any git-based build.
+git_describe_command = "git describe --dirty --tags --long --match v[0-9]*"
 
 [tool.ruff]
 line-length = 100
