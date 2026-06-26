@@ -29,7 +29,12 @@ from ndslive.math import (  # noqa: E402
     MortonCode,
     NdsBoundingBox,
     PackedTileId,
+    Polygon,
+    PolygonType,
+    Vec2,
     Wgs84,
+    Wgs84Aabb,
+    Wgs84Polygon,
     bounding_box_from_tile_ids,
     get_tile_ids_for_bounding_box,
 )
@@ -119,6 +124,95 @@ TILES_FOR_BBOX = [
     (0, 0, (1 << 28), (1 << 28), 3),
     (1000000, 500000, 2000000, 1500000, 8),
     (0, 0, (1 << 31) - 1, (1 << 30) - 1, 1),
+]
+
+# ---------------------------------------------------------------------------
+# Geometry-layer input fixtures (deterministic methods only)
+# ---------------------------------------------------------------------------
+
+# Wgs84Aabb cases as (name, sw_lon, sw_lat, size_x, size_y). These exercise the
+# excess-height clamp, the anti-meridian split, the default/invalid boxes, and
+# the tile-count helpers. Construction goes through the Wgs84Aabb constructor,
+# which clamps height for valid boxes and leaves invalid boxes untouched.
+AABB_CASES = [
+    ("origin_box", 0.0, 0.0, 20.0, 10.0),
+    ("offset_box", 0.0, 10.0, 20.0, 10.0),
+    ("clamp_box", 0.0, 85.0, 10.0, 10.0),  # excess-height clamp: size.y -> 5
+    ("anti_meridian_box", 175.0, 0.0, 10.0, 5.0),  # crosses +180
+    ("wide_box", -5.0, 14.0, 40.0, 2.0),  # cross-shaped overlap partner
+    ("tall_box", 8.0, 0.0, 2.0, 40.0),  # cross-shaped overlap partner
+    ("invalid_neg_size", 0.0, 85.0, -1.0, 10.0),  # invalid: no clamp
+    ("default_box", 0.0, 0.0, 0.0, 0.0),
+    ("tiny_box", 0.0, 0.0, 0.0001, 0.0001),  # tile_level falls back to 15
+]
+
+# (name, x_nds, y_nds) sample points for Wgs84Aabb.contains, tested against
+# every AABB case above. Includes inclusive-edge corners of origin_box.
+AABB_CONTAINS_POINTS = [
+    ("inside", 5.0, 5.0),
+    ("sw_corner_origin", 0.0, 0.0),
+    ("ne_corner_origin", 20.0, 10.0),
+    ("far_outside", 50.0, 50.0),
+    ("near_am", 178.0, 2.0),
+]
+
+# Index pairs (into AABB_CASES) for the pairwise intersects() matrix. We test
+# all ordered pairs so symmetry is verified by the ports.
+# (computed in main as a full cross product)
+
+# Polygon orientation/validity cases: (name, polygon_type_int, vertices).
+# vertices are raw (lon, lat) and are NOT normalized for orientation, but the
+# Wgs84 constructor still normalizes; all sample coords are well inside range so
+# the stored value equals the literal.
+POLYGON_CASES = [
+    ("ccw_triangle", 0, [(0.0, 0.0), (1.0, 0.0), (0.0, 1.0)]),
+    ("cw_triangle", 0, [(0.0, 0.0), (0.0, 1.0), (1.0, 0.0)]),
+    ("collinear", 0, [(0.0, 0.0), (1.0, 1.0), (2.0, 2.0)]),
+    ("ccw_quad", 0, [(0.0, 0.0), (4.0, 0.0), (4.0, 4.0), (0.0, 4.0)]),
+    ("triangle_list_single", 3, [(0.0, 0.0), (1.0, 0.0), (0.0, 1.0)]),
+    ("triangle_strip_unsupported", 1, [(0.0, 0.0), (1.0, 0.0), (0.0, 1.0)]),
+    ("triangle_list_multi", 3, [(0.0, 0.0), (4.0, 0.0), (4.0, 4.0), (0.0, 4.0)]),
+    ("single_vertex", 0, [(0.0, 0.0)]),
+    ("two_vertices", 0, [(0.0, 0.0), (1.0, 0.0)]),
+    ("empty", 0, []),
+]
+
+# Wgs84Polygon cases (always SIMPLE_POLYGON): (name, vertices).
+WGS84_POLYGON_CASES = [
+    ("triangle", [(0.0, 0.0), (4.0, 0.0), (0.0, 4.0)]),
+    ("asymmetric_triangle", [(0.0, 0.0), (30.0, 0.0), (0.0, 60.0)]),
+    ("quad", [(0.0, 0.0), (4.0, 0.0), (4.0, 4.0), (0.0, 4.0)]),
+    ("berlin_quad", [(13.0, 52.0), (14.0, 52.0), (14.0, 53.0), (13.0, 53.0)]),
+    ("invalid_two_vertices", [(0.0, 0.0), (1.0, 0.0)]),
+]
+
+# Ordered pairs (index into WGS84_POLYGON_CASES) for collides_with, plus a
+# couple of synthetic overlapping/disjoint triangles defined inline by name.
+WGS84_POLYGON_COLLISION_PAIRS = [
+    (
+        "triangle",
+        [(0.0, 0.0), (4.0, 0.0), (0.0, 4.0)],
+        "overlap",
+        [(1.0, 1.0), (5.0, 1.0), (1.0, 5.0)],
+    ),
+    (
+        "triangle",
+        [(0.0, 0.0), (4.0, 0.0), (0.0, 4.0)],
+        "disjoint",
+        [(20.0, 20.0), (24.0, 20.0), (20.0, 24.0)],
+    ),
+    (
+        "triangle",
+        [(0.0, 0.0), (4.0, 0.0), (0.0, 4.0)],
+        "self",
+        [(0.0, 0.0), (4.0, 0.0), (0.0, 4.0)],
+    ),
+    (
+        "quad",
+        [(0.0, 0.0), (4.0, 0.0), (4.0, 4.0), (0.0, 4.0)],
+        "shifted_quad",
+        [(2.0, 2.0), (6.0, 2.0), (6.0, 6.0), (2.0, 6.0)],
+    ),
 ]
 
 # float comparison tolerance the ports should use for distance/bearing/meters
@@ -342,6 +436,141 @@ def main():
             }
         )
     data["nds_distance_to_meters"] = rows
+
+    # -----------------------------------------------------------------------
+    # Geometry layer (deterministic methods only; PolygonTriangulation and the
+    # transcendental avg_mercator_stretch are intentionally excluded).
+    # -----------------------------------------------------------------------
+
+    def _pt(w: Wgs84) -> list[float]:
+        return [w.longitude(), w.latitude()]
+
+    def _make_aabb(sw_lon, sw_lat, size_x, size_y) -> Wgs84Aabb:
+        return Wgs84Aabb(Wgs84(sw_lon, sw_lat), Vec2(size_x, size_y))
+
+    # 12. Wgs84Aabb geometry: corners/center/size/validity/anti-meridian/tiles.
+    rows = []
+    for name, sw_lon, sw_lat, size_x, size_y in AABB_CASES:
+        box = _make_aabb(sw_lon, sw_lat, size_x, size_y)
+        split = box.split_over_anti_meridian()
+        if split is None:
+            split_out = None
+        else:
+            left, right = split
+            split_out = {
+                "left_sw": _pt(left.sw()),
+                "left_size": [left.size().x, left.size().y],
+                "right_sw": _pt(right.sw()),
+                "right_size": [right.size().x, right.size().y],
+            }
+        rows.append(
+            {
+                "name": name,
+                "sw_lon": sw_lon,
+                "sw_lat": sw_lat,
+                "size_x": size_x,
+                "size_y": size_y,
+                "valid": box.valid(),
+                # The constructor may clamp size.y for valid boxes.
+                "stored_size": [box.size().x, box.size().y],
+                "sw": _pt(box.sw()),
+                "se": _pt(box.se()),
+                "ne": _pt(box.ne()),
+                "nw": _pt(box.nw()),
+                "center": _pt(box.center()),
+                "vertices": [_pt(v) for v in box.vertices()],
+                "contains_anti_meridian": box.contains_anti_meridian(),
+                "split_over_anti_meridian": split_out,
+                # num_tile_ids at levels 0..15 and the tile_level thresholds.
+                "num_tile_ids": [box.num_tile_ids(lv) for lv in range(16)],
+                "tile_level_min8": box.tile_level(8),
+                "tile_level_min2": box.tile_level(2),
+            }
+        )
+    data["wgs84_aabb"] = rows
+
+    # 13. Wgs84Aabb.contains: each point against each AABB case.
+    rows = []
+    for box_name, sw_lon, sw_lat, size_x, size_y in AABB_CASES:
+        box = _make_aabb(sw_lon, sw_lat, size_x, size_y)
+        for point_name, plon, plat in AABB_CONTAINS_POINTS:
+            rows.append(
+                {
+                    "box": box_name,
+                    "point": point_name,
+                    "point_lon": plon,
+                    "point_lat": plat,
+                    "contains": box.contains(Wgs84(plon, plat)),
+                }
+            )
+    data["wgs84_aabb_contains"] = rows
+
+    # 14. Wgs84Aabb.intersects: full ordered pairwise matrix (verifies symmetry).
+    rows = []
+    for a_name, a_sw_lon, a_sw_lat, a_sx, a_sy in AABB_CASES:
+        for b_name, b_sw_lon, b_sw_lat, b_sx, b_sy in AABB_CASES:
+            a = _make_aabb(a_sw_lon, a_sw_lat, a_sx, a_sy)
+            b = _make_aabb(b_sw_lon, b_sw_lat, b_sx, b_sy)
+            rows.append(
+                {
+                    "a": a_name,
+                    "b": b_name,
+                    "intersects": a.intersects(b),
+                }
+            )
+    data["wgs84_aabb_intersects"] = rows
+
+    # 15. Polygon orientation + validity (base Polygon, raw lon/lat plane).
+    rows = []
+    for name, ptype_int, verts in POLYGON_CASES:
+        ptype = PolygonType(ptype_int)
+        poly = Polygon(ptype, [Wgs84(lon, lat) for lon, lat in verts])
+        rows.append(
+            {
+                "name": name,
+                "polygon_type": ptype_int,
+                "vertices": [list(v) for v in verts],
+                "orientation": int(poly.orientation()),
+                "is_valid": poly.is_valid(),
+            }
+        )
+    data["polygon_orientation"] = rows
+
+    # 16. Wgs84Polygon: aaBb, median (centroid), is_valid.
+    rows = []
+    for name, verts in WGS84_POLYGON_CASES:
+        poly = Wgs84Polygon(vertices=[Wgs84(lon, lat) for lon, lat in verts])
+        bb = poly.aa_bb()
+        med = poly.median()
+        rows.append(
+            {
+                "name": name,
+                "vertices": [list(v) for v in verts],
+                "is_valid": poly.is_valid(),
+                "aabb_sw": _pt(bb.sw()),
+                "aabb_size": [bb.size().x, bb.size().y],
+                "median_lon": med.longitude(),
+                "median_lat": med.latitude(),
+            }
+        )
+    data["wgs84_polygon"] = rows
+
+    # 17. Wgs84Polygon.collides_with (SAT), ordered pairs.
+    rows = []
+    for a_name, a_verts, b_name, b_verts in WGS84_POLYGON_COLLISION_PAIRS:
+        a = Wgs84Polygon(vertices=[Wgs84(lon, lat) for lon, lat in a_verts])
+        b = Wgs84Polygon(vertices=[Wgs84(lon, lat) for lon, lat in b_verts])
+        rows.append(
+            {
+                "a": a_name,
+                "a_vertices": [list(v) for v in a_verts],
+                "b": b_name,
+                "b_vertices": [list(v) for v in b_verts],
+                "a_collides_b": a.collides_with(b),
+                "b_collides_a": b.collides_with(a),
+            }
+        )
+    data["wgs84_polygon_collision"] = rows
 
     out_path = os.path.join(REPO_ROOT, "test-vectors", "parity_vectors.json")
     with open(out_path, "w") as f:

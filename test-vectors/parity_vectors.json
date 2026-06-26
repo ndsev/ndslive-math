@@ -1264,5 +1264,1873 @@
       "width_m": 19567.968750000004,
       "height_m": 39135.9375
     }
+  ],
+  "wgs84_aabb": [
+    {
+      "name": "origin_box",
+      "sw_lon": 0.0,
+      "sw_lat": 0.0,
+      "size_x": 20.0,
+      "size_y": 10.0,
+      "valid": true,
+      "stored_size": [
+        20.0,
+        10.0
+      ],
+      "sw": [
+        0.0,
+        0.0
+      ],
+      "se": [
+        20.0,
+        0.0
+      ],
+      "ne": [
+        20.0,
+        10.0
+      ],
+      "nw": [
+        0.0,
+        10.0
+      ],
+      "center": [
+        10.0,
+        5.0
+      ],
+      "vertices": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          20.0,
+          0.0
+        ],
+        [
+          20.0,
+          10.0
+        ],
+        [
+          0.0,
+          10.0
+        ]
+      ],
+      "contains_anti_meridian": false,
+      "split_over_anti_meridian": null,
+      "num_tile_ids": [
+        1,
+        1,
+        1,
+        1,
+        2,
+        8,
+        32,
+        120,
+        435,
+        1653,
+        6498,
+        25992,
+        103968,
+        415416,
+        1658931,
+        6630261
+      ],
+      "tile_level_min8": 5,
+      "tile_level_min2": 4
+    },
+    {
+      "name": "offset_box",
+      "sw_lon": 0.0,
+      "sw_lat": 10.0,
+      "size_x": 20.0,
+      "size_y": 10.0,
+      "valid": true,
+      "stored_size": [
+        20.0,
+        10.0
+      ],
+      "sw": [
+        0.0,
+        10.0
+      ],
+      "se": [
+        20.0,
+        10.0
+      ],
+      "ne": [
+        20.0,
+        20.0
+      ],
+      "nw": [
+        0.0,
+        20.0
+      ],
+      "center": [
+        10.0,
+        15.0
+      ],
+      "vertices": [
+        [
+          0.0,
+          10.0
+        ],
+        [
+          20.0,
+          10.0
+        ],
+        [
+          20.0,
+          20.0
+        ],
+        [
+          0.0,
+          20.0
+        ]
+      ],
+      "contains_anti_meridian": false,
+      "split_over_anti_meridian": null,
+      "num_tile_ids": [
+        1,
+        1,
+        1,
+        1,
+        2,
+        8,
+        32,
+        120,
+        435,
+        1653,
+        6498,
+        25992,
+        103968,
+        415416,
+        1658931,
+        6630261
+      ],
+      "tile_level_min8": 5,
+      "tile_level_min2": 4
+    },
+    {
+      "name": "clamp_box",
+      "sw_lon": 0.0,
+      "sw_lat": 85.0,
+      "size_x": 10.0,
+      "size_y": 10.0,
+      "valid": true,
+      "stored_size": [
+        10.0,
+        5.0
+      ],
+      "sw": [
+        0.0,
+        85.0
+      ],
+      "se": [
+        10.0,
+        85.0
+      ],
+      "ne": [
+        10.0,
+        89.99999991618097
+      ],
+      "nw": [
+        0.0,
+        89.99999991618097
+      ],
+      "center": [
+        5.0,
+        87.5
+      ],
+      "vertices": [
+        [
+          0.0,
+          85.0
+        ],
+        [
+          10.0,
+          85.0
+        ],
+        [
+          10.0,
+          89.99999991618097
+        ],
+        [
+          0.0,
+          89.99999991618097
+        ]
+      ],
+      "contains_anti_meridian": false,
+      "split_over_anti_meridian": null,
+      "num_tile_ids": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        8,
+        32,
+        120,
+        435,
+        1653,
+        6498,
+        25992,
+        103968,
+        415416,
+        1658931
+      ],
+      "tile_level_min8": 6,
+      "tile_level_min2": 5
+    },
+    {
+      "name": "anti_meridian_box",
+      "sw_lon": 175.0,
+      "sw_lat": 0.0,
+      "size_x": 10.0,
+      "size_y": 5.0,
+      "valid": true,
+      "stored_size": [
+        10.0,
+        5.0
+      ],
+      "sw": [
+        175.0,
+        0.0
+      ],
+      "se": [
+        -175.0,
+        0.0
+      ],
+      "ne": [
+        -175.0,
+        5.0
+      ],
+      "nw": [
+        175.0,
+        5.0
+      ],
+      "center": [
+        179.99999991618097,
+        2.5
+      ],
+      "vertices": [
+        [
+          175.0,
+          0.0
+        ],
+        [
+          -175.0,
+          0.0
+        ],
+        [
+          -175.0,
+          5.0
+        ],
+        [
+          175.0,
+          5.0
+        ]
+      ],
+      "contains_anti_meridian": true,
+      "split_over_anti_meridian": {
+        "left_sw": [
+          175.0,
+          0.0
+        ],
+        "left_size": [
+          4.999999916180968,
+          5.0
+        ],
+        "right_sw": [
+          -180.0,
+          0.0
+        ],
+        "right_size": [
+          5.000000083819032,
+          5.0
+        ]
+      },
+      "num_tile_ids": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        8,
+        32,
+        120,
+        435,
+        1653,
+        6498,
+        25992,
+        103968,
+        415416,
+        1658931
+      ],
+      "tile_level_min8": 6,
+      "tile_level_min2": 5
+    },
+    {
+      "name": "wide_box",
+      "sw_lon": -5.0,
+      "sw_lat": 14.0,
+      "size_x": 40.0,
+      "size_y": 2.0,
+      "valid": true,
+      "stored_size": [
+        40.0,
+        2.0
+      ],
+      "sw": [
+        -5.0,
+        14.0
+      ],
+      "se": [
+        35.0,
+        14.0
+      ],
+      "ne": [
+        35.0,
+        16.0
+      ],
+      "nw": [
+        -5.0,
+        16.0
+      ],
+      "center": [
+        15.0,
+        15.0
+      ],
+      "vertices": [
+        [
+          -5.0,
+          14.0
+        ],
+        [
+          35.0,
+          14.0
+        ],
+        [
+          35.0,
+          16.0
+        ],
+        [
+          -5.0,
+          16.0
+        ]
+      ],
+      "contains_anti_meridian": false,
+      "split_over_anti_meridian": null,
+      "num_tile_ids": [
+        1,
+        1,
+        1,
+        2,
+        4,
+        8,
+        15,
+        58,
+        171,
+        684,
+        2736,
+        10488,
+        41906,
+        167532,
+        666303,
+        2657930
+      ],
+      "tile_level_min8": 5,
+      "tile_level_min2": 3
+    },
+    {
+      "name": "tall_box",
+      "sw_lon": 8.0,
+      "sw_lat": 0.0,
+      "size_x": 2.0,
+      "size_y": 40.0,
+      "valid": true,
+      "stored_size": [
+        2.0,
+        40.0
+      ],
+      "sw": [
+        8.0,
+        0.0
+      ],
+      "se": [
+        10.0,
+        0.0
+      ],
+      "ne": [
+        10.0,
+        40.0
+      ],
+      "nw": [
+        8.0,
+        40.0
+      ],
+      "center": [
+        9.0,
+        20.0
+      ],
+      "vertices": [
+        [
+          8.0,
+          0.0
+        ],
+        [
+          10.0,
+          0.0
+        ],
+        [
+          10.0,
+          40.0
+        ],
+        [
+          8.0,
+          40.0
+        ]
+      ],
+      "contains_anti_meridian": false,
+      "split_over_anti_meridian": null,
+      "num_tile_ids": [
+        1,
+        1,
+        1,
+        2,
+        4,
+        8,
+        15,
+        58,
+        171,
+        684,
+        2736,
+        10488,
+        41906,
+        167532,
+        666303,
+        2657930
+      ],
+      "tile_level_min8": 5,
+      "tile_level_min2": 3
+    },
+    {
+      "name": "invalid_neg_size",
+      "sw_lon": 0.0,
+      "sw_lat": 85.0,
+      "size_x": -1.0,
+      "size_y": 10.0,
+      "valid": false,
+      "stored_size": [
+        -1.0,
+        10.0
+      ],
+      "sw": [
+        0.0,
+        85.0
+      ],
+      "se": [
+        -1.0,
+        85.0
+      ],
+      "ne": [
+        -1.0,
+        89.99999991618097
+      ],
+      "nw": [
+        0.0,
+        89.99999991618097
+      ],
+      "center": [
+        -0.5,
+        89.99999991618097
+      ],
+      "vertices": [
+        [
+          0.0,
+          85.0
+        ],
+        [
+          -1.0,
+          85.0
+        ],
+        [
+          -1.0,
+          89.99999991618097
+        ],
+        [
+          0.0,
+          89.99999991618097
+        ]
+      ],
+      "contains_anti_meridian": false,
+      "split_over_anti_meridian": null,
+      "num_tile_ids": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        -15,
+        -58,
+        -285,
+        -1254,
+        -5016,
+        -20520,
+        -82901,
+        -331422
+      ],
+      "tile_level_min8": 15,
+      "tile_level_min2": 15
+    },
+    {
+      "name": "default_box",
+      "sw_lon": 0.0,
+      "sw_lat": 0.0,
+      "size_x": 0.0,
+      "size_y": 0.0,
+      "valid": true,
+      "stored_size": [
+        0.0,
+        0.0
+      ],
+      "sw": [
+        0.0,
+        0.0
+      ],
+      "se": [
+        0.0,
+        0.0
+      ],
+      "ne": [
+        0.0,
+        0.0
+      ],
+      "nw": [
+        0.0,
+        0.0
+      ],
+      "center": [
+        0.0,
+        0.0
+      ],
+      "vertices": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ]
+      ],
+      "contains_anti_meridian": false,
+      "split_over_anti_meridian": null,
+      "num_tile_ids": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "tile_level_min8": 15,
+      "tile_level_min2": 15
+    },
+    {
+      "name": "tiny_box",
+      "sw_lon": 0.0,
+      "sw_lat": 0.0,
+      "size_x": 0.0001,
+      "size_y": 0.0001,
+      "valid": true,
+      "stored_size": [
+        0.0001,
+        0.0001
+      ],
+      "sw": [
+        0.0,
+        0.0
+      ],
+      "se": [
+        0.0001,
+        0.0
+      ],
+      "ne": [
+        0.0001,
+        0.0001
+      ],
+      "nw": [
+        0.0,
+        0.0001
+      ],
+      "center": [
+        5e-05,
+        5e-05
+      ],
+      "vertices": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0001,
+          0.0
+        ],
+        [
+          0.0001,
+          0.0001
+        ],
+        [
+          0.0,
+          0.0001
+        ]
+      ],
+      "contains_anti_meridian": false,
+      "split_over_anti_meridian": null,
+      "num_tile_ids": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "tile_level_min8": 15,
+      "tile_level_min2": 15
+    }
+  ],
+  "wgs84_aabb_contains": [
+    {
+      "box": "origin_box",
+      "point": "inside",
+      "point_lon": 5.0,
+      "point_lat": 5.0,
+      "contains": true
+    },
+    {
+      "box": "origin_box",
+      "point": "sw_corner_origin",
+      "point_lon": 0.0,
+      "point_lat": 0.0,
+      "contains": true
+    },
+    {
+      "box": "origin_box",
+      "point": "ne_corner_origin",
+      "point_lon": 20.0,
+      "point_lat": 10.0,
+      "contains": true
+    },
+    {
+      "box": "origin_box",
+      "point": "far_outside",
+      "point_lon": 50.0,
+      "point_lat": 50.0,
+      "contains": false
+    },
+    {
+      "box": "origin_box",
+      "point": "near_am",
+      "point_lon": 178.0,
+      "point_lat": 2.0,
+      "contains": false
+    },
+    {
+      "box": "offset_box",
+      "point": "inside",
+      "point_lon": 5.0,
+      "point_lat": 5.0,
+      "contains": false
+    },
+    {
+      "box": "offset_box",
+      "point": "sw_corner_origin",
+      "point_lon": 0.0,
+      "point_lat": 0.0,
+      "contains": false
+    },
+    {
+      "box": "offset_box",
+      "point": "ne_corner_origin",
+      "point_lon": 20.0,
+      "point_lat": 10.0,
+      "contains": true
+    },
+    {
+      "box": "offset_box",
+      "point": "far_outside",
+      "point_lon": 50.0,
+      "point_lat": 50.0,
+      "contains": false
+    },
+    {
+      "box": "offset_box",
+      "point": "near_am",
+      "point_lon": 178.0,
+      "point_lat": 2.0,
+      "contains": false
+    },
+    {
+      "box": "clamp_box",
+      "point": "inside",
+      "point_lon": 5.0,
+      "point_lat": 5.0,
+      "contains": false
+    },
+    {
+      "box": "clamp_box",
+      "point": "sw_corner_origin",
+      "point_lon": 0.0,
+      "point_lat": 0.0,
+      "contains": false
+    },
+    {
+      "box": "clamp_box",
+      "point": "ne_corner_origin",
+      "point_lon": 20.0,
+      "point_lat": 10.0,
+      "contains": false
+    },
+    {
+      "box": "clamp_box",
+      "point": "far_outside",
+      "point_lon": 50.0,
+      "point_lat": 50.0,
+      "contains": false
+    },
+    {
+      "box": "clamp_box",
+      "point": "near_am",
+      "point_lon": 178.0,
+      "point_lat": 2.0,
+      "contains": false
+    },
+    {
+      "box": "anti_meridian_box",
+      "point": "inside",
+      "point_lon": 5.0,
+      "point_lat": 5.0,
+      "contains": false
+    },
+    {
+      "box": "anti_meridian_box",
+      "point": "sw_corner_origin",
+      "point_lon": 0.0,
+      "point_lat": 0.0,
+      "contains": false
+    },
+    {
+      "box": "anti_meridian_box",
+      "point": "ne_corner_origin",
+      "point_lon": 20.0,
+      "point_lat": 10.0,
+      "contains": false
+    },
+    {
+      "box": "anti_meridian_box",
+      "point": "far_outside",
+      "point_lon": 50.0,
+      "point_lat": 50.0,
+      "contains": false
+    },
+    {
+      "box": "anti_meridian_box",
+      "point": "near_am",
+      "point_lon": 178.0,
+      "point_lat": 2.0,
+      "contains": true
+    },
+    {
+      "box": "wide_box",
+      "point": "inside",
+      "point_lon": 5.0,
+      "point_lat": 5.0,
+      "contains": false
+    },
+    {
+      "box": "wide_box",
+      "point": "sw_corner_origin",
+      "point_lon": 0.0,
+      "point_lat": 0.0,
+      "contains": false
+    },
+    {
+      "box": "wide_box",
+      "point": "ne_corner_origin",
+      "point_lon": 20.0,
+      "point_lat": 10.0,
+      "contains": false
+    },
+    {
+      "box": "wide_box",
+      "point": "far_outside",
+      "point_lon": 50.0,
+      "point_lat": 50.0,
+      "contains": false
+    },
+    {
+      "box": "wide_box",
+      "point": "near_am",
+      "point_lon": 178.0,
+      "point_lat": 2.0,
+      "contains": false
+    },
+    {
+      "box": "tall_box",
+      "point": "inside",
+      "point_lon": 5.0,
+      "point_lat": 5.0,
+      "contains": false
+    },
+    {
+      "box": "tall_box",
+      "point": "sw_corner_origin",
+      "point_lon": 0.0,
+      "point_lat": 0.0,
+      "contains": false
+    },
+    {
+      "box": "tall_box",
+      "point": "ne_corner_origin",
+      "point_lon": 20.0,
+      "point_lat": 10.0,
+      "contains": false
+    },
+    {
+      "box": "tall_box",
+      "point": "far_outside",
+      "point_lon": 50.0,
+      "point_lat": 50.0,
+      "contains": false
+    },
+    {
+      "box": "tall_box",
+      "point": "near_am",
+      "point_lon": 178.0,
+      "point_lat": 2.0,
+      "contains": false
+    },
+    {
+      "box": "invalid_neg_size",
+      "point": "inside",
+      "point_lon": 5.0,
+      "point_lat": 5.0,
+      "contains": false
+    },
+    {
+      "box": "invalid_neg_size",
+      "point": "sw_corner_origin",
+      "point_lon": 0.0,
+      "point_lat": 0.0,
+      "contains": false
+    },
+    {
+      "box": "invalid_neg_size",
+      "point": "ne_corner_origin",
+      "point_lon": 20.0,
+      "point_lat": 10.0,
+      "contains": false
+    },
+    {
+      "box": "invalid_neg_size",
+      "point": "far_outside",
+      "point_lon": 50.0,
+      "point_lat": 50.0,
+      "contains": false
+    },
+    {
+      "box": "invalid_neg_size",
+      "point": "near_am",
+      "point_lon": 178.0,
+      "point_lat": 2.0,
+      "contains": false
+    },
+    {
+      "box": "default_box",
+      "point": "inside",
+      "point_lon": 5.0,
+      "point_lat": 5.0,
+      "contains": false
+    },
+    {
+      "box": "default_box",
+      "point": "sw_corner_origin",
+      "point_lon": 0.0,
+      "point_lat": 0.0,
+      "contains": true
+    },
+    {
+      "box": "default_box",
+      "point": "ne_corner_origin",
+      "point_lon": 20.0,
+      "point_lat": 10.0,
+      "contains": false
+    },
+    {
+      "box": "default_box",
+      "point": "far_outside",
+      "point_lon": 50.0,
+      "point_lat": 50.0,
+      "contains": false
+    },
+    {
+      "box": "default_box",
+      "point": "near_am",
+      "point_lon": 178.0,
+      "point_lat": 2.0,
+      "contains": false
+    },
+    {
+      "box": "tiny_box",
+      "point": "inside",
+      "point_lon": 5.0,
+      "point_lat": 5.0,
+      "contains": false
+    },
+    {
+      "box": "tiny_box",
+      "point": "sw_corner_origin",
+      "point_lon": 0.0,
+      "point_lat": 0.0,
+      "contains": true
+    },
+    {
+      "box": "tiny_box",
+      "point": "ne_corner_origin",
+      "point_lon": 20.0,
+      "point_lat": 10.0,
+      "contains": false
+    },
+    {
+      "box": "tiny_box",
+      "point": "far_outside",
+      "point_lon": 50.0,
+      "point_lat": 50.0,
+      "contains": false
+    },
+    {
+      "box": "tiny_box",
+      "point": "near_am",
+      "point_lon": 178.0,
+      "point_lat": 2.0,
+      "contains": false
+    }
+  ],
+  "wgs84_aabb_intersects": [
+    {
+      "a": "origin_box",
+      "b": "origin_box",
+      "intersects": true
+    },
+    {
+      "a": "origin_box",
+      "b": "offset_box",
+      "intersects": true
+    },
+    {
+      "a": "origin_box",
+      "b": "clamp_box",
+      "intersects": false
+    },
+    {
+      "a": "origin_box",
+      "b": "anti_meridian_box",
+      "intersects": false
+    },
+    {
+      "a": "origin_box",
+      "b": "wide_box",
+      "intersects": false
+    },
+    {
+      "a": "origin_box",
+      "b": "tall_box",
+      "intersects": true
+    },
+    {
+      "a": "origin_box",
+      "b": "invalid_neg_size",
+      "intersects": false
+    },
+    {
+      "a": "origin_box",
+      "b": "default_box",
+      "intersects": true
+    },
+    {
+      "a": "origin_box",
+      "b": "tiny_box",
+      "intersects": true
+    },
+    {
+      "a": "offset_box",
+      "b": "origin_box",
+      "intersects": true
+    },
+    {
+      "a": "offset_box",
+      "b": "offset_box",
+      "intersects": true
+    },
+    {
+      "a": "offset_box",
+      "b": "clamp_box",
+      "intersects": false
+    },
+    {
+      "a": "offset_box",
+      "b": "anti_meridian_box",
+      "intersects": false
+    },
+    {
+      "a": "offset_box",
+      "b": "wide_box",
+      "intersects": true
+    },
+    {
+      "a": "offset_box",
+      "b": "tall_box",
+      "intersects": true
+    },
+    {
+      "a": "offset_box",
+      "b": "invalid_neg_size",
+      "intersects": false
+    },
+    {
+      "a": "offset_box",
+      "b": "default_box",
+      "intersects": false
+    },
+    {
+      "a": "offset_box",
+      "b": "tiny_box",
+      "intersects": false
+    },
+    {
+      "a": "clamp_box",
+      "b": "origin_box",
+      "intersects": false
+    },
+    {
+      "a": "clamp_box",
+      "b": "offset_box",
+      "intersects": false
+    },
+    {
+      "a": "clamp_box",
+      "b": "clamp_box",
+      "intersects": true
+    },
+    {
+      "a": "clamp_box",
+      "b": "anti_meridian_box",
+      "intersects": false
+    },
+    {
+      "a": "clamp_box",
+      "b": "wide_box",
+      "intersects": false
+    },
+    {
+      "a": "clamp_box",
+      "b": "tall_box",
+      "intersects": false
+    },
+    {
+      "a": "clamp_box",
+      "b": "invalid_neg_size",
+      "intersects": false
+    },
+    {
+      "a": "clamp_box",
+      "b": "default_box",
+      "intersects": false
+    },
+    {
+      "a": "clamp_box",
+      "b": "tiny_box",
+      "intersects": false
+    },
+    {
+      "a": "anti_meridian_box",
+      "b": "origin_box",
+      "intersects": false
+    },
+    {
+      "a": "anti_meridian_box",
+      "b": "offset_box",
+      "intersects": false
+    },
+    {
+      "a": "anti_meridian_box",
+      "b": "clamp_box",
+      "intersects": false
+    },
+    {
+      "a": "anti_meridian_box",
+      "b": "anti_meridian_box",
+      "intersects": true
+    },
+    {
+      "a": "anti_meridian_box",
+      "b": "wide_box",
+      "intersects": false
+    },
+    {
+      "a": "anti_meridian_box",
+      "b": "tall_box",
+      "intersects": false
+    },
+    {
+      "a": "anti_meridian_box",
+      "b": "invalid_neg_size",
+      "intersects": false
+    },
+    {
+      "a": "anti_meridian_box",
+      "b": "default_box",
+      "intersects": false
+    },
+    {
+      "a": "anti_meridian_box",
+      "b": "tiny_box",
+      "intersects": false
+    },
+    {
+      "a": "wide_box",
+      "b": "origin_box",
+      "intersects": false
+    },
+    {
+      "a": "wide_box",
+      "b": "offset_box",
+      "intersects": true
+    },
+    {
+      "a": "wide_box",
+      "b": "clamp_box",
+      "intersects": false
+    },
+    {
+      "a": "wide_box",
+      "b": "anti_meridian_box",
+      "intersects": false
+    },
+    {
+      "a": "wide_box",
+      "b": "wide_box",
+      "intersects": true
+    },
+    {
+      "a": "wide_box",
+      "b": "tall_box",
+      "intersects": true
+    },
+    {
+      "a": "wide_box",
+      "b": "invalid_neg_size",
+      "intersects": false
+    },
+    {
+      "a": "wide_box",
+      "b": "default_box",
+      "intersects": false
+    },
+    {
+      "a": "wide_box",
+      "b": "tiny_box",
+      "intersects": false
+    },
+    {
+      "a": "tall_box",
+      "b": "origin_box",
+      "intersects": true
+    },
+    {
+      "a": "tall_box",
+      "b": "offset_box",
+      "intersects": true
+    },
+    {
+      "a": "tall_box",
+      "b": "clamp_box",
+      "intersects": false
+    },
+    {
+      "a": "tall_box",
+      "b": "anti_meridian_box",
+      "intersects": false
+    },
+    {
+      "a": "tall_box",
+      "b": "wide_box",
+      "intersects": true
+    },
+    {
+      "a": "tall_box",
+      "b": "tall_box",
+      "intersects": true
+    },
+    {
+      "a": "tall_box",
+      "b": "invalid_neg_size",
+      "intersects": false
+    },
+    {
+      "a": "tall_box",
+      "b": "default_box",
+      "intersects": false
+    },
+    {
+      "a": "tall_box",
+      "b": "tiny_box",
+      "intersects": false
+    },
+    {
+      "a": "invalid_neg_size",
+      "b": "origin_box",
+      "intersects": false
+    },
+    {
+      "a": "invalid_neg_size",
+      "b": "offset_box",
+      "intersects": false
+    },
+    {
+      "a": "invalid_neg_size",
+      "b": "clamp_box",
+      "intersects": false
+    },
+    {
+      "a": "invalid_neg_size",
+      "b": "anti_meridian_box",
+      "intersects": false
+    },
+    {
+      "a": "invalid_neg_size",
+      "b": "wide_box",
+      "intersects": false
+    },
+    {
+      "a": "invalid_neg_size",
+      "b": "tall_box",
+      "intersects": false
+    },
+    {
+      "a": "invalid_neg_size",
+      "b": "invalid_neg_size",
+      "intersects": false
+    },
+    {
+      "a": "invalid_neg_size",
+      "b": "default_box",
+      "intersects": false
+    },
+    {
+      "a": "invalid_neg_size",
+      "b": "tiny_box",
+      "intersects": false
+    },
+    {
+      "a": "default_box",
+      "b": "origin_box",
+      "intersects": true
+    },
+    {
+      "a": "default_box",
+      "b": "offset_box",
+      "intersects": false
+    },
+    {
+      "a": "default_box",
+      "b": "clamp_box",
+      "intersects": false
+    },
+    {
+      "a": "default_box",
+      "b": "anti_meridian_box",
+      "intersects": false
+    },
+    {
+      "a": "default_box",
+      "b": "wide_box",
+      "intersects": false
+    },
+    {
+      "a": "default_box",
+      "b": "tall_box",
+      "intersects": false
+    },
+    {
+      "a": "default_box",
+      "b": "invalid_neg_size",
+      "intersects": false
+    },
+    {
+      "a": "default_box",
+      "b": "default_box",
+      "intersects": true
+    },
+    {
+      "a": "default_box",
+      "b": "tiny_box",
+      "intersects": true
+    },
+    {
+      "a": "tiny_box",
+      "b": "origin_box",
+      "intersects": true
+    },
+    {
+      "a": "tiny_box",
+      "b": "offset_box",
+      "intersects": false
+    },
+    {
+      "a": "tiny_box",
+      "b": "clamp_box",
+      "intersects": false
+    },
+    {
+      "a": "tiny_box",
+      "b": "anti_meridian_box",
+      "intersects": false
+    },
+    {
+      "a": "tiny_box",
+      "b": "wide_box",
+      "intersects": false
+    },
+    {
+      "a": "tiny_box",
+      "b": "tall_box",
+      "intersects": false
+    },
+    {
+      "a": "tiny_box",
+      "b": "invalid_neg_size",
+      "intersects": false
+    },
+    {
+      "a": "tiny_box",
+      "b": "default_box",
+      "intersects": true
+    },
+    {
+      "a": "tiny_box",
+      "b": "tiny_box",
+      "intersects": true
+    }
+  ],
+  "polygon_orientation": [
+    {
+      "name": "ccw_triangle",
+      "polygon_type": 0,
+      "vertices": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0
+        ]
+      ],
+      "orientation": 1,
+      "is_valid": true
+    },
+    {
+      "name": "cw_triangle",
+      "polygon_type": 0,
+      "vertices": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0
+        ],
+        [
+          1.0,
+          0.0
+        ]
+      ],
+      "orientation": -1,
+      "is_valid": true
+    },
+    {
+      "name": "collinear",
+      "polygon_type": 0,
+      "vertices": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          1.0,
+          1.0
+        ],
+        [
+          2.0,
+          2.0
+        ]
+      ],
+      "orientation": 0,
+      "is_valid": true
+    },
+    {
+      "name": "ccw_quad",
+      "polygon_type": 0,
+      "vertices": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          4.0,
+          0.0
+        ],
+        [
+          4.0,
+          4.0
+        ],
+        [
+          0.0,
+          4.0
+        ]
+      ],
+      "orientation": 1,
+      "is_valid": true
+    },
+    {
+      "name": "triangle_list_single",
+      "polygon_type": 3,
+      "vertices": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0
+        ]
+      ],
+      "orientation": 1,
+      "is_valid": true
+    },
+    {
+      "name": "triangle_strip_unsupported",
+      "polygon_type": 1,
+      "vertices": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0
+        ]
+      ],
+      "orientation": 0,
+      "is_valid": true
+    },
+    {
+      "name": "triangle_list_multi",
+      "polygon_type": 3,
+      "vertices": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          4.0,
+          0.0
+        ],
+        [
+          4.0,
+          4.0
+        ],
+        [
+          0.0,
+          4.0
+        ]
+      ],
+      "orientation": 0,
+      "is_valid": true
+    },
+    {
+      "name": "single_vertex",
+      "polygon_type": 0,
+      "vertices": [
+        [
+          0.0,
+          0.0
+        ]
+      ],
+      "orientation": 0,
+      "is_valid": true
+    },
+    {
+      "name": "two_vertices",
+      "polygon_type": 0,
+      "vertices": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          1.0,
+          0.0
+        ]
+      ],
+      "orientation": 0,
+      "is_valid": true
+    },
+    {
+      "name": "empty",
+      "polygon_type": 0,
+      "vertices": [],
+      "orientation": 0,
+      "is_valid": false
+    }
+  ],
+  "wgs84_polygon": [
+    {
+      "name": "triangle",
+      "vertices": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          4.0,
+          0.0
+        ],
+        [
+          0.0,
+          4.0
+        ]
+      ],
+      "is_valid": true,
+      "aabb_sw": [
+        0.0,
+        0.0
+      ],
+      "aabb_size": [
+        4.0,
+        4.0
+      ],
+      "median_lon": 1.3333333333333333,
+      "median_lat": 1.3333333333333333
+    },
+    {
+      "name": "asymmetric_triangle",
+      "vertices": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          30.0,
+          0.0
+        ],
+        [
+          0.0,
+          60.0
+        ]
+      ],
+      "is_valid": true,
+      "aabb_sw": [
+        0.0,
+        0.0
+      ],
+      "aabb_size": [
+        30.0,
+        60.0
+      ],
+      "median_lon": 10.0,
+      "median_lat": 20.0
+    },
+    {
+      "name": "quad",
+      "vertices": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          4.0,
+          0.0
+        ],
+        [
+          4.0,
+          4.0
+        ],
+        [
+          0.0,
+          4.0
+        ]
+      ],
+      "is_valid": true,
+      "aabb_sw": [
+        0.0,
+        0.0
+      ],
+      "aabb_size": [
+        4.0,
+        4.0
+      ],
+      "median_lon": 2.0,
+      "median_lat": 2.0
+    },
+    {
+      "name": "berlin_quad",
+      "vertices": [
+        [
+          13.0,
+          52.0
+        ],
+        [
+          14.0,
+          52.0
+        ],
+        [
+          14.0,
+          53.0
+        ],
+        [
+          13.0,
+          53.0
+        ]
+      ],
+      "is_valid": true,
+      "aabb_sw": [
+        13.0,
+        52.0
+      ],
+      "aabb_size": [
+        1.0,
+        1.0
+      ],
+      "median_lon": 13.5,
+      "median_lat": 52.5
+    },
+    {
+      "name": "invalid_two_vertices",
+      "vertices": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          1.0,
+          0.0
+        ]
+      ],
+      "is_valid": false,
+      "aabb_sw": [
+        0.0,
+        0.0
+      ],
+      "aabb_size": [
+        0.0,
+        0.0
+      ],
+      "median_lon": 0.5,
+      "median_lat": 0.0
+    }
+  ],
+  "wgs84_polygon_collision": [
+    {
+      "a": "triangle",
+      "a_vertices": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          4.0,
+          0.0
+        ],
+        [
+          0.0,
+          4.0
+        ]
+      ],
+      "b": "overlap",
+      "b_vertices": [
+        [
+          1.0,
+          1.0
+        ],
+        [
+          5.0,
+          1.0
+        ],
+        [
+          1.0,
+          5.0
+        ]
+      ],
+      "a_collides_b": true,
+      "b_collides_a": true
+    },
+    {
+      "a": "triangle",
+      "a_vertices": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          4.0,
+          0.0
+        ],
+        [
+          0.0,
+          4.0
+        ]
+      ],
+      "b": "disjoint",
+      "b_vertices": [
+        [
+          20.0,
+          20.0
+        ],
+        [
+          24.0,
+          20.0
+        ],
+        [
+          20.0,
+          24.0
+        ]
+      ],
+      "a_collides_b": false,
+      "b_collides_a": false
+    },
+    {
+      "a": "triangle",
+      "a_vertices": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          4.0,
+          0.0
+        ],
+        [
+          0.0,
+          4.0
+        ]
+      ],
+      "b": "self",
+      "b_vertices": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          4.0,
+          0.0
+        ],
+        [
+          0.0,
+          4.0
+        ]
+      ],
+      "a_collides_b": true,
+      "b_collides_a": true
+    },
+    {
+      "a": "quad",
+      "a_vertices": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          4.0,
+          0.0
+        ],
+        [
+          4.0,
+          4.0
+        ],
+        [
+          0.0,
+          4.0
+        ]
+      ],
+      "b": "shifted_quad",
+      "b_vertices": [
+        [
+          2.0,
+          2.0
+        ],
+        [
+          6.0,
+          2.0
+        ],
+        [
+          6.0,
+          6.0
+        ],
+        [
+          2.0,
+          6.0
+        ]
+      ],
+      "a_collides_b": true,
+      "b_collides_a": true
+    }
   ]
 }

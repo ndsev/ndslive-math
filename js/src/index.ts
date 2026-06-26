@@ -31,3 +31,8 @@ export { Wgs84 } from './wgs84.js';
 export { MortonCode } from './morton.js';
 export { PackedTileId, getTileIdsForBoundingBox, boundingBoxFromTileIds } from './tileid.js';
 export { NdsBoundingBox } from './boundingBox.js';
+export { Vec2 } from './vec2.js';
+export { Polygon, Orientation, PolygonType } from './polygon.js';
+export { Wgs84Aabb } from './wgs84Aabb.js';
+export { Wgs84Polygon } from './wgs84Polygon.js';
+export { PolygonTriangulation } from './polygonTriangulation.js';

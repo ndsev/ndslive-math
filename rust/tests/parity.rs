@@ -6,9 +6,11 @@
 
 use std::path::PathBuf;
 
+use std::collections::HashMap;
+
 use ndslive_math::{
     bounding_box_from_tile_ids, get_tile_ids_for_bounding_box, MortonCode, NdsBoundingBox,
-    PackedTileId, Wgs84,
+    Orientation, PackedTileId, PolygonType, Vec2, Wgs84, Wgs84Aabb, Wgs84Polygon,
 };
 use serde::Deserialize;
 
@@ -30,6 +32,12 @@ struct Vectors {
     nds_bbox_from_wgs84: Vec<NdsBboxFromWgs84>,
     distance_bearing: Vec<DistanceBearing>,
     nds_distance_to_meters: Vec<NdsDistanceToMeters>,
+    wgs84_aabb: Vec<AabbVec>,
+    wgs84_aabb_contains: Vec<AabbContainsVec>,
+    wgs84_aabb_intersects: Vec<AabbIntersectsVec>,
+    polygon_orientation: Vec<PolygonOrientationVec>,
+    wgs84_polygon: Vec<Wgs84PolygonVec>,
+    wgs84_polygon_collision: Vec<Wgs84PolygonCollisionVec>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -146,6 +154,78 @@ struct NdsDistanceToMeters {
     at_latitude: f64,
     width_m: f64,
     height_m: f64,
+}
+
+#[derive(Debug, Deserialize)]
+struct AabbSplit {
+    left_sw: [f64; 2],
+    left_size: [f64; 2],
+    right_sw: [f64; 2],
+    right_size: [f64; 2],
+}
+
+#[derive(Debug, Deserialize)]
+struct AabbVec {
+    name: String,
+    sw_lon: f64,
+    sw_lat: f64,
+    size_x: f64,
+    size_y: f64,
+    valid: bool,
+    stored_size: [f64; 2],
+    sw: [f64; 2],
+    se: [f64; 2],
+    ne: [f64; 2],
+    nw: [f64; 2],
+    center: [f64; 2],
+    vertices: Vec<[f64; 2]>,
+    contains_anti_meridian: bool,
+    split_over_anti_meridian: Option<AabbSplit>,
+    num_tile_ids: Vec<i64>,
+    tile_level_min8: u8,
+    tile_level_min2: u8,
+}
+
+#[derive(Debug, Deserialize)]
+struct AabbContainsVec {
+    #[serde(rename = "box")]
+    box_name: String,
+    point_lon: f64,
+    point_lat: f64,
+    contains: bool,
+}
+
+#[derive(Debug, Deserialize)]
+struct AabbIntersectsVec {
+    a: String,
+    b: String,
+    intersects: bool,
+}
+
+#[derive(Debug, Deserialize)]
+struct PolygonOrientationVec {
+    polygon_type: u8,
+    vertices: Vec<[f64; 2]>,
+    orientation: i8,
+    is_valid: bool,
+}
+
+#[derive(Debug, Deserialize)]
+struct Wgs84PolygonVec {
+    vertices: Vec<[f64; 2]>,
+    is_valid: bool,
+    aabb_sw: [f64; 2],
+    aabb_size: [f64; 2],
+    median_lon: f64,
+    median_lat: f64,
+}
+
+#[derive(Debug, Deserialize)]
+struct Wgs84PolygonCollisionVec {
+    a_vertices: Vec<[f64; 2]>,
+    b_vertices: Vec<[f64; 2]>,
+    a_collides_b: bool,
+    b_collides_a: bool,
 }
 
 fn load() -> Vectors {
@@ -496,6 +576,289 @@ fn nds_distance_to_meters() {
             row.at_latitude,
             h,
             row.height_m
+        );
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Geometry parity (the C++-only layer ported to Rust).
+// ---------------------------------------------------------------------------
+
+fn polygon_type_from_u8(t: u8) -> PolygonType {
+    match t {
+        0 => PolygonType::SimplePolygon,
+        1 => PolygonType::TriangleStrip,
+        2 => PolygonType::TriangleFan,
+        3 => PolygonType::TriangleList,
+        4 => PolygonType::Unknown,
+        other => panic!("unknown polygon_type {other}"),
+    }
+}
+
+fn orientation_to_i8(o: Orientation) -> i8 {
+    match o {
+        Orientation::Clockwise => -1,
+        Orientation::InvalidOrientation => 0,
+        Orientation::CounterClockwise => 1,
+    }
+}
+
+fn pts(v: &[[f64; 2]]) -> Vec<Wgs84> {
+    v.iter().map(|p| Wgs84::new(p[0], p[1])).collect()
+}
+
+/// Build a `Wgs84Aabb` from a row in the `wgs84_aabb` section (explicit
+/// `(sw, size)` construction, matching how the golden vectors were generated).
+fn build_aabb(row: &AabbVec) -> Wgs84Aabb {
+    Wgs84Aabb::new(
+        Wgs84::new(row.sw_lon, row.sw_lat),
+        Vec2::new(row.size_x, row.size_y),
+    )
+}
+
+#[test]
+fn geometry_wgs84_aabb() {
+    let v = load();
+    assert!(!v.wgs84_aabb.is_empty());
+    for row in &v.wgs84_aabb {
+        let b = build_aabb(row);
+        let name = &row.name;
+
+        assert_eq!(b.valid(), row.valid, "valid {name}");
+
+        let sz = b.size();
+        assert!(
+            approx(sz.x, row.stored_size[0], FLOAT_TOLERANCE)
+                && approx(sz.y, row.stored_size[1], FLOAT_TOLERANCE),
+            "stored_size {name}: got ({},{}), want {:?}",
+            sz.x,
+            sz.y,
+            row.stored_size
+        );
+
+        let check = |label: &str, got: Wgs84, want: [f64; 2]| {
+            assert!(
+                approx(got.lon, want[0], FLOAT_TOLERANCE)
+                    && approx(got.lat, want[1], FLOAT_TOLERANCE),
+                "{label} {name}: got ({},{}), want {:?}",
+                got.lon,
+                got.lat,
+                want
+            );
+        };
+        check("sw", b.sw(), row.sw);
+        check("se", b.se(), row.se);
+        check("ne", b.ne(), row.ne);
+        check("nw", b.nw(), row.nw);
+        check("center", b.center(), row.center);
+
+        let verts = b.vertices();
+        assert_eq!(verts.len(), row.vertices.len(), "vertices len {name}");
+        for (i, want) in row.vertices.iter().enumerate() {
+            check(&format!("vertex[{i}]"), verts[i], *want);
+        }
+
+        assert_eq!(
+            b.contains_anti_meridian(),
+            row.contains_anti_meridian,
+            "contains_anti_meridian {name}"
+        );
+
+        match (&row.split_over_anti_meridian, b.split_over_anti_meridian()) {
+            (None, None) => {}
+            (Some(want), Some((left, right))) => {
+                assert!(
+                    approx(left.sw().lon, want.left_sw[0], FLOAT_TOLERANCE)
+                        && approx(left.sw().lat, want.left_sw[1], FLOAT_TOLERANCE),
+                    "split left_sw {name}"
+                );
+                assert!(
+                    approx(left.size().x, want.left_size[0], FLOAT_TOLERANCE)
+                        && approx(left.size().y, want.left_size[1], FLOAT_TOLERANCE),
+                    "split left_size {name}: got ({},{}), want {:?}",
+                    left.size().x,
+                    left.size().y,
+                    want.left_size
+                );
+                assert!(
+                    approx(right.sw().lon, want.right_sw[0], FLOAT_TOLERANCE)
+                        && approx(right.sw().lat, want.right_sw[1], FLOAT_TOLERANCE),
+                    "split right_sw {name}"
+                );
+                assert!(
+                    approx(right.size().x, want.right_size[0], FLOAT_TOLERANCE)
+                        && approx(right.size().y, want.right_size[1], FLOAT_TOLERANCE),
+                    "split right_size {name}: got ({},{}), want {:?}",
+                    right.size().x,
+                    right.size().y,
+                    want.right_size
+                );
+            }
+            (want, got) => panic!(
+                "split_over_anti_meridian mismatch {name}: want_some={} got_some={}",
+                want.is_some(),
+                got.is_some()
+            ),
+        }
+
+        assert_eq!(
+            row.num_tile_ids.len(),
+            16,
+            "num_tile_ids must cover levels 0..=15"
+        );
+        for (lv, want) in row.num_tile_ids.iter().enumerate() {
+            assert_eq!(
+                b.num_tile_ids(lv as u32),
+                *want,
+                "num_tile_ids[{lv}] {name}"
+            );
+        }
+
+        assert_eq!(b.tile_level(8), row.tile_level_min8, "tile_level(8) {name}");
+        assert_eq!(b.tile_level(2), row.tile_level_min2, "tile_level(2) {name}");
+    }
+}
+
+#[test]
+fn geometry_wgs84_aabb_contains() {
+    let v = load();
+    assert!(!v.wgs84_aabb_contains.is_empty());
+
+    let boxes: HashMap<&str, Wgs84Aabb> = v
+        .wgs84_aabb
+        .iter()
+        .map(|row| (row.name.as_str(), build_aabb(row)))
+        .collect();
+
+    for row in &v.wgs84_aabb_contains {
+        let b = boxes
+            .get(row.box_name.as_str())
+            .unwrap_or_else(|| panic!("unknown box {}", row.box_name));
+        let p = Wgs84::new(row.point_lon, row.point_lat);
+        assert_eq!(
+            b.contains(&p),
+            row.contains,
+            "contains box={} point=({},{})",
+            row.box_name,
+            row.point_lon,
+            row.point_lat
+        );
+    }
+}
+
+#[test]
+fn geometry_wgs84_aabb_intersects() {
+    let v = load();
+    assert!(!v.wgs84_aabb_intersects.is_empty());
+
+    let boxes: HashMap<&str, Wgs84Aabb> = v
+        .wgs84_aabb
+        .iter()
+        .map(|row| (row.name.as_str(), build_aabb(row)))
+        .collect();
+
+    for row in &v.wgs84_aabb_intersects {
+        let a = boxes
+            .get(row.a.as_str())
+            .unwrap_or_else(|| panic!("unknown box {}", row.a));
+        let b = boxes
+            .get(row.b.as_str())
+            .unwrap_or_else(|| panic!("unknown box {}", row.b));
+        assert_eq!(
+            a.intersects(b),
+            row.intersects,
+            "intersects a={} b={}",
+            row.a,
+            row.b
+        );
+    }
+}
+
+#[test]
+fn geometry_polygon_orientation() {
+    let v = load();
+    assert!(!v.polygon_orientation.is_empty());
+    for row in &v.polygon_orientation {
+        let poly = ndslive_math::Polygon::with_vertices(
+            polygon_type_from_u8(row.polygon_type),
+            pts(&row.vertices),
+        );
+        assert_eq!(
+            orientation_to_i8(poly.orientation()),
+            row.orientation,
+            "orientation {:?}",
+            row.vertices
+        );
+        assert_eq!(poly.is_valid(), row.is_valid, "is_valid {:?}", row.vertices);
+    }
+}
+
+#[test]
+fn geometry_wgs84_polygon() {
+    let v = load();
+    assert!(!v.wgs84_polygon.is_empty());
+    for row in &v.wgs84_polygon {
+        let poly = Wgs84Polygon::from_vertices(pts(&row.vertices));
+        assert_eq!(poly.is_valid(), row.is_valid, "is_valid {:?}", row.vertices);
+
+        let bb = poly.aa_bb();
+        assert!(
+            approx(bb.sw().lon, row.aabb_sw[0], FLOAT_TOLERANCE)
+                && approx(bb.sw().lat, row.aabb_sw[1], FLOAT_TOLERANCE),
+            "aabb_sw {:?}: got ({},{}), want {:?}",
+            row.vertices,
+            bb.sw().lon,
+            bb.sw().lat,
+            row.aabb_sw
+        );
+        assert!(
+            approx(bb.size().x, row.aabb_size[0], FLOAT_TOLERANCE)
+                && approx(bb.size().y, row.aabb_size[1], FLOAT_TOLERANCE),
+            "aabb_size {:?}: got ({},{}), want {:?}",
+            row.vertices,
+            bb.size().x,
+            bb.size().y,
+            row.aabb_size
+        );
+
+        let m = poly.median();
+        assert!(
+            approx(m.lon, row.median_lon, FLOAT_TOLERANCE),
+            "median_lon {:?}: got {}, want {}",
+            row.vertices,
+            m.lon,
+            row.median_lon
+        );
+        assert!(
+            approx(m.lat, row.median_lat, FLOAT_TOLERANCE),
+            "median_lat {:?}: got {}, want {}",
+            row.vertices,
+            m.lat,
+            row.median_lat
+        );
+    }
+}
+
+#[test]
+fn geometry_wgs84_polygon_collision() {
+    let v = load();
+    assert!(!v.wgs84_polygon_collision.is_empty());
+    for row in &v.wgs84_polygon_collision {
+        let a = Wgs84Polygon::from_vertices(pts(&row.a_vertices));
+        let b = Wgs84Polygon::from_vertices(pts(&row.b_vertices));
+        assert_eq!(
+            a.collides_with(&b),
+            row.a_collides_b,
+            "a_collides_b a={:?} b={:?}",
+            row.a_vertices,
+            row.b_vertices
+        );
+        assert_eq!(
+            b.collides_with(&a),
+            row.b_collides_a,
+            "b_collides_a a={:?} b={:?}",
+            row.a_vertices,
+            row.b_vertices
         );
     }
 }

@@ -2,6 +2,10 @@
 from __future__ import annotations
 
 import math
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .morton import MortonCode
 
 
 class Wgs84:
@@ -13,6 +17,21 @@ class Wgs84:
     EARTH_RADIUS_IN_METERS = 6371000.8  # Approximate radius of Earth in meters
     LON_NDS_DELTA = 360 / (2**32 - 1)
     LAT_NDS_DELTA = 180 / (2**31 - 1)
+
+    # Geometry-layer constants mirroring the C++ ``Wgs84<double>`` static members
+    # (``cpp/include/ndsmath/wgs84.h``). These intentionally use a power-of-two
+    # denominator (``2^32`` / ``2^31``) rather than the ``LON_NDS_DELTA`` /
+    # ``LAT_NDS_DELTA`` above (which use ``2^32 - 1`` / ``2^31 - 1``). The
+    # difference shows up in the 13th significant digit, but it is load-bearing
+    # for the geometry layer: ``Wgs84AABB`` antimeridian handling and tile-from-
+    # index construction must match the C++ reference bit-for-bit. Do NOT reuse
+    # ``LON_NDS_DELTA`` / ``LAT_NDS_DELTA`` in the geometry layer.
+    LON_NDS_DELTA_POW2 = 360.0 / 2**32  # == 8.381903171539307e-08
+    LAT_NDS_DELTA_POW2 = 180.0 / 2**31  # == 8.381903171539307e-08 (numerically equal)
+    LON_MIN = -180.0
+    LON_MAX = 180.0 - LON_NDS_DELTA_POW2  # == 179.99999991618097
+    LAT_MIN = -90.0
+    LAT_MAX = 90.0 - LAT_NDS_DELTA_POW2
 
     def __init__(self, lon: float = 0.0, lat: float = 0.0, alt: float = 0.0) -> None:
         """Construct a WGS84 point in degrees.
@@ -26,6 +45,22 @@ class Wgs84:
         self.y = lat
         self.z = alt
         self.normalize()
+
+    def longitude(self) -> float:
+        """Longitude in degrees (the ``x`` component). Mirrors the C++ accessor."""
+        return self.x
+
+    def latitude(self) -> float:
+        """Latitude in degrees (the ``y`` component). Mirrors the C++ accessor."""
+        return self.y
+
+    def dx(self) -> float:
+        """The ``x`` (longitude) component. Mirrors the C++ ``dx()`` accessor."""
+        return self.x
+
+    def dy(self) -> float:
+        """The ``y`` (latitude) component. Mirrors the C++ ``dy()`` accessor."""
+        return self.y
 
     def normalize(self) -> None:
         """Wrap longitude into ``[-180, 180)`` and clamp latitude into ``[-90, 90)``.
@@ -104,6 +139,28 @@ class Wgs84:
         lon = x * lon_multiplier
         lat = y * lat_multiplier
         return Wgs84(lon, lat)
+
+    @staticmethod
+    def from_morton_code(morton_code: MortonCode) -> Wgs84:
+        """Construct a :class:`Wgs84` point from a Morton code.
+
+        Mirrors the C++ ``Wgs84<double>::fromMortonCode``
+        (``cpp/include/ndsmath/wgs84.h``). Note that this scales **both** the
+        NDS x (longitude) and the NDS y (latitude) by the same factor
+        ``360 / 2^32`` — unlike :meth:`from_nds_coordinates`, which scales
+        latitude by ``180 / 2^31``. This difference is intentional in the
+        reference and is relied upon by the geometry layer (e.g. the
+        ``Wgs84Aabb`` tile-from-index constructor); do not "fix" it.
+
+        Args:
+            morton_code: A :class:`MortonCode` encoding NDS integer coordinates.
+
+        Returns:
+            Wgs84 point with longitude / latitude in degrees and ``alt=0``.
+        """
+        bit_scaling = 360.0 / (2**32)
+        x, y = morton_code.to_nds_coordinates()
+        return Wgs84(x * bit_scaling, y * bit_scaling)
 
     @staticmethod
     def degrees_to_meters(

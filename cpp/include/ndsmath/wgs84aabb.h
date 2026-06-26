@@ -124,7 +124,11 @@ public:
     {
         T const tileWidth = 180. / static_cast<float>(1u << lv);
         auto const tilesPerDim = glm::ceil(size_ / tileWidth);
-        return static_cast<uint32_t>(tilesPerDim.x * tilesPerDim.y);
+        auto const count = tilesPerDim.x * tilesPerDim.y;
+        // A negative-size (invalid) box yields a negative product; casting that
+        // to uint32_t is undefined behaviour — clang clamps to 0 while gcc/MSVC
+        // wrap to a huge value, which also corrupts tileLevel(). Treat it as 0.
+        return count > 0 ? static_cast<uint32_t>(count) : 0u;
     }
 
     /// Obtain the first tile level for this bounding box, for which

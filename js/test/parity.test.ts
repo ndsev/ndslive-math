@@ -12,6 +12,11 @@ import {
   NdsBoundingBox,
   getTileIdsForBoundingBox,
   boundingBoxFromTileIds,
+  Vec2,
+  Polygon,
+  PolygonType,
+  Wgs84Aabb,
+  Wgs84Polygon,
 } from '../src/index.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -100,6 +105,67 @@ interface Vectors {
     at_latitude: number;
     width_m: number;
     height_m: number;
+  }>;
+  wgs84_aabb: Array<{
+    name: string;
+    sw_lon: number;
+    sw_lat: number;
+    size_x: number;
+    size_y: number;
+    valid: boolean;
+    stored_size: [number, number];
+    sw: [number, number];
+    se: [number, number];
+    ne: [number, number];
+    nw: [number, number];
+    center: [number, number];
+    vertices: Array<[number, number]>;
+    contains_anti_meridian: boolean;
+    split_over_anti_meridian: {
+      left_sw: [number, number];
+      left_size: [number, number];
+      right_sw: [number, number];
+      right_size: [number, number];
+    } | null;
+    num_tile_ids: number[];
+    tile_level_min8: number;
+    tile_level_min2: number;
+  }>;
+  wgs84_aabb_contains: Array<{
+    box: string;
+    point: string;
+    point_lon: number;
+    point_lat: number;
+    contains: boolean;
+  }>;
+  wgs84_aabb_intersects: Array<{
+    a: string;
+    b: string;
+    intersects: boolean;
+  }>;
+  polygon_orientation: Array<{
+    name: string;
+    polygon_type: number;
+    vertices: Array<[number, number]>;
+    orientation: number;
+    is_valid: boolean;
+  }>;
+  wgs84_polygon: Array<{
+    name: string;
+    vertices: Array<[number, number]>;
+    is_valid: boolean;
+    aabb_sw: [number, number];
+    aabb_size: [number, number];
+    median_lon: number;
+    median_lat: number;
+  }>;
+  wgs84_polygon_collision: Array<{
+    a: string;
+    a_vertices: Array<[number, number]>;
+    b: string;
+    b_vertices: Array<[number, number]>;
+    a_collides_b: boolean;
+    b_collides_a: boolean;
   }>;
 }
 
@@ -237,5 +303,135 @@ describe('nds_distance_to_meters', () => {
     const [w, h] = Wgs84.ndsDistanceToMeters(v.nds_x, v.nds_y, v.at_latitude);
     approx(w, v.width_m);
     approx(h, v.height_m);
+  });
+});
+
+/** Reconstruct an AABB from its raw sw/size definition in the vectors. */
+function makeAabb(swLon: number, swLat: number, sizeX: number, sizeY: number): Wgs84Aabb {
+  return new Wgs84Aabb(new Wgs84(swLon, swLat), new Vec2(sizeX, sizeY));
+}
+
+/** Map from a named AABB case to its raw `(sw, size)` definition. */
+const aabbByName = new Map<string, { swLon: number; swLat: number; sizeX: number; sizeY: number }>(
+  vectors.wgs84_aabb.map((v) => [
+    v.name,
+    { swLon: v.sw_lon, swLat: v.sw_lat, sizeX: v.size_x, sizeY: v.size_y },
+  ]),
+);
+
+function aabbForName(name: string): Wgs84Aabb {
+  const def = aabbByName.get(name);
+  if (def === undefined) {
+    throw new Error(`Unknown AABB case: ${name}`);
+  }
+  return makeAabb(def.swLon, def.swLat, def.sizeX, def.sizeY);
+}
+
+function approxPair(actual: Wgs84, expected: [number, number]): void {
+  approx(actual.longitude(), expected[0]);
+  approx(actual.latitude(), expected[1]);
+}
+
+describe('wgs84_aabb', () => {
+  it.each(vectors.wgs84_aabb)('$name', (v) => {
+    const box = makeAabb(v.sw_lon, v.sw_lat, v.size_x, v.size_y);
+
+    expect(box.valid()).toBe(v.valid);
+    approx(box.size().x, v.stored_size[0]);
+    approx(box.size().y, v.stored_size[1]);
+
+    approxPair(box.sw(), v.sw);
+    approxPair(box.se(), v.se);
+    approxPair(box.ne(), v.ne);
+    approxPair(box.nw(), v.nw);
+    approxPair(box.center(), v.center);
+
+    const verts = box.vertices();
+    expect(verts.length).toBe(v.vertices.length);
+    for (let i = 0; i < verts.length; i++) {
+      approxPair(verts[i], v.vertices[i]);
+    }
+
+    expect(box.containsAntiMeridian()).toBe(v.contains_anti_meridian);
+
+    const split = box.splitOverAntiMeridian();
+    if (v.split_over_anti_meridian === null) {
+      expect(split).toBeNull();
+    } else {
+      expect(split).not.toBeNull();
+      const [left, right] = split!;
+      approxPair(left.sw(), v.split_over_anti_meridian.left_sw);
+      approx(left.size().x, v.split_over_anti_meridian.left_size[0]);
+      approx(left.size().y, v.split_over_anti_meridian.left_size[1]);
+      approxPair(right.sw(), v.split_over_anti_meridian.right_sw);
+      approx(right.size().x, v.split_over_anti_meridian.right_size[0]);
+      approx(right.size().y, v.split_over_anti_meridian.right_size[1]);
+    }
+
+    for (let lv = 0; lv < v.num_tile_ids.length; lv++) {
+      expect(box.numTileIds(lv)).toBe(v.num_tile_ids[lv]);
+    }
+    expect(box.tileLevel(8)).toBe(v.tile_level_min8);
+    expect(box.tileLevel(2)).toBe(v.tile_level_min2);
+  });
+});
+
+describe('wgs84_aabb_contains', () => {
+  it.each(vectors.wgs84_aabb_contains)('$box contains $point', (v) => {
+    const box = aabbForName(v.box);
+    expect(box.contains(new Wgs84(v.point_lon, v.point_lat))).toBe(v.contains);
+  });
+});
+
+describe('wgs84_aabb_intersects', () => {
+  it.each(vectors.wgs84_aabb_intersects)('$a vs $b', (v) => {
+    const a = aabbForName(v.a);
+    const b = aabbForName(v.b);
+    expect(a.intersects(b)).toBe(v.intersects);
+  });
+});
+
+describe('polygon_orientation', () => {
+  it.each(vectors.polygon_orientation)('$name', (v) => {
+    const poly = new Polygon(
+      v.polygon_type as PolygonType,
+      v.vertices.map(([lon, lat]) => new Wgs84(lon, lat)),
+    );
+    expect(poly.orientation()).toBe(v.orientation);
+    expect(poly.isValid()).toBe(v.is_valid);
+  });
+});
+
+describe('wgs84_polygon', () => {
+  it.each(vectors.wgs84_polygon)('$name', (v) => {
+    const poly = new Wgs84Polygon(
+      undefined,
+      v.vertices.map(([lon, lat]) => new Wgs84(lon, lat)),
+    );
+    expect(poly.isValid()).toBe(v.is_valid);
+
+    const bb = poly.aaBb();
+    approxPair(bb.sw(), v.aabb_sw);
+    approx(bb.size().x, v.aabb_size[0]);
+    approx(bb.size().y, v.aabb_size[1]);
+
+    const med = poly.median();
+    approx(med.longitude(), v.median_lon);
+    approx(med.latitude(), v.median_lat);
+  });
+});
+
+describe('wgs84_polygon_collision', () => {
+  it.each(vectors.wgs84_polygon_collision)('$a vs $b', (v) => {
+    const a = new Wgs84Polygon(
+      undefined,
+      v.a_vertices.map(([lon, lat]) => new Wgs84(lon, lat)),
+    );
+    const b = new Wgs84Polygon(
+      undefined,
+      v.b_vertices.map(([lon, lat]) => new Wgs84(lon, lat)),
+    );
+    expect(a.collidesWith(b)).toBe(v.a_collides_b);
+    expect(b.collidesWith(a)).toBe(v.b_collides_a);
   });
 });

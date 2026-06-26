@@ -4,6 +4,8 @@
 //! This is a faithful port of the Python reference implementation
 //! (`python/src/ndslive/math/wgs84.py`).
 
+use crate::morton::MortonCode;
+
 /// Approximate radius of Earth in meters (matches the C++/Python reference).
 pub const EARTH_RADIUS_IN_METERS: f64 = 6371000.8;
 
@@ -11,6 +13,28 @@ pub const EARTH_RADIUS_IN_METERS: f64 = 6371000.8;
 pub const LON_NDS_DELTA: f64 = 360.0 / (4294967295.0); // 2^32 - 1
 /// Latitude NDS delta: `180 / (2^31 - 1)`.
 pub const LAT_NDS_DELTA: f64 = 180.0 / (2147483647.0); // 2^31 - 1
+
+/// Longitude NDS delta using a power-of-two divisor: `360 / 2^32`.
+///
+/// This is the **geometry-layer** delta. It differs from [`LON_NDS_DELTA`]
+/// (which divides by `2^32 - 1`) in the 13th significant digit. The geometry
+/// types ([`crate::Wgs84Aabb`] in particular) must use this `_POW2` variant so
+/// that antimeridian handling and tile-from-index construction match the C++
+/// reference bit-for-bit. See `_ext/geometry-port-spec.md` §0.1.
+pub const LON_NDS_DELTA_POW2: f64 = 360.0 / 4294967296.0; // 360 / 2^32
+/// Latitude NDS delta using a power-of-two divisor: `180 / 2^31`.
+///
+/// Numerically equal to [`LON_NDS_DELTA_POW2`]. See [`LON_NDS_DELTA_POW2`].
+pub const LAT_NDS_DELTA_POW2: f64 = 180.0 / 2147483648.0; // 180 / 2^31
+
+/// Minimum geometry longitude: `-180`.
+pub const LON_MIN: f64 = -180.0;
+/// Maximum geometry longitude: `180 - LON_NDS_DELTA_POW2` (`179.99999991618097`).
+pub const LON_MAX: f64 = 180.0 - LON_NDS_DELTA_POW2;
+/// Minimum geometry latitude: `-90`.
+pub const LAT_MIN: f64 = -90.0;
+/// Maximum geometry latitude: `90 - LAT_NDS_DELTA_POW2`.
+pub const LAT_MAX: f64 = 90.0 - LAT_NDS_DELTA_POW2;
 
 /// Meters per degree of latitude (and longitude at the equator).
 pub const METERS_PER_DEGREE: f64 = 111320.0;
@@ -105,6 +129,20 @@ impl Wgs84 {
         Wgs84::new(lon, lat)
     }
 
+    /// Construct a [`Wgs84`] point from a [`MortonCode`].
+    ///
+    /// Mirrors the C++ `Wgs84<double>::fromMortonCode`. **Both** the NDS x
+    /// (longitude) and the NDS y (latitude) are scaled by the same factor
+    /// `360 / 2^32` — unlike [`Wgs84::from_nds_coordinates`], which scales
+    /// latitude by `180 / 2^31`. This difference is intentional in the
+    /// reference and is relied upon by the geometry layer (e.g. the
+    /// [`crate::Wgs84Aabb`] tile-from-index constructor); do not "fix" it.
+    pub fn from_morton_code(morton_code: MortonCode) -> Wgs84 {
+        let bit_scaling = 360.0 / 4294967296.0; // 360 / 2^32
+        let (x, y) = morton_code.to_nds_coordinates();
+        Wgs84::new((x as f64) * bit_scaling, (y as f64) * bit_scaling)
+    }
+
     /// Convert degree distances to meters at a given latitude.
     ///
     /// Longitude distance shrinks toward the poles (scaled by
@@ -191,6 +229,39 @@ fn is_close_rel(a: f64, b: f64, rel_tol: f64) -> bool {
     (a - b).abs() <= rel_tol * a.abs().max(b.abs())
 }
 
+// Component-wise arithmetic, mirroring the Python `__add__` / `__sub__` /
+// `__mul__` / `__truediv__`. Each operation re-normalizes the result (longitude
+// wrap, latitude clamp), exactly like the C++ `Wgs84<T>` operators. The
+// triangulation port relies on this re-normalizing subtraction (see
+// `polygon_triangulation`).
+impl std::ops::Add for Wgs84 {
+    type Output = Wgs84;
+    fn add(self, other: Wgs84) -> Wgs84 {
+        Wgs84::new(self.lon + other.lon, self.lat + other.lat)
+    }
+}
+
+impl std::ops::Sub for Wgs84 {
+    type Output = Wgs84;
+    fn sub(self, other: Wgs84) -> Wgs84 {
+        Wgs84::new(self.lon - other.lon, self.lat - other.lat)
+    }
+}
+
+impl std::ops::Mul for Wgs84 {
+    type Output = Wgs84;
+    fn mul(self, other: Wgs84) -> Wgs84 {
+        Wgs84::new(self.lon * other.lon, self.lat * other.lat)
+    }
+}
+
+impl std::ops::Div for Wgs84 {
+    type Output = Wgs84;
+    fn div(self, other: Wgs84) -> Wgs84 {
+        Wgs84::new(self.lon / other.lon, self.lat / other.lat)
+    }
+}
+
 impl std::fmt::Display for Wgs84 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "Wgs84(lon={}, lat={})", self.lon, self.lat)
@@ -244,5 +315,41 @@ mod tests {
         let (lat, lon) = p.to_degree_minutes_seconds();
         assert!(lat.ends_with(" N"));
         assert!(lon.ends_with(" E"));
+    }
+
+    #[test]
+    fn geometry_constants() {
+        assert!((LON_NDS_DELTA_POW2 - 8.381903171539307e-08).abs() < 1e-20);
+        assert!((LAT_NDS_DELTA_POW2 - 8.381903171539307e-08).abs() < 1e-20);
+        assert_eq!(LON_MIN, -180.0);
+        assert!((LON_MAX - 179.99999991618097).abs() < 1e-9);
+        assert_eq!(LAT_MIN, -90.0);
+        // LON_MAX + LON_NDS_DELTA_POW2 must be exactly 180.0 (antimeridian thr.).
+        assert_eq!(LON_MAX + LON_NDS_DELTA_POW2, 180.0);
+    }
+
+    #[test]
+    fn from_morton_code_scales_both_axes_by_pow2() {
+        // fromMortonCode scales BOTH x and y by 360/2^32 (not 180/2^31 for lat).
+        let m = MortonCode::from_nds_coordinates(0, 0);
+        let p = Wgs84::from_morton_code(m);
+        assert_eq!((p.lon, p.lat), (0.0, 0.0));
+
+        // A nonzero coordinate confirms the latitude uses the 360/2^32 factor.
+        let m2 = MortonCode::from_nds_coordinates(1 << 20, 1 << 20);
+        let p2 = Wgs84::from_morton_code(m2);
+        let expected = (1u64 << 20) as f64 * (360.0 / 4294967296.0);
+        assert!((p2.lon - expected).abs() < 1e-12);
+        assert!((p2.lat - expected).abs() < 1e-12);
+    }
+
+    #[test]
+    fn component_wise_arithmetic() {
+        let a = Wgs84::new(10.0, 20.0);
+        let b = Wgs84::new(3.0, 4.0);
+        assert_eq!(a + b, Wgs84::new(13.0, 24.0));
+        assert_eq!(a - b, Wgs84::new(7.0, 16.0));
+        assert_eq!(a * b, Wgs84::new(30.0, 80.0));
+        assert_eq!(a / b, Wgs84::new(10.0 / 3.0, 5.0));
     }
 }

@@ -28,6 +28,31 @@ public final class Wgs84 {
 	/** Latitude quantization step of the NDS coordinate grid. */
 	public static final double LAT_NDS_DELTA = 180.0 / (Math.pow(2, 31) - 1);
 
+	// Geometry-layer NDS deltas derived from exact powers of two. These differ
+	// from LON_NDS_DELTA / LAT_NDS_DELTA (which use 2^n - 1) in the 13th
+	// significant digit, but that difference is load-bearing: the Wgs84Aabb
+	// antimeridian handling and tile-from-index construction must match the C++
+	// reference bit-for-bit. Do NOT reuse LON_NDS_DELTA / LAT_NDS_DELTA in the
+	// geometry layer.
+
+	/** Longitude NDS delta from exact powers of two ({@code 360 / 2^32}). */
+	public static final double LON_NDS_DELTA_POW2 = 360.0 / Math.pow(2, 32); // 8.381903171539307e-08
+
+	/** Latitude NDS delta from exact powers of two ({@code 180 / 2^31}). */
+	public static final double LAT_NDS_DELTA_POW2 = 180.0 / Math.pow(2, 31); // numerically equal
+
+	/** Minimum representable longitude. */
+	public static final double LON_MIN = -180.0;
+
+	/** Maximum representable longitude ({@code 180 - LON_NDS_DELTA_POW2}). */
+	public static final double LON_MAX = 180.0 - LON_NDS_DELTA_POW2; // 179.99999991618097
+
+	/** Minimum representable latitude. */
+	public static final double LAT_MIN = -90.0;
+
+	/** Maximum representable latitude ({@code 90 - LAT_NDS_DELTA_POW2}). */
+	public static final double LAT_MAX = 90.0 - LAT_NDS_DELTA_POW2;
+
 	private static final double METERS_PER_DEGREE = 111320.0;
 	private static final double TWO_POW_31 = 2147483648.0; // 2^31
 	private static final double TWO_POW_32 = 4294967296.0; // 2^32
@@ -73,6 +98,82 @@ public final class Wgs84 {
 		this.y = lat;
 		this.z = alt;
 		normalize();
+	}
+
+	/**
+	 * @return longitude in degrees (the {@link #x} component); mirrors the C++
+	 *         accessor
+	 */
+	public double longitude() {
+		return this.x;
+	}
+
+	/**
+	 * @return latitude in degrees (the {@link #y} component); mirrors the C++
+	 *         accessor
+	 */
+	public double latitude() {
+		return this.y;
+	}
+
+	/**
+	 * @return the {@link #x} (longitude) component; mirrors the C++ {@code dx()}
+	 *         accessor
+	 */
+	public double dx() {
+		return this.x;
+	}
+
+	/**
+	 * @return the {@link #y} (latitude) component; mirrors the C++ {@code dy()}
+	 *         accessor
+	 */
+	public double dy() {
+		return this.y;
+	}
+
+	/**
+	 * Component-wise addition, re-normalizing the result.
+	 *
+	 * @param other
+	 *            the point to add
+	 * @return a new normalized {@link Wgs84}
+	 */
+	public Wgs84 add(Wgs84 other) {
+		return new Wgs84(this.x + other.x, this.y + other.y);
+	}
+
+	/**
+	 * Component-wise subtraction, re-normalizing the result.
+	 *
+	 * @param other
+	 *            the point to subtract
+	 * @return a new normalized {@link Wgs84}
+	 */
+	public Wgs84 sub(Wgs84 other) {
+		return new Wgs84(this.x - other.x, this.y - other.y);
+	}
+
+	/**
+	 * Component-wise multiplication, re-normalizing the result.
+	 *
+	 * @param other
+	 *            the point to multiply by
+	 * @return a new normalized {@link Wgs84}
+	 */
+	public Wgs84 mul(Wgs84 other) {
+		return new Wgs84(this.x * other.x, this.y * other.y);
+	}
+
+	/**
+	 * Component-wise division, re-normalizing the result.
+	 *
+	 * @param other
+	 *            the point to divide by
+	 * @return a new normalized {@link Wgs84}
+	 */
+	public Wgs84 div(Wgs84 other) {
+		return new Wgs84(this.x / other.x, this.y / other.y);
 	}
 
 	/**
@@ -141,6 +242,28 @@ public final class Wgs84 {
 		double lon = x * lonMultiplier;
 		double lat = y * latMultiplier;
 		return new Wgs84(lon, lat);
+	}
+
+	/**
+	 * Construct a {@link Wgs84} point from a Morton code.
+	 *
+	 * <p>
+	 * Mirrors the C++ {@code Wgs84<double>::fromMortonCode}. Note that this scales
+	 * <em>both</em> the NDS x (longitude) and the NDS y (latitude) by the same
+	 * factor {@code 360 / 2^32} — unlike {@link #fromNdsCoordinates(long, long)},
+	 * which scales latitude by {@code 180 / 2^31}. This difference is intentional
+	 * in the reference and is relied upon by the geometry layer (e.g. the
+	 * {@code Wgs84Aabb} tile-from-index constructor); do not "fix" it.
+	 * </p>
+	 *
+	 * @param mortonCode
+	 *            a {@link MortonCode} encoding NDS integer coordinates
+	 * @return a WGS84 point with longitude/latitude in degrees and {@code alt=0}
+	 */
+	public static Wgs84 fromMortonCode(MortonCode mortonCode) {
+		double bitScaling = 360.0 / TWO_POW_32;
+		long[] xy = mortonCode.toNdsCoordinates();
+		return new Wgs84(xy[0] * bitScaling, xy[1] * bitScaling);
 	}
 
 	/**

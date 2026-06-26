@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
+import { MortonCode } from './morton.js';
+
 /**
  * Represents a point on the Earth's surface using the WGS84 coordinate system.
  * Provides methods for coordinate conversion, normalization, and distance
@@ -15,6 +17,27 @@ export class Wgs84 {
   static readonly LON_NDS_DELTA = 360 / (2 ** 32 - 1);
   /** Latitude quantization step of the NDS coordinate grid (degrees). */
   static readonly LAT_NDS_DELTA = 180 / (2 ** 31 - 1);
+
+  // Geometry-layer constants mirroring the C++ `Wgs84<double>` static members
+  // (`cpp/include/ndsmath/wgs84.h`). These intentionally use a power-of-two
+  // denominator (`2^32` / `2^31`) rather than the `LON_NDS_DELTA` /
+  // `LAT_NDS_DELTA` above (which use `2^32 - 1` / `2^31 - 1`). The difference
+  // shows up in the 13th significant digit, but it is load-bearing for the
+  // geometry layer: `Wgs84Aabb` antimeridian handling and tile-from-index
+  // construction must match the C++ reference bit-for-bit. Do NOT reuse
+  // `LON_NDS_DELTA` / `LAT_NDS_DELTA` in the geometry layer.
+  /** Longitude quantization step using a power-of-two denominator. */
+  static readonly LON_NDS_DELTA_POW2 = 360.0 / 2 ** 32; // == 8.381903171539307e-08
+  /** Latitude quantization step using a power-of-two denominator. */
+  static readonly LAT_NDS_DELTA_POW2 = 180.0 / 2 ** 31; // == 8.381903171539307e-08 (equal)
+  /** Minimum representable longitude. */
+  static readonly LON_MIN = -180.0;
+  /** Maximum representable longitude (`180 - LON_NDS_DELTA_POW2`). */
+  static readonly LON_MAX = 180.0 - Wgs84.LON_NDS_DELTA_POW2; // == 179.99999991618097
+  /** Minimum representable latitude. */
+  static readonly LAT_MIN = -90.0;
+  /** Maximum representable latitude (`90 - LAT_NDS_DELTA_POW2`). */
+  static readonly LAT_MAX = 90.0 - Wgs84.LAT_NDS_DELTA_POW2;
 
   /** Longitude in degrees, wrapped into `[-180, 180)`. */
   x: number;
@@ -35,6 +58,26 @@ export class Wgs84 {
     this.y = lat;
     this.z = alt;
     this.normalize();
+  }
+
+  /** Longitude in degrees (the `x` component). Mirrors the C++ accessor. */
+  longitude(): number {
+    return this.x;
+  }
+
+  /** Latitude in degrees (the `y` component). Mirrors the C++ accessor. */
+  latitude(): number {
+    return this.y;
+  }
+
+  /** The `x` (longitude) component. Mirrors the C++ `dx()` accessor. */
+  dx(): number {
+    return this.x;
+  }
+
+  /** The `y` (latitude) component. Mirrors the C++ `dy()` accessor. */
+  dy(): number {
+    return this.y;
   }
 
   /**
@@ -103,6 +146,26 @@ export class Wgs84 {
     const lon = x * lonMultiplier;
     const lat = y * latMultiplier;
     return new Wgs84(lon, lat);
+  }
+
+  /**
+   * Construct a {@link Wgs84} point from a {@link MortonCode}.
+   *
+   * Mirrors the C++ `Wgs84<double>::fromMortonCode`
+   * (`cpp/include/ndsmath/wgs84.h`). Note that this scales **both** the NDS x
+   * (longitude) and the NDS y (latitude) by the same factor `360 / 2^32` —
+   * unlike {@link Wgs84.fromNdsCoordinates}, which scales latitude by
+   * `180 / 2^31`. This difference is intentional in the reference and is relied
+   * upon by the geometry layer (e.g. the `Wgs84Aabb` tile-from-index
+   * constructor); do not "fix" it.
+   *
+   * @param mortonCode A MortonCode encoding NDS integer coordinates.
+   * @returns Wgs84 point with longitude / latitude in degrees and `alt = 0`.
+   */
+  static fromMortonCode(mortonCode: MortonCode): Wgs84 {
+    const bitScaling = 360.0 / 2 ** 32;
+    const [x, y] = mortonCode.toNdsCoordinates();
+    return new Wgs84(x * bitScaling, y * bitScaling);
   }
 
   /**
