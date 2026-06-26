@@ -11,7 +11,7 @@ vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO ndsev/ndslive-math
     REF "v${VERSION}"
-    SHA512 0  # <-- placeholder; replace with the real hash at release time
+    SHA512 e898495604fcd52dc50af9734f9696ddc6a818db23b2440af34130cef27fd223a044a23ef4225c8d331a1b6540872879de91ed94c56ecfdf4702f2f045f3cf72
     HEAD_REF main
 )
 

@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### C++
+- vcpkg overlay port: pinned the `v1.0.0` source `SHA512` in
+  `cpp/vcpkg-port/portfile.cmake`, so the port is installable as-is (and ready
+  for upstream `microsoft/vcpkg` submission).
+
 ## [v1.0.0] - 2026-06-26
 
 ### Project
