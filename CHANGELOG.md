@@ -29,6 +29,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   above the 95% gate.
 - CI: exempt Dependabot PRs from the `check-changelog` job (dependency bumps
   don't carry user-facing changelog entries).
+- Coverage: added C++ instrumentation (a `NDSMATH_COVERAGE` CMake option +
+  `gcovr` on Ubuntu) and a JS `lcov` reporter, so **all six** languages now
+  upload to Codecov (previously only Python, Java, Go, and Rust). Added C++ unit
+  tests for the polygon / `Wgs84AABB` / triangulation layer (and
+  `MortonCode::fromWgs84Coordinates`) to keep C++ above the coverage gate.
 
 ### Added
 - **Java** implementation (`java/`, Gradle; Maven coordinates `io.github.ndsev:ndslive-math`).
@@ -60,6 +65,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   and `180/2^31` (were ~2× too small); `from_morton_and_level` now wraps negative
   coordinates by `2^32`/`2^31` (was off by one). Added `boundingBoxFromTileIds`.
   The C++ parity test now validates the full golden set.
+
+### Fixed
+- **C++:** `Wgs84AABB::intersects()` could recurse until the stack overflowed for
+  any box pair where neither box held a corner of the other (fully disjoint boxes
+  *and* cross-shaped overlaps), and also returned the wrong answer for
+  cross-shaped overlaps. Replaced the corner-containment logic with a standard
+  axis-aligned interval-overlap test (O(1), non-recursive).
 
 ## [v0.5.2] - 2026-04-27
 

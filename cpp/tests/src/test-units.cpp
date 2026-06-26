@@ -8,6 +8,9 @@
 #include "ndsmath/wgs84.h"
 #include "ndsmath/mortoncode.h"
 #include "ndsmath/packedtileid.h"
+#include "ndsmath/ndsboundingbox.h"
+
+#include <stdexcept>
 
 #include <cstdint>
 #include <limits>
@@ -72,6 +75,38 @@ int main()
         CHECK_EQ(tiles.size(), static_cast<size_t>(4));
         for (const auto &t : tiles)
             CHECK_EQ(t.level(), 13);
+
+        // boundingBoxFromTileIds over several tiles exercises the min/max
+        // accumulation branch for the 2nd+ tile.
+        auto bb = ndsmath::boundingBoxFromTileIds(tiles);
+        CHECK_EQ(bb.minX, 0);
+        CHECK_EQ(bb.minY, 0);
+        CHECK_EQ(bb.maxX, 2 * tileSize - 1);
+        CHECK_EQ(bb.maxY, 2 * tileSize - 1);
+    }
+
+    // boundingBoxFromTileIds rejects an empty list.
+    {
+        bool threw = false;
+        try
+        {
+            ndsmath::boundingBoxFromTileIds(ndsmath::PackedTileIds{});
+        }
+        catch (const std::invalid_argument &)
+        {
+            threw = true;
+        }
+        CHECK(threw);
+    }
+
+    // MortonCode::fromWgs84Coordinates round-trips through NDS coordinates.
+    {
+        MortonCode m = MortonCode::fromWgs84Coordinates(Wgs84<double>(13.404954, 52.520008));
+        int32_t x, y;
+        m.toNdsCoordinates(x, y);
+        CHECK(x > 0); // Berlin lies in the NE quadrant
+        CHECK(y > 0);
+        CHECK_EQ(MortonCode::fromNdsCoordinates(x, y).value(), m.value());
     }
 
     return TEST_SUMMARY();

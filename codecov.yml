@@ -1,8 +1,6 @@
 # Codecov configuration. Coverage is uploaded per language via flags
-# (python, java, js, go, rust) from .github/workflows/ci.yml.
-#
-# C++ does not yet upload coverage (no lcov/gcov instrumentation wired) — it is
-# excluded from the gate until that is added.
+# (python, java, js, go, rust, cpp) from .github/workflows/ci.yml. C++ uses a
+# gcovr-instrumented Debug build on the Ubuntu test-cpp leg (NDSMATH_COVERAGE).
 coverage:
   status:
     project:

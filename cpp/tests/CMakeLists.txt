@@ -22,6 +22,9 @@ get_filename_component(NDSMATH_REPO_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../.." ABS
 add_executable(test-units src/test-units.cpp)
 target_link_libraries(test-units ndsmath glm::glm)
 
+add_executable(test-polygon src/test-polygon.cpp)
+target_link_libraries(test-polygon ndsmath glm::glm)
+
 add_executable(test-parity src/test-parity.cpp)
 target_link_libraries(test-parity ndsmath glm::glm nlohmann_json::nlohmann_json)
 target_compile_definitions(test-parity PRIVATE
@@ -30,7 +33,7 @@ target_compile_definitions(test-parity PRIVATE
 # On Windows the loader does not use rpath, so the shared ndsmath.dll must sit
 # next to each test executable for it to start. Copy runtime DLLs post-build.
 if(WIN32)
-    foreach(t test-units test-parity)
+    foreach(t test-units test-polygon test-parity)
         add_custom_command(TARGET ${t} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
                     $<TARGET_RUNTIME_DLLS:${t}> $<TARGET_FILE_DIR:${t}>
@@ -39,4 +42,5 @@ if(WIN32)
 endif()
 
 add_test(NAME units COMMAND test-units)
+add_test(NAME polygon COMMAND test-polygon)
 add_test(NAME parity COMMAND test-parity)

@@ -209,6 +209,26 @@ jobs:
       # single hanging Catch2 case is reported by name instead of stalling.
       run: ctest --test-dir build --output-on-failure -C Release --timeout 120
 
+    # Coverage: a separate instrumented Debug build on Ubuntu only (GCC + gcovr).
+    - name: Coverage build + report (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update && sudo apt-get install -y gcovr
+        cmake -S cpp -B build-cov -DCMAKE_BUILD_TYPE=Debug \
+          -DNDSMATH_COVERAGE=ON -DNDSMATH_INSTALL=OFF
+        cmake --build build-cov
+        ctest --test-dir build-cov --output-on-failure --timeout 120
+        gcovr --root cpp --exclude '.*/tests/.*' --exclude '.*/_deps/.*' \
+          --xml --output coverage-cpp.xml --print-summary build-cov
+    - name: Upload C++ coverage to Codecov
+      if: matrix.os == 'ubuntu-latest'
+      uses: codecov/codecov-action@v7
+      with:
+        files: coverage-cpp.xml
+        flags: cpp
+        token: ${{ secrets.CODECOV_TOKEN }}
+        fail_ci_if_error: false
+
   test-java:
     runs-on: ubuntu-latest
     timeout-minutes: 20
