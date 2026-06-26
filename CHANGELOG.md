@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [v1.0.0] - 2026-06-26
+
 ### Project
 - **BREAKING (licensing):** Relicensed from the proprietary NDS license to
   **BSD-3-Clause**. See `LICENSE`.
