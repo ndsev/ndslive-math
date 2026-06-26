@@ -41,7 +41,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   with GPG signing (`com.vanniktech.maven.publish`); npm and crates.io versions
   are derived from the tag; the PyPI publish jobs no longer depend on the
   tag-skipped `check-changelog`; and the per-language manifests are aligned to
-  `1.0.0`.
+  `1.0.0`. The PyPI build pins the version from the tag
+  (`SETUPTOOLS_SCM_PRETEND_VERSION`) and builds the `python/` project directly,
+  for an exact version and a Python-only sdist; `setuptools-scm` is also told to
+  match only `v[0-9]*` tags so the `go/*` module tags don't break it.
 
 ### Added
 - **Geometry layer in all six languages.** Ported the previously C++-only

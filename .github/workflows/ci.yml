@@ -368,9 +368,11 @@ jobs:
         python-version: '3.12'
     - name: Build sdist + wheel
       run: |
-        python -m pip install build "setuptools-scm[toml]>=8"
-        cp -r python/* .          # put pyproject beside .git so setuptools-scm sees the tag
-        python -m build --outdir dist .
+        python -m pip install build
+        # Pin the version from the release tag and build the python/ project
+        # directly: exact version (no fragile git-describe at the tag) and a
+        # Python-only sdist (the old cp-to-root bundled the whole repo).
+        SETUPTOOLS_SCM_PRETEND_VERSION="${GITHUB_REF_NAME#v}" python -m build --outdir dist python
     - name: Publish to PyPI (Trusted Publishing)
       uses: pypa/gh-action-pypi-publish@release/v1
 
