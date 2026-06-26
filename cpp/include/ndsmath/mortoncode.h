@@ -27,7 +27,6 @@ public:
     inline void toNdsCoordinates(int32_t &x, int32_t &y) const
     {
         const int32_t YBASE = (1ULL << 30);
-        const int32_t XBASE = (1ULL << 31);
 
         int32_t bit = 1;
         uint64_t mortonCode = mortonCode_;
@@ -51,10 +50,9 @@ public:
             y -= (1ULL << 31);
         }
 
-        if (x >= XBASE)
-        {
-            x -= (1ULL << 32);
-        }
+        // x already holds a signed int32: the loop fills all 32 bits, so bit 31
+        // is the sign bit and needs no further adjustment (unlike the 31-bit y,
+        // which is a magnitude that must be sign-extended above).
     }
 
     //! Convert NDS coordinates to morton Code.

@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Project
+- CodeQL: scoped analysis to our own code by ignoring the `build/` tree (which
+  CMake/FetchContent fills with third-party GLM/Catch2 sources), removing the
+  bulk of the open alerts, and cleared the remaining minor source findings.
+
+### Fixed
+- **Go:** removed dead-store assignments in `morton.go` (no behavior change).
+- **C++:** dropped a redundant, always-true sign-adjust branch in
+  `MortonCode::toNdsCoordinates` — an `int32_t` already carries the sign bit of
+  the 32-bit `x` coordinate (`XBASE = 1<<31` had silently overflowed to
+  `INT32_MIN`, making the guard always true). Decode output is unchanged
+  (parity-verified).
+- **Java:** renamed shadowing locals in `Wgs84.bearingFrom`.
+- **Python:** `PackedTileId` uses `functools.total_ordering` for full, consistent
+  comparison operators.
+
 ## [v1.0.0] - 2026-06-26
 
 ### Project
