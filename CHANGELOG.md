@@ -50,7 +50,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   The deterministic operations are bit-locked across languages by new
   `parity_vectors.json` sections; triangulation is unit-tested per language
   (its output ordering is not canonical).
-- **Java** implementation (`java/`, Gradle; Maven coordinates `io.github.ndsev:ndslive-math`).
+- **Java** implementation (`java/`, Gradle; Maven coordinates `de.klebert-engineering:ndslive-math`).
 - **JavaScript/TypeScript** implementation (`js/`, npm package `@ndsev/ndslive-math`).
 - **Go** implementation (`go/`, module `github.com/ndsev/ndslive-math/go`).
 - **Rust** implementation (`rust/`, crate `ndslive-math`).
