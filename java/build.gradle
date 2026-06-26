@@ -6,7 +6,7 @@ plugins {
     id 'com.vanniktech.maven.publish' version '0.30.0'
 }
 
-group = 'de.klebert-engineering'
+group = 'live.nds'
 // Version is overridable via -Pversion=X.Y.Z; defaults to a development version.
 version = project.findProperty('ndslivemathVersion') ?: '0.1.0-SNAPSHOT'
 
@@ -80,7 +80,7 @@ mavenPublishing {
     // in-memory GPG key (ORG_GRADLE_PROJECT_signingInMemoryKey[Password]).
     publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL)
     signAllPublications()
-    coordinates('de.klebert-engineering', 'ndslive-math', version.toString())
+    coordinates('live.nds', 'ndslive-math', version.toString())
 
     pom {
         name = 'ndslive-math'

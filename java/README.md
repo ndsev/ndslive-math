@@ -23,13 +23,13 @@ It provides:
 ## Install
 
 The artifact is published under the Maven coordinates
-`de.klebert-engineering:ndslive-math`.
+`live.nds:ndslive-math`.
 
 ### Maven
 
 ```xml
 <dependency>
-    <groupId>de.klebert-engineering</groupId>
+    <groupId>live.nds</groupId>
     <artifactId>ndslive-math</artifactId>
     <version>1.0.0</version>
 </dependency>
@@ -38,7 +38,7 @@ The artifact is published under the Maven coordinates
 ### Gradle
 
 ```groovy
-implementation 'de.klebert-engineering:ndslive-math:1.0.0'
+implementation 'live.nds:ndslive-math:1.0.0'
 ```
 
 ## Usage
