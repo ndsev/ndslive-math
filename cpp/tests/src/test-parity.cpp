@@ -334,12 +334,11 @@ int main()
             CHECK_NEAR(pr.second.size().y, split["right_size"][1].get<double>(), tol);
         }
         // numTileIds: for valid (non-negative-size) boxes both ports agree. For
-        // the invalid negative-size box the two diverge in an undefined regime:
-        // Python's math.ceil keeps a signed product (negative tile counts, e.g.
-        // -15), while the C++ `static_cast<uint32_t>(negativeDouble)` is UB and
-        // on this platform clamps to 0. A negative expected count means we are
-        // in that ill-defined regime, so only compare the well-defined (>= 0)
-        // entries. Reported as a divergence, not silently reconciled.
+        // the invalid negative-size box they differ by design: Python's math.ceil
+        // keeps a signed product (negative tile counts, e.g. -15), while C++
+        // numTileIds() returns 0 for a negative-size box. A negative expected
+        // count marks that regime, so only compare the well-defined (>= 0)
+        // entries; tileLevel() is now well-defined on both (returns 15).
         const auto &nt = r["num_tile_ids"];
         for (uint32_t lv = 0; lv < nt.size(); ++lv)
         {

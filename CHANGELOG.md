@@ -84,6 +84,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   and latitude swapped (the C++ reference built `Wgs84(meanLat, meanLon)` against
   a `(lon, lat)` constructor). It now returns a correct `(meanLon, meanLat)`
   centroid in every language, locked by the `wgs84_polygon` parity vectors.
+- **C++:** `Wgs84AABB::numTileIds()` cast a negative-size (invalid) box's
+  negative tile-count `double` to `uint32_t` — undefined behaviour that clang
+  clamped to 0 but gcc/MSVC wrapped to a huge value, corrupting `tileLevel()`.
+  It now returns 0 for a non-positive count (defined and consistent).
 
 ## [v0.5.2] - 2026-04-27
 
