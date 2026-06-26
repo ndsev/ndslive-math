@@ -34,6 +34,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   upload to Codecov (previously only Python, Java, Go, and Rust). Added C++ unit
   tests for the polygon / `Wgs84AABB` / triangulation layer (and
   `MortonCode::fromWgs84Coordinates`) to keep C++ above the coverage gate.
+- Release readiness: completed the publishing pipeline so a single `vX.Y.Z` tag
+  publishes every package. Maven Central now goes through the **Central Portal**
+  with GPG signing (`com.vanniktech.maven.publish`); npm and crates.io versions
+  are derived from the tag; the PyPI publish jobs no longer depend on the
+  tag-skipped `check-changelog`; and the per-language manifests are aligned to
+  `1.0.0`.
 
 ### Added
 - **Geometry layer in all six languages.** Ported the previously C++-only

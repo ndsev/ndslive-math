@@ -1,8 +1,9 @@
 plugins {
     id 'java-library'
-    id 'maven-publish'
     id 'jacoco'
     id 'com.diffplug.spotless' version '8.7.0'
+    // Publishes to the Maven Central Portal and signs artifacts (in-memory GPG).
+    id 'com.vanniktech.maven.publish' version '0.30.0'
 }
 
 group = 'io.github.ndsev'
@@ -15,8 +16,7 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
     }
-    withJavadocJar()
-    withSourcesJar()
+    // Sources + javadoc jars are added by the maven-publish plugin below.
 }
 
 repositories {
@@ -75,37 +75,36 @@ jacocoTestCoverageVerification {
 
 check.dependsOn jacocoTestCoverageVerification
 
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-            artifactId = 'ndslive-math'
+mavenPublishing {
+    // Upload to the new Maven Central Portal; sign all artifacts with the
+    // in-memory GPG key (ORG_GRADLE_PROJECT_signingInMemoryKey[Password]).
+    publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL)
+    signAllPublications()
+    coordinates('io.github.ndsev', 'ndslive-math', version.toString())
 
-            pom {
-                name = 'ndslive-math'
-                description = project.description
-                url = 'https://github.com/ndsev/ndslive-math'
+    pom {
+        name = 'ndslive-math'
+        description = project.description
+        url = 'https://github.com/ndsev/ndslive-math'
 
-                licenses {
-                    license {
-                        name = 'BSD 3-Clause License'
-                        url = 'https://opensource.org/licenses/BSD-3-Clause'
-                    }
-                }
-
-                developers {
-                    developer {
-                        id = 'ndsev'
-                        name = 'Navigation Data Standard (NDS) e.V.'
-                    }
-                }
-
-                scm {
-                    connection = 'scm:git:https://github.com/ndsev/ndslive-math.git'
-                    developerConnection = 'scm:git:ssh://git@github.com/ndsev/ndslive-math.git'
-                    url = 'https://github.com/ndsev/ndslive-math'
-                }
+        licenses {
+            license {
+                name = 'BSD 3-Clause License'
+                url = 'https://opensource.org/licenses/BSD-3-Clause'
             }
+        }
+
+        developers {
+            developer {
+                id = 'ndsev'
+                name = 'Navigation Data Standard (NDS) e.V.'
+            }
+        }
+
+        scm {
+            connection = 'scm:git:https://github.com/ndsev/ndslive-math.git'
+            developerConnection = 'scm:git:ssh://git@github.com/ndsev/ndslive-math.git'
+            url = 'https://github.com/ndsev/ndslive-math'
         }
     }
 }

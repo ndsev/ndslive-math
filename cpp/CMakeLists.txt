@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.14.0)
 
 # Version must match the release tag (vX.Y.Z) and cpp/vcpkg-port/vcpkg.json.
-project(ndsmath VERSION 0.5.2 LANGUAGES CXX)
+project(ndsmath VERSION 1.0.0 LANGUAGES CXX)
 
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set(CMAKE_CXX_STANDARD 20)
