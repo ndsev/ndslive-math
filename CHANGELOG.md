@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Project
+- CI: npm now publishes via **OIDC trusted publishing** instead of a stored
+  token — the `publish-npm` job upgrades npm to ≥ 11.5.1 and drops
+  `NODE_AUTH_TOKEN` (keeping `--provenance --access public`).
+
 ## [v1.0.0] - 2026-06-26
 
 ### Project
