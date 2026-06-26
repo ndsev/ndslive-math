@@ -422,7 +422,7 @@ jobs:
         java-version: '17'
     - name: Publish to Maven Central
       working-directory: java
-      run: ./gradlew publishToMavenCentral --no-daemon -PndslivemathVersion=${GITHUB_REF_NAME#v}
+      run: ./gradlew publishAndReleaseToMavenCentral --no-daemon -PndslivemathVersion=${GITHUB_REF_NAME#v}
       env:
         ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USER }}
         ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
