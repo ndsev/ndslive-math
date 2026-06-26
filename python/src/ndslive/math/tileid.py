@@ -1,9 +1,12 @@
 # SPDX-License-Identifier: BSD-3-Clause
 from __future__ import annotations
 
+import functools
+
 from .morton import MortonCode
 
 
+@functools.total_ordering
 class PackedTileId:
     """
     Represents a tile in a hierarchical tiling system following the NDS.Live standard.

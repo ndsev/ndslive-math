@@ -1,0 +1,8 @@
+name: "ndslive-math CodeQL config"
+
+# The C++ analysis builds into ./build, which CMake FetchContent populates with
+# third-party sources (GLM, Catch2) and generated CMake files. Those are not our
+# code, so don't report CodeQL alerts from the build tree.
+paths-ignore:
+  - build
+  - "build/**"

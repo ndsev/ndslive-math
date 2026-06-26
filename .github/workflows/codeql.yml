@@ -50,6 +50,7 @@ jobs:
           languages: ${{ matrix.language }}
           build-mode: ${{ matrix.build-mode }}
           queries: security-and-quality
+          config-file: ./.github/codeql/codeql-config.yml
 
       # Compiled languages need an explicit build (each lives in a subdirectory,
       # so CodeQL's autobuild can't find them from the repo root).
