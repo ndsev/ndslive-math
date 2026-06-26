@@ -1,6 +1,6 @@
 {
   "name": "ndsmath",
-  "version": "0.5.2",
+  "version": "1.0.0",
   "description": "Mathematical utilities for NDS.Live: WGS84 coordinates, Packed Tile IDs, Morton (Z-order) codes, and NDS bounding boxes.",
   "homepage": "https://github.com/ndsev/ndslive-math",
   "license": "BSD-3-Clause",

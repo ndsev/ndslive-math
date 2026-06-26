@@ -34,6 +34,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   upload to Codecov (previously only Python, Java, Go, and Rust). Added C++ unit
   tests for the polygon / `Wgs84AABB` / triangulation layer (and
   `MortonCode::fromWgs84Coordinates`) to keep C++ above the coverage gate.
+- Release readiness: completed the publishing pipeline so a single `vX.Y.Z` tag
+  publishes every package. Maven Central now goes through the **Central Portal**
+  with GPG signing (`com.vanniktech.maven.publish`); npm and crates.io versions
+  are derived from the tag; the PyPI publish jobs no longer depend on the
+  tag-skipped `check-changelog`; and the per-language manifests are aligned to
+  `1.0.0`.
 
 ### Added
 - **Geometry layer in all six languages.** Ported the previously C++-only
@@ -44,7 +50,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   The deterministic operations are bit-locked across languages by new
   `parity_vectors.json` sections; triangulation is unit-tested per language
   (its output ordering is not canonical).
-- **Java** implementation (`java/`, Gradle; Maven coordinates `io.github.ndsev:ndslive-math`).
+- **Java** implementation (`java/`, Gradle; Maven coordinates `live.nds:ndslive-math`).
 - **JavaScript/TypeScript** implementation (`js/`, npm package `@ndsev/ndslive-math`).
 - **Go** implementation (`go/`, module `github.com/ndsev/ndslive-math/go`).
 - **Rust** implementation (`rust/`, crate `ndslive-math`).

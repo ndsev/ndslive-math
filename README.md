@@ -43,7 +43,7 @@ arithmetic for moving between these representations.
 | **JavaScript/TS** | `npm install @ndsev/ndslive-math` |
 | **Rust** | `cargo add ndslive-math` |
 | **Go** | `go get github.com/ndsev/ndslive-math/go` |
-| **Java** | Gradle/Maven artifact `io.github.ndsev:ndslive-math` (see [`java/README.md`](java/README.md)) |
+| **Java** | Gradle/Maven artifact `live.nds:ndslive-math` (see [`java/README.md`](java/README.md)) |
 | **C++** | Header/CMake library — see below |
 
 For per-language usage and examples, see the README in each directory:
