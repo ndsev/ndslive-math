@@ -77,10 +77,17 @@ class TestParityVectors(unittest.TestCase):
             self.assertEqual(t.value, r["value"])
             self.assertEqual(t.level(), r["computed_level"])
             self.assertEqual(t.morton_number(), r["computed_morton_number"])
+            self.assertEqual(t.x(), r["grid_x"])
+            self.assertEqual(t.y(), r["grid_y"])
             self.assertEqual(t.size(), r["size"])
             self.assertEqual(list(t.south_west_corner()), r["sw"])
             self.assertEqual(list(t.north_east_corner()), r["ne"])
             self.assertEqual(list(t.center()), r["center"])
+            self.assertEqual(PackedTileId.from_value(r["value"]).value, r["value"])
+            self.assertEqual(
+                PackedTileId.from_tile_xy(r["grid_x"], r["grid_y"], r["level"]).value,
+                r["value"],
+            )
 
     def test_tile_neighbours(self):
         for r in VECTORS["tile_neighbours"]:
@@ -97,6 +104,16 @@ class TestParityVectors(unittest.TestCase):
             self.assertEqual(t.value, r["value"])
             self.assertEqual(t.level(), r["computed_level"])
             self.assertEqual(t.morton_number(), r["computed_morton_number"])
+            from_nds = PackedTileId.from_nds_coordinates(r["x"], r["y"], r["level"])
+            self.assertEqual(from_nds.value, r["value"])
+
+    def test_packed_tile_from_wgs84(self):
+        for r in VECTORS["packed_tile_from_wgs84"]:
+            t = PackedTileId.from_wgs84(r["lon"], r["lat"], r["level"])
+            self.assertEqual(t.value, r["value"])
+            self.assertEqual(t.morton_number(), r["computed_morton_number"])
+            self.assertEqual(t.x(), r["grid_x"])
+            self.assertEqual(t.y(), r["grid_y"])
 
     def test_tiles_for_bbox(self):
         for r in VECTORS["tiles_for_bbox"]:

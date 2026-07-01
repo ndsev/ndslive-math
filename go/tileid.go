@@ -48,6 +48,12 @@ func NewPackedTileIdFromUnsigned(value uint64) (PackedTileId, error) {
 	return t, nil
 }
 
+// PackedTileIdFromValue constructs a PackedTileId from the signed NDS.Live
+// public value.
+func PackedTileIdFromValue(value int32) (PackedTileId, error) {
+	return NewPackedTileId(value)
+}
+
 // PackedTileIdFromTileIndex creates a PackedTileId directly from a tile morton
 // number and level, without any coordinate conversion.
 //
@@ -69,6 +75,36 @@ func PackedTileIdFromTileIndex(mortonNumber uint32, level int) (PackedTileId, er
 		return PackedTileId{}, err
 	}
 	return t, nil
+}
+
+// PackedTileIdFromTileXY creates a PackedTileId from tile-grid coordinates at
+// the given level. X is in [0, 2^(level+1)-1], Y is in [0, 2^level-1].
+// Coordinates use the NDS Morton tile-grid order and are inverse to X and Y.
+func PackedTileIdFromTileXY(x, y uint32, level int) (PackedTileId, error) {
+	if level < 0 || level > 15 {
+		return PackedTileId{}, fmt.Errorf("invalid level %d (must be 0-15)", level)
+	}
+	maxX := (uint32(1) << (level + 1)) - 1
+	maxY := (uint32(1) << level) - 1
+	if x > maxX || y > maxY {
+		return PackedTileId{}, fmt.Errorf(
+			"invalid tile coordinates (%d, %d) for level %d (allowed x: 0-%d, y: 0-%d)",
+			x, y, level, maxX, maxY)
+	}
+	return PackedTileIdFromTileIndex(interleaveCoords(x, y, level), level)
+}
+
+// PackedTileIdFromNdsCoordinates returns the tile at level that contains the
+// given NDS integer coordinate.
+func PackedTileIdFromNdsCoordinates(x, y int32, level int) (PackedTileId, error) {
+	return PackedTileIdFromMortonAndLevel(MortonFromNdsCoordinates(x, y), level)
+}
+
+// PackedTileIdFromWgs84 returns the tile at level that contains the given
+// WGS84 coordinate.
+func PackedTileIdFromWgs84(longitude, latitude float64, level int) (PackedTileId, error) {
+	x, y := NewWgs84(longitude, latitude, 0).ToNdsCoordinates()
+	return PackedTileIdFromNdsCoordinates(x, y, level)
 }
 
 // PackedTileIdFromMortonAndLevel creates the PackedTileId of the tile at the
@@ -138,6 +174,18 @@ func (t PackedTileId) Size() uint32 {
 func (t PackedTileId) MortonNumber() uint32 {
 	tileLevel := t.Level()
 	return t.value - (uint32(1) << (16 + tileLevel))
+}
+
+// X returns the tile-grid X coordinate at this tile's level.
+func (t PackedTileId) X() uint32 {
+	x, _ := deinterleaveMorton(t.MortonNumber(), t.Level())
+	return x
+}
+
+// Y returns the tile-grid Y coordinate at this tile's level.
+func (t PackedTileId) Y() uint32 {
+	_, y := deinterleaveMorton(t.MortonNumber(), t.Level())
+	return y
 }
 
 // Center returns the center of the tile in NDS coordinates.

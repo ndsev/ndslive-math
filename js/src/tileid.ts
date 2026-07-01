@@ -64,6 +64,11 @@ export class PackedTileId {
     return this._value;
   }
 
+  /** Create a PackedTileId from the signed NDS.Live public value. */
+  static fromValue(value: number): PackedTileId {
+    return new PackedTileId(value);
+  }
+
   /**
    * Create a PackedTileId directly from a tile morton number and level.
    *
@@ -88,6 +93,39 @@ export class PackedTileId {
 
     const value = mortonNumber + 2 ** (16 + level);
     return new PackedTileId(value);
+  }
+
+  /**
+   * Create a PackedTileId from tile-grid coordinates at the given level.
+   *
+   * X is in `[0, 2^(level+1)-1]`, Y is in `[0, 2^level-1]`. Coordinates use
+   * the NDS Morton tile-grid order and are inverse to {@link PackedTileId.x}
+   * and {@link PackedTileId.y}.
+   */
+  static fromTileXY(x: number, y: number, level: number): PackedTileId {
+    if (!(level >= 0 && level <= 15)) {
+      throw new RangeError(`Invalid level ${level} (must be 0-15)`);
+    }
+    const maxX = 2 ** (level + 1) - 1;
+    const maxY = 2 ** level - 1;
+    if (!(x >= 0 && x <= maxX && y >= 0 && y <= maxY)) {
+      throw new RangeError(
+        `Invalid tile coordinates (${x}, ${y}) for level ${level} ` +
+          `(allowed x: 0-${maxX}, y: 0-${maxY})`,
+      );
+    }
+    return PackedTileId.fromTileIndex(PackedTileId.interleaveCoords(x, y, level), level);
+  }
+
+  /** Create a PackedTileId containing the given NDS integer coordinate. */
+  static fromNdsCoordinates(x: number, y: number, level: number): PackedTileId {
+    return PackedTileId.fromMortonAndLevel(MortonCode.fromNdsCoordinates(x, y), level);
+  }
+
+  /** Create a PackedTileId containing the given WGS84 coordinate. */
+  static fromWgs84(longitude: number, latitude: number, level: number): PackedTileId {
+    const [x, y] = new Wgs84(longitude, latitude).toNdsCoordinates();
+    return PackedTileId.fromNdsCoordinates(x, y, level);
   }
 
   /**
@@ -189,6 +227,16 @@ export class PackedTileId {
     return this._value - 2 ** (16 + tileLevel);
   }
 
+  /** Tile-grid X coordinate at this tile's level. */
+  x(): number {
+    return PackedTileId.deinterleaveMorton(this.mortonNumber(), this.level())[0];
+  }
+
+  /** Tile-grid Y coordinate at this tile's level. */
+  y(): number {
+    return PackedTileId.deinterleaveMorton(this.mortonNumber(), this.level())[1];
+  }
+
   private validate(): void {
     const minPackedTileId = 1 << 16;
     if (this._value < minPackedTileId) {
@@ -216,7 +264,7 @@ export class PackedTileId {
    * In the NDS tiling system X has `(level+1)` bits and Y has `level` bits,
    * creating a rectangular grid twice as wide as it is tall.
    */
-  private deinterleaveMorton(morton: number, level: number): [number, number] {
+  private static deinterleaveMorton(morton: number, level: number): [number, number] {
     let x = 0;
     let y = 0;
     for (let i = 0; i < level; i++) {
@@ -238,7 +286,7 @@ export class PackedTileId {
    *
    * In the NDS tiling system X has `(level+1)` bits and Y has `level` bits.
    */
-  private interleaveCoords(x: number, y: number, level: number): number {
+  private static interleaveCoords(x: number, y: number, level: number): number {
     let morton = 0;
     for (let i = 0; i < level; i++) {
       if (x & (1 << i)) {
@@ -261,9 +309,9 @@ export class PackedTileId {
   westNeighbour(): PackedTileId {
     const level = this.level();
     const morton = this.mortonNumber();
-    const [x, y] = this.deinterleaveMorton(morton, level);
+    const [x, y] = PackedTileId.deinterleaveMorton(morton, level);
     const maxX = (1 << (level + 1)) - 1;
-    const newMorton = this.interleaveCoords((x - 1) & maxX, y, level);
+    const newMorton = PackedTileId.interleaveCoords((x - 1) & maxX, y, level);
     return PackedTileId.fromTileIndex(newMorton, level);
   }
 
@@ -274,9 +322,9 @@ export class PackedTileId {
   eastNeighbour(): PackedTileId {
     const level = this.level();
     const morton = this.mortonNumber();
-    const [x, y] = this.deinterleaveMorton(morton, level);
+    const [x, y] = PackedTileId.deinterleaveMorton(morton, level);
     const maxX = (1 << (level + 1)) - 1;
-    const newMorton = this.interleaveCoords((x + 1) & maxX, y, level);
+    const newMorton = PackedTileId.interleaveCoords((x + 1) & maxX, y, level);
     return PackedTileId.fromTileIndex(newMorton, level);
   }
 
@@ -287,9 +335,9 @@ export class PackedTileId {
   southNeighbour(): PackedTileId {
     const level = this.level();
     const morton = this.mortonNumber();
-    const [x, y] = this.deinterleaveMorton(morton, level);
+    const [x, y] = PackedTileId.deinterleaveMorton(morton, level);
     const maxY = (1 << level) - 1;
-    const newMorton = this.interleaveCoords(x, (y - 1) & maxY, level);
+    const newMorton = PackedTileId.interleaveCoords(x, (y - 1) & maxY, level);
     return PackedTileId.fromTileIndex(newMorton, level);
   }
 
@@ -300,9 +348,9 @@ export class PackedTileId {
   northNeighbour(): PackedTileId {
     const level = this.level();
     const morton = this.mortonNumber();
-    const [x, y] = this.deinterleaveMorton(morton, level);
+    const [x, y] = PackedTileId.deinterleaveMorton(morton, level);
     const maxY = (1 << level) - 1;
-    const newMorton = this.interleaveCoords(x, (y + 1) & maxY, level);
+    const newMorton = PackedTileId.interleaveCoords(x, (y + 1) & maxY, level);
     return PackedTileId.fromTileIndex(newMorton, level);
   }
 

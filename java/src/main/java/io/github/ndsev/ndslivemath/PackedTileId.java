@@ -77,6 +77,17 @@ public final class PackedTileId {
 	}
 
 	/**
+	 * Create a PackedTileId from the signed NDS.Live public value.
+	 *
+	 * @param value
+	 *            signed int32 tile id value
+	 * @return the PackedTileId represented by {@code value}
+	 */
+	public static PackedTileId fromValue(int value) {
+		return new PackedTileId(value);
+	}
+
+	/**
 	 * Create a PackedTileId directly from a tile morton number and level, without
 	 * any coordinate conversion.
 	 *
@@ -99,6 +110,48 @@ public final class PackedTileId {
 		}
 		long value = mortonNumber + (1L << (16 + level));
 		return new PackedTileId(value);
+	}
+
+	/**
+	 * Create a PackedTileId from tile-grid coordinates at the given level. X is in
+	 * {@code [0, 2^(level+1)-1]}, Y is in {@code [0, 2^level-1]}. Coordinates use
+	 * the NDS Morton tile-grid order and are inverse to {@link #x()} and
+	 * {@link #y()}.
+	 *
+	 * @param x
+	 *            tile-grid X coordinate
+	 * @param y
+	 *            tile-grid Y coordinate
+	 * @param level
+	 *            tile level (0-15)
+	 * @return the PackedTileId for the given grid coordinate
+	 */
+	public static PackedTileId fromTileXY(long x, long y, int level) {
+		if (level < 0 || level > 15) {
+			throw new IllegalArgumentException("Invalid level " + level + " (must be 0-15)");
+		}
+		long maxX = (1L << (level + 1)) - 1;
+		long maxY = (1L << level) - 1;
+		if (x < 0 || x > maxX || y < 0 || y > maxY) {
+			throw new IllegalArgumentException("Invalid tile coordinates (" + x + ", " + y + ") for level " + level
+					+ " (allowed x: 0-" + maxX + ", y: 0-" + maxY + ")");
+		}
+		return fromTileIndex(interleaveCoords(x, y, level), level);
+	}
+
+	/**
+	 * Create the tile at {@code level} that contains the given NDS coordinate.
+	 */
+	public static PackedTileId fromNdsCoordinates(long x, long y, int level) {
+		return fromMortonAndLevel(MortonCode.fromNdsCoordinates(x, y), level);
+	}
+
+	/**
+	 * Create the tile at {@code level} that contains the given WGS84 coordinate.
+	 */
+	public static PackedTileId fromWgs84(double longitude, double latitude, int level) {
+		long[] xy = new Wgs84(longitude, latitude).toNdsCoordinates();
+		return fromNdsCoordinates(xy[0], xy[1], level);
 	}
 
 	/**
@@ -207,6 +260,20 @@ public final class PackedTileId {
 	public long mortonNumber() {
 		int tileLevel = level();
 		return this.value - (1L << (16 + tileLevel));
+	}
+
+	/**
+	 * @return the tile-grid X coordinate at this tile's level
+	 */
+	public long x() {
+		return deinterleaveMorton(mortonNumber(), level())[0];
+	}
+
+	/**
+	 * @return the tile-grid Y coordinate at this tile's level
+	 */
+	public long y() {
+		return deinterleaveMorton(mortonNumber(), level())[1];
 	}
 
 	private void validate() {

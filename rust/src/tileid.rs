@@ -69,6 +69,11 @@ impl PackedTileId {
         Self::from_i64(value as i64)
     }
 
+    /// Construct a `PackedTileId` from the signed NDS.Live public value.
+    pub fn from_value(value: i32) -> Result<Self, TileIdError> {
+        Self::new(value)
+    }
+
     /// Construct a `PackedTileId` from an `i64`, accepting both signed and
     /// unsigned 32-bit representations (matching the Python constructor).
     ///
@@ -120,6 +125,45 @@ impl PackedTileId {
 
         let value: u32 = morton_number + (1u32 << (16 + level));
         PackedTileId::from_i64(value as i64)
+    }
+
+    /// Create a `PackedTileId` from tile-grid coordinates at the given level.
+    ///
+    /// X is in `0..=2^(level+1)-1`, Y is in `0..=2^level-1`. Coordinates use
+    /// the NDS Morton tile-grid order and are inverse to [`PackedTileId::x`]
+    /// and [`PackedTileId::y`].
+    pub fn from_tile_xy(x: u32, y: u32, level: u32) -> Result<Self, TileIdError> {
+        if level > 15 {
+            return Err(TileIdError::InvalidLevel(level));
+        }
+        let max_x = (1u32 << (level + 1)) - 1;
+        let max_y = (1u32 << level) - 1;
+        if x > max_x {
+            return Err(TileIdError::InvalidMortonNumber {
+                morton: x as i64,
+                level,
+                max: max_x as u64,
+            });
+        }
+        if y > max_y {
+            return Err(TileIdError::InvalidMortonNumber {
+                morton: y as i64,
+                level,
+                max: max_y as u64,
+            });
+        }
+        Self::from_tile_index(Self::interleave_coords(x, y, level), level)
+    }
+
+    /// Create the tile at `level` that contains the given NDS coordinate.
+    pub fn from_nds_coordinates(x: i32, y: i32, level: u32) -> Result<Self, TileIdError> {
+        Self::from_morton_and_level(MortonCode::from_nds_coordinates(x, y), level)
+    }
+
+    /// Create the tile at `level` that contains the given WGS84 coordinate.
+    pub fn from_wgs84(longitude: f64, latitude: f64, level: u32) -> Result<Self, TileIdError> {
+        let (x, y) = Wgs84::new(longitude, latitude).to_nds_coordinates();
+        Self::from_nds_coordinates(x, y, level)
     }
 
     /// Create a `PackedTileId` for the tile at `level` that contains the
@@ -211,6 +255,16 @@ impl PackedTileId {
     pub fn morton_number(&self) -> u32 {
         let tile_level = self.level();
         self.value - (1u32 << (16 + tile_level))
+    }
+
+    /// Tile-grid X coordinate at this tile's level.
+    pub fn x(&self) -> u32 {
+        Self::deinterleave_morton(self.morton_number(), self.level()).0
+    }
+
+    /// Tile-grid Y coordinate at this tile's level.
+    pub fn y(&self) -> u32 {
+        Self::deinterleave_morton(self.morton_number(), self.level()).1
     }
 
     /// Validate this tile id against the NDS constraints.

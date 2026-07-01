@@ -119,11 +119,32 @@ FROM_MORTON_LEVEL = [
     ((1 << 31) - 1, (1 << 30) - 1, 15),
 ]
 
+# (lon, lat, level) for PackedTileId.from_wgs84.
+FROM_WGS84_LEVEL = [
+    (0.0, 0.0, 0),
+    (13.404954, 52.520008, 13),
+    (11.585, 48.137, 13),
+    (-122.4194, 37.7749, 10),
+    (179.9, 0.0, 5),
+    (-179.9, 0.0, 5),
+    (180.0, 90.0, 15),
+    (-180.0, -90.0, 15),
+    # Negative fractional NDS coordinates just west/south of a level-15 boundary.
+    # This catches floor-vs-truncate differences in WGS84 conversion.
+    (
+        -((1 << 16) + 0.5) * (360.0 / (1 << 32)),
+        -((1 << 16) + 0.5) * (180.0 / (1 << 31)),
+        15,
+    ),
+]
+
 # (sw_x, sw_y, ne_x, ne_y, level) bounding boxes for tile enumeration.
 TILES_FOR_BBOX = [
     (0, 0, (1 << 28), (1 << 28), 3),
     (1000000, 500000, 2000000, 1500000, 8),
     (0, 0, (1 << 31) - 1, (1 << 30) - 1, 1),
+    (-1, -1, 0, 0, 1),
+    (-1000000, -500000, 1000000, 500000, 8),
 ]
 
 # ---------------------------------------------------------------------------
@@ -280,6 +301,8 @@ def main():
                 "value": t.value,
                 "computed_level": t.level(),
                 "computed_morton_number": t.morton_number(),
+                "grid_x": t.x(),
+                "grid_y": t.y(),
                 "size": t.size(),
                 "sw": list(t.south_west_corner()),
                 "ne": list(t.north_east_corner()),
@@ -323,7 +346,24 @@ def main():
         )
     data["from_morton_and_level"] = rows
 
-    # 7. get_tile_ids_for_bounding_box
+    # 7. from_wgs84 (containing tile)
+    rows = []
+    for lon, lat, level in FROM_WGS84_LEVEL:
+        t = PackedTileId.from_wgs84(lon, lat, level)
+        rows.append(
+            {
+                "lon": lon,
+                "lat": lat,
+                "level": level,
+                "value": t.value,
+                "computed_morton_number": t.morton_number(),
+                "grid_x": t.x(),
+                "grid_y": t.y(),
+            }
+        )
+    data["packed_tile_from_wgs84"] = rows
+
+    # 8. get_tile_ids_for_bounding_box
     rows = []
     for sw_x, sw_y, ne_x, ne_y, level in TILES_FOR_BBOX:
         tiles = get_tile_ids_for_bounding_box(sw_x, sw_y, ne_x, ne_y, level)
@@ -339,7 +379,7 @@ def main():
         )
     data["tiles_for_bbox"] = rows
 
-    # 8. bounding_box_from_tile_ids
+    # 9. bounding_box_from_tile_ids
     rows = []
     for morton_number, level in TILE_INDEX:
         if level == 0:

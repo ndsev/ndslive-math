@@ -323,7 +323,7 @@ private:
             while (true)
             {
                 // Gracefully allow a longitude close enough to 180 to mean "rightmost"
-                if (std::abs(x - lonMax) < lonNdsDelta)
+                if (std::abs(x - lonMax) <= lonNdsDelta)
                 {
                     x = lonMax;
                     break;
@@ -339,7 +339,7 @@ private:
 
             while (true)
             {
-                if (std::abs(y - latMax) < latNdsDelta)
+                if (std::abs(y - latMax) <= latNdsDelta)
                 {
                     y = latMax;
                     break;

@@ -38,6 +38,23 @@ int main()
              static_cast<int32_t>(-1)); // 0xFFFFFFFF -> -1
     CHECK_EQ(PackedTileId::fromTileIndex(0, 14).value(),
              static_cast<int32_t>(1u << 30)); // 1073741824 (positive)
+    CHECK_EQ(PackedTileId::fromValue(std::numeric_limits<int32_t>::min()).value(),
+             std::numeric_limits<int32_t>::min());
+
+    // The explicit factory validates, while the raw constructor preserves the
+    // legacy "construct then query isValid()" behavior.
+    {
+        bool threw = false;
+        try
+        {
+            (void)PackedTileId::fromValue(0);
+        }
+        catch (const std::out_of_range &)
+        {
+            threw = true;
+        }
+        CHECK(threw);
+    }
 
     // Corners of a level-13 tile at the SW origin.
     constexpr uint32_t L13 = 1u << (32 - 14); // tile length in NDS units

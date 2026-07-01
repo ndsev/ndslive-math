@@ -48,6 +48,8 @@ type parityData struct {
 		Value                int32    `json:"value"`
 		ComputedLevel        int      `json:"computed_level"`
 		ComputedMortonNumber uint32   `json:"computed_morton_number"`
+		GridX                uint32   `json:"grid_x"`
+		GridY                uint32   `json:"grid_y"`
 		Size                 uint64   `json:"size"`
 		SW                   [2]int64 `json:"sw"`
 		NE                   [2]int64 `json:"ne"`
@@ -71,6 +73,16 @@ type parityData struct {
 		ComputedLevel        int    `json:"computed_level"`
 		ComputedMortonNumber uint32 `json:"computed_morton_number"`
 	} `json:"from_morton_and_level"`
+
+	PackedTileFromWgs84 []struct {
+		Lon                  float64 `json:"lon"`
+		Lat                  float64 `json:"lat"`
+		Level                int     `json:"level"`
+		Value                int32   `json:"value"`
+		ComputedMortonNumber uint32  `json:"computed_morton_number"`
+		GridX                uint32  `json:"grid_x"`
+		GridY                uint32  `json:"grid_y"`
+	} `json:"packed_tile_from_wgs84"`
 
 	TilesForBbox []struct {
 		SwX        int32   `json:"sw_x"`
@@ -280,6 +292,9 @@ func TestParityPackedTileFromIndex(t *testing.T) {
 		if tile.MortonNumber() != c.ComputedMortonNumber {
 			t.Errorf("case %d: morton = %d, want %d", i, tile.MortonNumber(), c.ComputedMortonNumber)
 		}
+		if tile.X() != c.GridX || tile.Y() != c.GridY {
+			t.Errorf("case %d: grid = (%d,%d), want (%d,%d)", i, tile.X(), tile.Y(), c.GridX, c.GridY)
+		}
 		if uint64(tile.Size()) != c.Size {
 			t.Errorf("case %d: size = %d, want %d", i, tile.Size(), c.Size)
 		}
@@ -303,6 +318,20 @@ func TestParityPackedTileFromIndex(t *testing.T) {
 		}
 		if fromSigned.Value() != c.Value {
 			t.Errorf("case %d: NewPackedTileId round-trip value = %d, want %d", i, fromSigned.Value(), c.Value)
+		}
+		fromValue, err := PackedTileIdFromValue(c.Value)
+		if err != nil {
+			t.Fatalf("case %d: PackedTileIdFromValue(%d) error: %v", i, c.Value, err)
+		}
+		if fromValue.Value() != c.Value {
+			t.Errorf("case %d: PackedTileIdFromValue value = %d, want %d", i, fromValue.Value(), c.Value)
+		}
+		fromXY, err := PackedTileIdFromTileXY(c.GridX, c.GridY, c.Level)
+		if err != nil {
+			t.Fatalf("case %d: PackedTileIdFromTileXY error: %v", i, err)
+		}
+		if fromXY.Value() != c.Value {
+			t.Errorf("case %d: PackedTileIdFromTileXY value = %d, want %d", i, fromXY.Value(), c.Value)
 		}
 	}
 }
@@ -345,6 +374,32 @@ func TestParityFromMortonAndLevel(t *testing.T) {
 		}
 		if tile.MortonNumber() != c.ComputedMortonNumber {
 			t.Errorf("case %d: morton = %d, want %d", i, tile.MortonNumber(), c.ComputedMortonNumber)
+		}
+		fromNds, err := PackedTileIdFromNdsCoordinates(c.X, c.Y, c.Level)
+		if err != nil {
+			t.Fatalf("case %d: PackedTileIdFromNdsCoordinates error: %v", i, err)
+		}
+		if fromNds.Value() != c.Value {
+			t.Errorf("case %d: PackedTileIdFromNdsCoordinates value = %d, want %d", i, fromNds.Value(), c.Value)
+		}
+	}
+}
+
+func TestParityPackedTileFromWgs84(t *testing.T) {
+	data := loadParity(t)
+	for i, c := range data.PackedTileFromWgs84 {
+		tile, err := PackedTileIdFromWgs84(c.Lon, c.Lat, c.Level)
+		if err != nil {
+			t.Fatalf("case %d: PackedTileIdFromWgs84 error: %v", i, err)
+		}
+		if tile.Value() != c.Value {
+			t.Errorf("case %d: value = %d, want %d", i, tile.Value(), c.Value)
+		}
+		if tile.MortonNumber() != c.ComputedMortonNumber {
+			t.Errorf("case %d: morton = %d, want %d", i, tile.MortonNumber(), c.ComputedMortonNumber)
+		}
+		if tile.X() != c.GridX || tile.Y() != c.GridY {
+			t.Errorf("case %d: grid = (%d,%d), want (%d,%d)", i, tile.X(), tile.Y(), c.GridX, c.GridY)
 		}
 	}
 }

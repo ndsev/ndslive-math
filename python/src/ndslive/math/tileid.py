@@ -122,6 +122,11 @@ class PackedTileId:
         return self._value
 
     @classmethod
+    def from_value(cls, value: int) -> PackedTileId:
+        """Create a PackedTileId from the signed NDS.Live public value."""
+        return cls(value)
+
+    @classmethod
     def from_tile_index(cls, morton_number: int, level: int) -> PackedTileId:
         """
         Create a PackedTileId directly from a tile morton number and level.
@@ -207,6 +212,38 @@ class PackedTileId:
 
         return cls(value)
 
+    @classmethod
+    def from_tile_xy(cls, x: int, y: int, level: int) -> PackedTileId:
+        """Create a tile from tile-grid coordinates at the given level.
+
+        ``x`` is in ``[0, 2^(level+1)-1]`` and ``y`` is in
+        ``[0, 2^level-1]``. Coordinates use the NDS Morton tile-grid order and
+        are inverse to :meth:`x` and :meth:`y`.
+        """
+        if not (0 <= level <= 15):
+            raise ValueError(f"Invalid level {level} (must be 0-15)")
+        max_x = (1 << (level + 1)) - 1
+        max_y = (1 << level) - 1
+        if not (0 <= x <= max_x and 0 <= y <= max_y):
+            raise ValueError(
+                f"Invalid tile coordinates ({x}, {y}) for level {level} "
+                f"(allowed x: 0-{max_x}, y: 0-{max_y})"
+            )
+        return cls.from_tile_index(cls._interleave_coords(x, y, level), level)
+
+    @classmethod
+    def from_nds_coordinates(cls, x: int, y: int, level: int) -> PackedTileId:
+        """Create the tile at ``level`` that contains the given NDS coordinate."""
+        return cls.from_morton_and_level(MortonCode.from_nds_coordinates(x, y), level)
+
+    @classmethod
+    def from_wgs84(cls, longitude: float, latitude: float, level: int) -> PackedTileId:
+        """Create the tile at ``level`` that contains the given WGS84 coordinate."""
+        from .wgs84 import Wgs84
+
+        x, y = Wgs84(longitude, latitude).to_nds_coordinates()
+        return cls.from_nds_coordinates(x, y, level)
+
     def level(self) -> int:
         """
         Level of the tile (0..15)
@@ -274,6 +311,14 @@ class PackedTileId:
         tile_level = self.level()
         return self._value - (1 << (16 + tile_level))
 
+    def x(self) -> int:
+        """Tile-grid X coordinate at this tile's level."""
+        return self._deinterleave_morton(self.morton_number(), self.level())[0]
+
+    def y(self) -> int:
+        """Tile-grid Y coordinate at this tile's level."""
+        return self._deinterleave_morton(self.morton_number(), self.level())[1]
+
     def _validate(self) -> None:
         """
         Validates this PackedTileId.
@@ -303,7 +348,8 @@ class PackedTileId:
                 f"exceeds valid range for level {tile_level} (allowed: 0-{max_morton})"
             )
 
-    def _deinterleave_morton(self, morton: int, level: int) -> tuple[int, int]:
+    @staticmethod
+    def _deinterleave_morton(morton: int, level: int) -> tuple[int, int]:
         """
         Extract X and Y coordinates from morton number.
 
@@ -330,7 +376,8 @@ class PackedTileId:
             x |= 1 << level
         return x, y
 
-    def _interleave_coords(self, x: int, y: int, level: int) -> int:
+    @staticmethod
+    def _interleave_coords(x: int, y: int, level: int) -> int:
         """
         Create morton number from X and Y coordinates.
 

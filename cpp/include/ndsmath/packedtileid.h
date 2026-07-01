@@ -23,6 +23,10 @@ public:
     //! Constructor.
     explicit PackedTileId(uint32_t value);
 
+    //! Create a PackedTileId from the signed NDS.Live public value.
+    //! Level 15 values are negative and are reinterpreted as their unsigned bit pattern.
+    static PackedTileId fromValue(int32_t value);
+
     //! Create a PackedTileId that contains the point encoded by a MortonCode.
     //! This finds the tile at the specified level containing the full-precision
     //! NDS coordinates. The resulting mortonNumber() will NOT equal the input
@@ -34,6 +38,17 @@ public:
     //! @param level Tile level (0-15)
     //! @return PackedTileId with the specified morton number at the given level
     static PackedTileId fromTileIndex(uint32_t mortonNumber, int level);
+
+    //! Create a PackedTileId from tile-grid coordinates at the given level.
+    //! X is in [0, 2^(level+1)-1], Y is in [0, 2^level-1]. Coordinates follow
+    //! the NDS Morton tile-grid order and are inverse to x()/y().
+    static PackedTileId fromTileXY(uint32_t x, uint32_t y, int level);
+
+    //! Create a PackedTileId containing the given NDS integer coordinate.
+    static PackedTileId fromNdsCoordinates(int32_t x, int32_t y, int level);
+
+    //! Create a PackedTileId containing the given WGS84 coordinate.
+    static PackedTileId fromWgs84(double longitude, double latitude, int level);
 
     ///! Checks if the internal value represents an actual PackedTileId or not
     bool isValid() const;
@@ -67,6 +82,14 @@ public:
 
     //! Tile number according to Morton scheme
     uint32_t mortonNumber() const;
+
+    //! Tile-grid X coordinate at this tile's level.
+    //! This is the deinterleaved Morton X coordinate and has level+1 bits.
+    uint32_t x() const;
+
+    //! Tile-grid Y coordinate at this tile's level.
+    //! This is the deinterleaved Morton Y coordinate and has level bits.
+    uint32_t y() const;
 
     //! Width and height of the tile in NDS coord units
     uint32_t size() const;
