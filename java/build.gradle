@@ -1,7 +1,7 @@
 plugins {
     id 'java-library'
     id 'jacoco'
-    id 'com.diffplug.spotless' version '8.7.0'
+    id 'com.diffplug.spotless' version '8.8.0'
     // Publishes to the Maven Central Portal and signs artifacts (in-memory GPG).
     id 'com.vanniktech.maven.publish' version '0.30.0'
 }
