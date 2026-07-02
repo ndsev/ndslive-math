@@ -211,6 +211,19 @@ describe('PackedTileId construction & validation', () => {
     expect(tile.value).toBe(-1);
   });
 
+  it('constructs from signed values, tile grid, NDS coordinates, and WGS84', () => {
+    const tile = PackedTileId.fromTileXY(3, 1, 1);
+    expect(tile.value).toBe(131079);
+    expect(tile.x()).toBe(3);
+    expect(tile.y()).toBe(1);
+    expect(PackedTileId.fromValue(tile.value).value).toBe(tile.value);
+
+    const fromNds = PackedTileId.fromNdsCoordinates(-65537, -65537, 15);
+    const fromWgs = PackedTileId.fromWgs84(-0.005493205972015858, -0.005493205972015858, 15);
+    expect(fromNds.value).toBe(-4);
+    expect(fromWgs.value).toBe(-4);
+  });
+
   it('masks values outside 32 bits', () => {
     const tile = new PackedTileId(2 ** 32 + 65536);
     expect(tile.value).toBe(65536);
@@ -229,6 +242,15 @@ describe('PackedTileId construction & validation', () => {
   it('rejects out-of-range level in fromTileIndex', () => {
     expect(() => PackedTileId.fromTileIndex(0, -1)).toThrow(RangeError);
     expect(() => PackedTileId.fromTileIndex(0, 16)).toThrow(RangeError);
+  });
+
+  it('rejects invalid inputs in added factories', () => {
+    expect(() => PackedTileId.fromValue(0)).toThrow();
+    expect(() => PackedTileId.fromTileXY(0, 0, -1)).toThrow(RangeError);
+    expect(() => PackedTileId.fromTileXY(4, 0, 1)).toThrow(RangeError);
+    expect(() => PackedTileId.fromTileXY(0, 2, 1)).toThrow(RangeError);
+    expect(() => PackedTileId.fromNdsCoordinates(0, 0, 16)).toThrow(RangeError);
+    expect(() => PackedTileId.fromWgs84(0, 0, 16)).toThrow(RangeError);
   });
 
   it('rejects out-of-range morton in fromTileIndex', () => {

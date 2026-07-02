@@ -38,6 +38,45 @@ fn constructors() {
 }
 
 #[test]
+fn added_tile_factories_and_grid_coordinates() {
+    let tile = PackedTileId::from_tile_xy(3, 1, 1).unwrap();
+    assert_eq!(tile.value(), 131079);
+    assert_eq!(tile.x(), 3);
+    assert_eq!(tile.y(), 1);
+    assert_eq!(
+        PackedTileId::from_value(tile.value()).unwrap().value(),
+        tile.value()
+    );
+
+    let from_nds = PackedTileId::from_nds_coordinates(-65537, -65537, 15).unwrap();
+    let from_wgs =
+        PackedTileId::from_wgs84(-0.005493205972015858, -0.005493205972015858, 15).unwrap();
+    assert_eq!(from_nds.value(), -4);
+    assert_eq!(from_wgs.value(), -4);
+}
+
+#[test]
+fn added_tile_factory_validation() {
+    assert!(PackedTileId::from_value(0).is_err());
+    assert!(PackedTileId::from_tile_xy(0, 0, 16).is_err());
+
+    let x_error = PackedTileId::from_tile_xy(4, 0, 1).unwrap_err();
+    assert!(matches!(
+        x_error,
+        TileIdError::InvalidMortonNumber { morton: 4, .. }
+    ));
+
+    let y_error = PackedTileId::from_tile_xy(0, 2, 1).unwrap_err();
+    assert!(matches!(
+        y_error,
+        TileIdError::InvalidMortonNumber { morton: 2, .. }
+    ));
+
+    assert!(PackedTileId::from_nds_coordinates(0, 0, 16).is_err());
+    assert!(PackedTileId::from_wgs84(0.0, 0.0, 16).is_err());
+}
+
+#[test]
 fn dimensions_and_displays() {
     let tile = PackedTileId::from_tile_index(12345, 13).unwrap();
     let (w, h) = tile.dimensions_in_meters();

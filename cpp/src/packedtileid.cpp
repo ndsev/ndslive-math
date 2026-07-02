@@ -330,9 +330,8 @@ PackedTileIds getTileIdsForBoundingBox(int32_t swX, int32_t swY, int32_t neX, in
             const int64_t tileSwY = tileY * static_cast<int64_t>(tileSize);
 
             // Create morton code from the tile's south-west corner
-            const MortonCode morton = MortonCode::fromNdsCoordinates(
-                static_cast<int32_t>(tileSwX),
-                static_cast<int32_t>(tileSwY));
+            const MortonCode morton = MortonCode::fromNdsCoordinates(static_cast<int32_t>(tileSwX),
+                                                                     static_cast<int32_t>(tileSwY));
 
             // Create the packed tile ID
             const PackedTileId tileId(morton, level);

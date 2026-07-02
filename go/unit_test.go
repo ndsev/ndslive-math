@@ -163,6 +163,57 @@ func TestPackedTileIdInvalid(t *testing.T) {
 	}
 }
 
+func TestPackedTileIdAddedFactoriesAndGridCoordinates(t *testing.T) {
+	tile, err := PackedTileIdFromTileXY(3, 1, 1)
+	if err != nil {
+		t.Fatalf("PackedTileIdFromTileXY error: %v", err)
+	}
+	if tile.Value() != 131079 || tile.X() != 3 || tile.Y() != 1 {
+		t.Errorf("from tile xy = value %d grid (%d,%d), want 131079 grid (3,1)", tile.Value(), tile.X(), tile.Y())
+	}
+
+	fromValue, err := PackedTileIdFromValue(tile.Value())
+	if err != nil {
+		t.Fatalf("PackedTileIdFromValue error: %v", err)
+	}
+	if fromValue.Value() != tile.Value() {
+		t.Errorf("from value = %d, want %d", fromValue.Value(), tile.Value())
+	}
+
+	fromNds, err := PackedTileIdFromNdsCoordinates(-1, -1, 15)
+	if err != nil {
+		t.Fatalf("PackedTileIdFromNdsCoordinates error: %v", err)
+	}
+	fromWgs, err := PackedTileIdFromWgs84(-0.005493205972015858, -0.005493205972015858, 15)
+	if err != nil {
+		t.Fatalf("PackedTileIdFromWgs84 error: %v", err)
+	}
+	if fromNds.Level() != 15 || fromWgs.Value() != -4 {
+		t.Errorf("coordinate factories = level %d value %d, want level 15 value -4", fromNds.Level(), fromWgs.Value())
+	}
+}
+
+func TestPackedTileIdAddedFactoryValidation(t *testing.T) {
+	if _, err := PackedTileIdFromValue(0); err == nil {
+		t.Error("expected error for invalid packed value")
+	}
+	if _, err := PackedTileIdFromTileXY(0, 0, -1); err == nil {
+		t.Error("expected error for invalid tile xy level")
+	}
+	if _, err := PackedTileIdFromTileXY(4, 0, 1); err == nil {
+		t.Error("expected error for x outside level range")
+	}
+	if _, err := PackedTileIdFromTileXY(0, 2, 1); err == nil {
+		t.Error("expected error for y outside level range")
+	}
+	if _, err := PackedTileIdFromNdsCoordinates(0, 0, 16); err == nil {
+		t.Error("expected error for invalid NDS factory level")
+	}
+	if _, err := PackedTileIdFromWgs84(0, 0, 16); err == nil {
+		t.Error("expected error for invalid WGS84 factory level")
+	}
+}
+
 func TestNorthEastCornerExclusive(t *testing.T) {
 	// Level 0, morton 0: NE corner is the exclusive 2^31 in both axes.
 	tile, err := PackedTileIdFromTileIndex(0, 0)

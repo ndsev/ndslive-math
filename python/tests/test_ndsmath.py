@@ -368,6 +368,34 @@ class TestPackedTileId(unittest.TestCase):
             PackedTileId.from_tile_index(-1, 2)
         self.assertIn("morton number", str(ctx.exception))
 
+    def test_added_factories_and_grid_coordinates(self):
+        """Test added PackedTileId factory helpers and grid accessors."""
+        tile = PackedTileId.from_tile_xy(3, 1, 1)
+        self.assertEqual(tile.value, 131079)
+        self.assertEqual(tile.x(), 3)
+        self.assertEqual(tile.y(), 1)
+        self.assertEqual(PackedTileId.from_value(tile.value).value, tile.value)
+
+        from_nds = PackedTileId.from_nds_coordinates(-65537, -65537, 15)
+        from_wgs = PackedTileId.from_wgs84(-0.005493205972015858, -0.005493205972015858, 15)
+        self.assertEqual(from_nds.value, -4)
+        self.assertEqual(from_wgs.value, -4)
+
+    def test_added_factory_validation(self):
+        """Test validation in added PackedTileId factory helpers."""
+        with self.assertRaises(ValueError):
+            PackedTileId.from_value(0)
+        with self.assertRaises(ValueError):
+            PackedTileId.from_tile_xy(0, 0, -1)
+        with self.assertRaises(ValueError):
+            PackedTileId.from_tile_xy(4, 0, 1)
+        with self.assertRaises(ValueError):
+            PackedTileId.from_tile_xy(0, 2, 1)
+        with self.assertRaises(ValueError):
+            PackedTileId.from_nds_coordinates(0, 0, 16)
+        with self.assertRaises(ValueError):
+            PackedTileId.from_wgs84(0.0, 0.0, 16)
+
     def test_from_morton_and_level_validation(self):
         """Test that from_morton_and_level validates level."""
         from ndslive.math import MortonCode

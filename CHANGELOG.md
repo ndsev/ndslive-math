@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- **PackedTileId parity:** added tile-grid coordinate accessors and factory
+  helpers across all six language bindings (`fromValue`/`from_value`,
+  `fromTileXY`/`from_tile_xy`, `fromNdsCoordinates`/`from_nds_coordinates`, and
+  `fromWgs84`/`from_wgs84`), with shared parity vectors covering the new API.
+
+### Fixed
+- **C++:** `PackedTileId::fromWgs84()` now follows the same floor-based
+  WGS84-to-NDS conversion path as the other bindings, fixing negative
+  fractional coordinate boundary cases.
+
 ## [v1.0.0] - 2026-06-26
 
 ### Project

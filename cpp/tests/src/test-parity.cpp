@@ -141,10 +141,8 @@ int main()
         CHECK_EQ(static_cast<int64_t>(cy), r["center"][1].get<int64_t>());
         CHECK_EQ(static_cast<int64_t>(PackedTileId::fromValue(r["value"].get<int32_t>()).value()),
                  r["value"].get<int64_t>());
-        CHECK_EQ(static_cast<int64_t>(PackedTileId::fromTileXY(
-                                          r["grid_x"].get<uint32_t>(),
-                                          r["grid_y"].get<uint32_t>(),
-                                          level)
+        CHECK_EQ(static_cast<int64_t>(PackedTileId::fromTileXY(r["grid_x"].get<uint32_t>(),
+                                                               r["grid_y"].get<uint32_t>(), level)
                                           .value()),
                  r["value"].get<int64_t>());
     }
@@ -173,8 +171,8 @@ int main()
         CHECK_EQ(t.level(), r["computed_level"].get<int>());
         CHECK_EQ(static_cast<int64_t>(t.mortonNumber()),
                  r["computed_morton_number"].get<int64_t>());
-        PackedTileId fromNds = PackedTileId::fromNdsCoordinates(
-            static_cast<int32_t>(x), static_cast<int32_t>(y), level);
+        PackedTileId fromNds = PackedTileId::fromNdsCoordinates(static_cast<int32_t>(x),
+                                                                static_cast<int32_t>(y), level);
         CHECK_EQ(static_cast<int64_t>(fromNds.value()), r["value"].get<int64_t>());
     }
 

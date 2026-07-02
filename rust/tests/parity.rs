@@ -361,8 +361,20 @@ fn packed_tile_from_index() {
             row.morton_number,
             row.level
         );
-        assert_eq!(t.x(), row.grid_x, "grid_x m={} l={}", row.morton_number, row.level);
-        assert_eq!(t.y(), row.grid_y, "grid_y m={} l={}", row.morton_number, row.level);
+        assert_eq!(
+            t.x(),
+            row.grid_x,
+            "grid_x m={} l={}",
+            row.morton_number,
+            row.level
+        );
+        assert_eq!(
+            t.y(),
+            row.grid_y,
+            "grid_y m={} l={}",
+            row.morton_number,
+            row.level
+        );
         assert_eq!(
             t.size(),
             row.size,
@@ -391,7 +403,10 @@ fn packed_tile_from_index() {
             row.morton_number,
             row.level
         );
-        assert_eq!(PackedTileId::from_value(row.value).unwrap().value(), row.value);
+        assert_eq!(
+            PackedTileId::from_value(row.value).unwrap().value(),
+            row.value
+        );
         assert_eq!(
             PackedTileId::from_tile_xy(row.grid_x, row.grid_y, row.level)
                 .unwrap()
@@ -484,7 +499,14 @@ fn packed_tile_from_wgs84() {
     assert!(!v.packed_tile_from_wgs84.is_empty());
     for row in &v.packed_tile_from_wgs84 {
         let t = PackedTileId::from_wgs84(row.lon, row.lat, row.level).unwrap();
-        assert_eq!(t.value(), row.value, "value lon={} lat={} l={}", row.lon, row.lat, row.level);
+        assert_eq!(
+            t.value(),
+            row.value,
+            "value lon={} lat={} l={}",
+            row.lon,
+            row.lat,
+            row.level
+        );
         assert_eq!(
             t.morton_number(),
             row.computed_morton_number,

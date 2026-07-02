@@ -164,9 +164,33 @@ class UnitTests {
 	}
 
 	@Test
+	void tileAddedFactoriesAndGridCoordinates() {
+		PackedTileId tile = PackedTileId.fromTileXY(3, 1, 1);
+		assertEquals(131079, tile.value());
+		assertEquals(3, tile.x());
+		assertEquals(1, tile.y());
+		assertEquals(tile.value(), PackedTileId.fromValue(tile.value()).value());
+
+		PackedTileId fromNds = PackedTileId.fromNdsCoordinates(-65537, -65537, 15);
+		PackedTileId fromWgs = PackedTileId.fromWgs84(-0.005493205972015858, -0.005493205972015858, 15);
+		assertEquals(-4, fromNds.value());
+		assertEquals(-4, fromWgs.value());
+	}
+
+	@Test
 	void tileInvalidLevelThrows() {
 		assertThrows(IllegalArgumentException.class, () -> PackedTileId.fromTileIndex(0, 16));
 		assertThrows(IllegalArgumentException.class, () -> PackedTileId.fromTileIndex(0, -1));
+	}
+
+	@Test
+	void tileAddedFactoryValidationThrows() {
+		assertThrows(IllegalArgumentException.class, () -> PackedTileId.fromValue(0));
+		assertThrows(IllegalArgumentException.class, () -> PackedTileId.fromTileXY(0, 0, -1));
+		assertThrows(IllegalArgumentException.class, () -> PackedTileId.fromTileXY(4, 0, 1));
+		assertThrows(IllegalArgumentException.class, () -> PackedTileId.fromTileXY(0, 2, 1));
+		assertThrows(IllegalArgumentException.class, () -> PackedTileId.fromNdsCoordinates(0, 0, 16));
+		assertThrows(IllegalArgumentException.class, () -> PackedTileId.fromWgs84(0.0, 0.0, 16));
 	}
 
 	@Test
