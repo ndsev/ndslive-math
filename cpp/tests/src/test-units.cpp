@@ -63,6 +63,17 @@ int main()
         CHECK_EQ(tile.x(), static_cast<uint32_t>(3));
         CHECK_EQ(tile.y(), static_cast<uint32_t>(1));
         CHECK_EQ(PackedTileId::fromValue(tile.value()).value(), tile.value());
+        CHECK_EQ(tile.centerWgs84().first, -45.0);
+        CHECK_EQ(tile.centerWgs84().second, -45.0);
+        CHECK_EQ(tile.southWestWgs84().first, -90.0);
+        CHECK_EQ(tile.southWestWgs84().second, -90.0);
+        CHECK_EQ(tile.northEastWgs84().first, 0.0);
+        CHECK_EQ(tile.northEastWgs84().second, 0.0);
+        CHECK_EQ(tile.wgs84Size().first, 90.0);
+        CHECK_EQ(tile.wgs84Size().second, 90.0);
+        auto boundary = PackedTileId::wgs84FromNdsCoordinates(1LL << 31, 1LL << 30);
+        CHECK_EQ(boundary.first, 180.0);
+        CHECK_EQ(boundary.second, 90.0);
 
         auto fromNds = PackedTileId::fromNdsCoordinates(-65537, -65537, 15);
         auto fromWgs = PackedTileId::fromWgs84(-0.005493205972015858, -0.005493205972015858, 15);
@@ -155,6 +166,10 @@ int main()
         // Round-trip in both directions.
         CHECK(t1.eastNeighbour().westNeighbour() == t1);
         CHECK(t1.westNeighbour().eastNeighbour() == t1);
+        CHECK(t1.neighbour(1, 0) == t1.eastNeighbour());
+        CHECK(t1.neighbour(-1, 0) == t1.westNeighbour());
+        CHECK(t1.neighbour(2, 0) == t1.eastNeighbour().eastNeighbour());
+        CHECK(t1.neighbor(2, 0) == t1.neighbour(2, 0));
     }
 
     // Bounding-box enumeration: a 2x2 span yields four tiles.

@@ -5,6 +5,7 @@
 
 #include "glm/glm.hpp"
 #include "glm/ext.hpp"
+#include <cmath>
 #include <stdexcept>
 
 namespace ndsmath
@@ -56,6 +57,17 @@ uint32_t interleaveCoords(uint32_t x, uint32_t y, int level)
     if (x & (1u << level))
         morton |= (1u << (2 * level));
     return morton;
+}
+
+uint32_t wrappedOffset(uint32_t coordinate, int32_t offset, uint32_t modulo)
+{
+    auto shifted = (static_cast<int64_t>(coordinate) + static_cast<int64_t>(offset)) %
+                   static_cast<int64_t>(modulo);
+    if (shifted < 0)
+    {
+        shifted += modulo;
+    }
+    return static_cast<uint32_t>(shifted);
 }
 } // namespace
 
@@ -115,42 +127,37 @@ PackedTileId PackedTileId::fromWgs84(double longitude, double latitude, int leve
 
 PackedTileId PackedTileId::westNeighbour() const
 {
-    const int lvl = level();
-    uint32_t x, y;
-    deinterleaveMorton(mortonNumber(), lvl, x, y);
-    const uint32_t maxX = (1u << (lvl + 1)) - 1;
-    x = (x - 1) & maxX;
-    return fromTileIndex(interleaveCoords(x, y, lvl), lvl);
+    return neighbour(-1, 0);
 }
 
 PackedTileId PackedTileId::eastNeighbour() const
 {
-    const int lvl = level();
-    uint32_t x, y;
-    deinterleaveMorton(mortonNumber(), lvl, x, y);
-    const uint32_t maxX = (1u << (lvl + 1)) - 1;
-    x = (x + 1) & maxX;
-    return fromTileIndex(interleaveCoords(x, y, lvl), lvl);
+    return neighbour(1, 0);
 }
 
 PackedTileId PackedTileId::southNeighbour() const
 {
-    const int lvl = level();
-    uint32_t x, y;
-    deinterleaveMorton(mortonNumber(), lvl, x, y);
-    const uint32_t maxY = (1u << lvl) - 1;
-    y = (y - 1) & maxY;
-    return fromTileIndex(interleaveCoords(x, y, lvl), lvl);
+    return neighbour(0, -1);
 }
 
 PackedTileId PackedTileId::northNeighbour() const
 {
+    return neighbour(0, 1);
+}
+
+PackedTileId PackedTileId::neighbour(int32_t offsetX, int32_t offsetY) const
+{
     const int lvl = level();
     uint32_t x, y;
     deinterleaveMorton(mortonNumber(), lvl, x, y);
-    const uint32_t maxY = (1u << lvl) - 1;
-    y = (y + 1) & maxY;
+    x = wrappedOffset(x, offsetX, 1u << (lvl + 1));
+    y = wrappedOffset(y, offsetY, 1u << lvl);
     return fromTileIndex(interleaveCoords(x, y, lvl), lvl);
+}
+
+PackedTileId PackedTileId::neighbor(int32_t offsetX, int32_t offsetY) const
+{
+    return neighbour(offsetX, offsetY);
 }
 
 PackedTileId::PackedTileId(MortonCode mortonCode, const int level)
@@ -225,6 +232,44 @@ void PackedTileId::center(int32_t &centerX, int32_t &centerY) const
     auto const halfSize = size() / 2;
     centerX += halfSize;
     centerY += halfSize;
+}
+
+std::pair<double, double> PackedTileId::wgs84FromNdsCoordinates(int64_t x, int64_t y)
+{
+    return {static_cast<double>(x) * 360.0 / std::ldexp(1.0, 32),
+            static_cast<double>(y) * 180.0 / std::ldexp(1.0, 31)};
+}
+
+std::pair<double, double> PackedTileId::centerWgs84() const
+{
+    int32_t x = 0;
+    int32_t y = 0;
+    center(x, y);
+    return wgs84FromNdsCoordinates(x, y);
+}
+
+std::pair<double, double> PackedTileId::southWestWgs84() const
+{
+    int32_t x = 0;
+    int32_t y = 0;
+    southWestCorner().toNdsCoordinates(x, y);
+    return wgs84FromNdsCoordinates(x, y);
+}
+
+std::pair<double, double> PackedTileId::northEastWgs84() const
+{
+    int32_t x = 0;
+    int32_t y = 0;
+    southWestCorner().toNdsCoordinates(x, y);
+    auto const tileSize = static_cast<int64_t>(size());
+    return wgs84FromNdsCoordinates(static_cast<int64_t>(x) + tileSize,
+                                   static_cast<int64_t>(y) + tileSize);
+}
+
+std::pair<double, double> PackedTileId::wgs84Size() const
+{
+    auto const tileSize = static_cast<double>(size());
+    return {tileSize * 360.0 / std::ldexp(1.0, 32), tileSize * 180.0 / std::ldexp(1.0, 31)};
 }
 
 uint32_t PackedTileId::mortonNumber() const

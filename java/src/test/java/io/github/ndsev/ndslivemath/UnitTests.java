@@ -170,6 +170,11 @@ class UnitTests {
 		assertEquals(3, tile.x());
 		assertEquals(1, tile.y());
 		assertEquals(tile.value(), PackedTileId.fromValue(tile.value()).value());
+		assertArrayEquals(new double[]{-45.0, -45.0}, tile.centerWgs84(), EPS);
+		assertArrayEquals(new double[]{-90.0, -90.0}, tile.southWestWgs84(), EPS);
+		assertArrayEquals(new double[]{0.0, 0.0}, tile.northEastWgs84(), EPS);
+		assertArrayEquals(new double[]{90.0, 90.0}, tile.wgs84Size(), EPS);
+		assertArrayEquals(new double[]{180.0, 90.0}, PackedTileId.wgs84FromNdsCoordinates(1L << 31, 1L << 30), EPS);
 
 		PackedTileId fromNds = PackedTileId.fromNdsCoordinates(-65537, -65537, 15);
 		PackedTileId fromWgs = PackedTileId.fromWgs84(-0.005493205972015858, -0.005493205972015858, 15);
@@ -221,6 +226,16 @@ class UnitTests {
 		assertEquals(t.westNeighbour().value(), 131077);
 		assertEquals(t.northNeighbour().value(), 131074);
 		assertEquals(t.southNeighbour().value(), 131074);
+	}
+
+	@Test
+	void tileRelativeNeighbourWrapping() {
+		PackedTileId t = PackedTileId.fromTileXY(0, 0, 1);
+		assertEquals(t.eastNeighbour(), t.neighbour(1, 0));
+		assertEquals(t.northNeighbour(), t.neighbour(0, 1));
+		assertEquals(PackedTileId.fromTileXY(3, 1, 1), t.neighbour(-1, -1));
+		assertEquals(t, t.neighbour(4, 2));
+		assertEquals(t.neighbour(4, 2), t.neighbor(4, 2));
 	}
 
 	@Test

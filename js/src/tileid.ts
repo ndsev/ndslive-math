@@ -200,6 +200,32 @@ export class PackedTileId {
     return [x + halfSize, y + halfSize];
   }
 
+  /** Convert NDS coordinates to lon/lat degrees without edge normalization. */
+  static wgs84FromNdsCoordinates(x: number, y: number): [number, number] {
+    return [(x * 360.0) / 2 ** 32, (y * 180.0) / 2 ** 31];
+  }
+
+  /** Center of the tile in lon/lat degrees. */
+  centerWgs84(): [number, number] {
+    return PackedTileId.wgs84FromNdsCoordinates(...this.center());
+  }
+
+  /** South-west tile corner in lon/lat degrees. */
+  southWestWgs84(): [number, number] {
+    return PackedTileId.wgs84FromNdsCoordinates(...this.southWestCorner());
+  }
+
+  /** Exclusive north-east tile corner in lon/lat degrees. */
+  northEastWgs84(): [number, number] {
+    return PackedTileId.wgs84FromNdsCoordinates(...this.northEastCorner());
+  }
+
+  /** Tile width/height in lon/lat degrees. */
+  wgs84Size(): [number, number] {
+    const tileSize = this.size();
+    return [(tileSize * 360.0) / 2 ** 32, (tileSize * 180.0) / 2 ** 31];
+  }
+
   /** Returns the south-west corner of the tile in NDS coordinates. */
   southWestCorner(): [number, number] {
     const mortonNumber = this.mortonNumber();
@@ -302,17 +328,34 @@ export class PackedTileId {
     return morton;
   }
 
+  private static wrappedOffset(coordinate: number, offset: number, modulo: number): number {
+    const shifted = (coordinate + offset) % modulo;
+    return shifted < 0 ? shifted + modulo : shifted;
+  }
+
+  /** Return the same-level tile at a relative grid offset, with wrapping. */
+  neighbour(offsetX: number, offsetY: number): PackedTileId {
+    const level = this.level();
+    const [x, y] = PackedTileId.deinterleaveMorton(this.mortonNumber(), level);
+    const wrappedX = PackedTileId.wrappedOffset(x, offsetX, 2 ** (level + 1));
+    const wrappedY = PackedTileId.wrappedOffset(y, offsetY, 2 ** level);
+    return PackedTileId.fromTileIndex(
+      PackedTileId.interleaveCoords(wrappedX, wrappedY, level),
+      level,
+    );
+  }
+
+  /** American-English alias for {@link PackedTileId.neighbour}. */
+  neighbor(offsetX: number, offsetY: number): PackedTileId {
+    return this.neighbour(offsetX, offsetY);
+  }
+
   /**
    * Returns the tile to the west at the same level, wrapping at the
    * antimeridian (180° longitude).
    */
   westNeighbour(): PackedTileId {
-    const level = this.level();
-    const morton = this.mortonNumber();
-    const [x, y] = PackedTileId.deinterleaveMorton(morton, level);
-    const maxX = (1 << (level + 1)) - 1;
-    const newMorton = PackedTileId.interleaveCoords((x - 1) & maxX, y, level);
-    return PackedTileId.fromTileIndex(newMorton, level);
+    return this.neighbour(-1, 0);
   }
 
   /**
@@ -320,12 +363,7 @@ export class PackedTileId {
    * antimeridian (180° longitude).
    */
   eastNeighbour(): PackedTileId {
-    const level = this.level();
-    const morton = this.mortonNumber();
-    const [x, y] = PackedTileId.deinterleaveMorton(morton, level);
-    const maxX = (1 << (level + 1)) - 1;
-    const newMorton = PackedTileId.interleaveCoords((x + 1) & maxX, y, level);
-    return PackedTileId.fromTileIndex(newMorton, level);
+    return this.neighbour(1, 0);
   }
 
   /**
@@ -333,12 +371,7 @@ export class PackedTileId {
    * south pole.
    */
   southNeighbour(): PackedTileId {
-    const level = this.level();
-    const morton = this.mortonNumber();
-    const [x, y] = PackedTileId.deinterleaveMorton(morton, level);
-    const maxY = (1 << level) - 1;
-    const newMorton = PackedTileId.interleaveCoords(x, (y - 1) & maxY, level);
-    return PackedTileId.fromTileIndex(newMorton, level);
+    return this.neighbour(0, -1);
   }
 
   /**
@@ -346,12 +379,7 @@ export class PackedTileId {
    * north pole.
    */
   northNeighbour(): PackedTileId {
-    const level = this.level();
-    const morton = this.mortonNumber();
-    const [x, y] = PackedTileId.deinterleaveMorton(morton, level);
-    const maxY = (1 << level) - 1;
-    const newMorton = PackedTileId.interleaveCoords(x, (y + 1) & maxY, level);
-    return PackedTileId.fromTileIndex(newMorton, level);
+    return this.neighbour(0, 1);
   }
 
   equals(other: PackedTileId): boolean {

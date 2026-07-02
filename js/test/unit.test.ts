@@ -217,6 +217,11 @@ describe('PackedTileId construction & validation', () => {
     expect(tile.x()).toBe(3);
     expect(tile.y()).toBe(1);
     expect(PackedTileId.fromValue(tile.value).value).toBe(tile.value);
+    expect(tile.centerWgs84()).toEqual([-45, -45]);
+    expect(tile.southWestWgs84()).toEqual([-90, -90]);
+    expect(tile.northEastWgs84()).toEqual([0, 0]);
+    expect(tile.wgs84Size()).toEqual([90, 90]);
+    expect(PackedTileId.wgs84FromNdsCoordinates(2 ** 31, 2 ** 30)).toEqual([180, 90]);
 
     const fromNds = PackedTileId.fromNdsCoordinates(-65537, -65537, 15);
     const fromWgs = PackedTileId.fromWgs84(-0.005493205972015858, -0.005493205972015858, 15);
@@ -293,6 +298,15 @@ describe('neighbour wrapping', () => {
   it('north/south are identical at level 0 (single row)', () => {
     const t = PackedTileId.fromTileIndex(0, 0);
     expect(t.northNeighbour().value).toBe(t.southNeighbour().value);
+  });
+
+  it('relative offsets support multi-step wrapping and alias spelling', () => {
+    const tile = PackedTileId.fromTileXY(0, 0, 1);
+    expect(tile.neighbour(1, 0).value).toBe(tile.eastNeighbour().value);
+    expect(tile.neighbour(0, 1).value).toBe(tile.northNeighbour().value);
+    expect(tile.neighbour(-1, -1).value).toBe(PackedTileId.fromTileXY(3, 1, 1).value);
+    expect(tile.neighbour(4, 2).value).toBe(tile.value);
+    expect(tile.neighbor(4, 2).value).toBe(tile.neighbour(4, 2).value);
   });
 });
 

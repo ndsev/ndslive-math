@@ -2,7 +2,10 @@
 
 package ndslivemath
 
-import "fmt"
+import (
+	"fmt"
+	"math"
+)
 
 // PackedTileId represents a tile in the hierarchical NDS.Live tiling system.
 //
@@ -198,6 +201,37 @@ func (t PackedTileId) Center() (int64, int64) {
 	return x + halfSize, y + halfSize
 }
 
+// PackedTileIdWgs84FromNdsCoordinates converts NDS integer coordinates to
+// lon/lat degrees without WGS84 edge normalization.
+func PackedTileIdWgs84FromNdsCoordinates(x, y int64) (float64, float64) {
+	return float64(x) * 360.0 / math.Exp2(32), float64(y) * 180.0 / math.Exp2(31)
+}
+
+// CenterWgs84 returns the center of the tile in lon/lat degrees.
+func (t PackedTileId) CenterWgs84() (float64, float64) {
+	x, y := t.Center()
+	return PackedTileIdWgs84FromNdsCoordinates(x, y)
+}
+
+// SouthWestWgs84 returns the south-west tile corner in lon/lat degrees.
+func (t PackedTileId) SouthWestWgs84() (float64, float64) {
+	x, y := t.SouthWestCorner()
+	return PackedTileIdWgs84FromNdsCoordinates(x, y)
+}
+
+// NorthEastWgs84 returns the exclusive north-east tile corner in lon/lat
+// degrees.
+func (t PackedTileId) NorthEastWgs84() (float64, float64) {
+	x, y := t.NorthEastCorner()
+	return PackedTileIdWgs84FromNdsCoordinates(x, y)
+}
+
+// Wgs84Size returns the tile width/height in lon/lat degrees.
+func (t PackedTileId) Wgs84Size() (float64, float64) {
+	tileSize := float64(t.Size())
+	return tileSize * 360.0 / math.Exp2(32), tileSize * 180.0 / math.Exp2(31)
+}
+
 // SouthWestCorner returns the south-west (inclusive) corner of the tile in NDS
 // coordinates. Returned as int64 for a uniform corner API; SW values always
 // fit in int32.
@@ -286,8 +320,19 @@ func interleaveCoords(x, y uint32, level int) uint32 {
 	return morton
 }
 
+// Neighbour returns the same-level tile at a relative grid offset, with
+// wrap-around at the respective limits.
+func (t PackedTileId) Neighbour(dx, dy int) PackedTileId {
+	return t.neighbour(dx, dy)
+}
+
+// Neighbor is an American-English alias for Neighbour.
+func (t PackedTileId) Neighbor(dx, dy int) PackedTileId {
+	return t.Neighbour(dx, dy)
+}
+
 // neighbour returns the same-level neighbour after applying dx to X and dy to
-// Y, with wrap-around at the respective limits. dx/dy are +1 or -1.
+// Y, with wrap-around at the respective limits.
 func (t PackedTileId) neighbour(dx, dy int) PackedTileId {
 	level := t.Level()
 	morton := t.MortonNumber()

@@ -6,6 +6,7 @@
 #include "mortoncode.h"
 #include "wgs84.h"
 #include <cstdint>
+#include <utility>
 #include <vector>
 
 namespace ndsmath
@@ -74,8 +75,32 @@ public:
     //! Get the tile id below the current tile.
     PackedTileId southNeighbour() const;
 
+    //! Get the same-level tile at a relative grid offset.
+    //! Offsets wrap in packed tile-grid space, matching the directional
+    //! neighbour helpers but allowing multi-tile steps.
+    PackedTileId neighbour(int32_t offsetX, int32_t offsetY) const;
+
+    //! American-English alias for neighbour().
+    PackedTileId neighbor(int32_t offsetX, int32_t offsetY) const;
+
     //! Get the tile center.
     void center(int32_t &centerX, int32_t &centerY) const;
+
+    //! Convert NDS integer coordinates to lon/lat degrees without normalizing
+    //! boundary maxima such as +180 longitude or +90 latitude.
+    static std::pair<double, double> wgs84FromNdsCoordinates(int64_t x, int64_t y);
+
+    //! Center of the tile in lon/lat degrees.
+    std::pair<double, double> centerWgs84() const;
+
+    //! South-west tile corner in lon/lat degrees.
+    std::pair<double, double> southWestWgs84() const;
+
+    //! Exclusive north-east tile corner in lon/lat degrees.
+    std::pair<double, double> northEastWgs84() const;
+
+    //! Tile width/height in lon/lat degrees.
+    std::pair<double, double> wgs84Size() const;
 
     //! Get the level of the tile id.
     int level() const;

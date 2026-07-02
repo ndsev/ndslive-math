@@ -47,6 +47,14 @@ fn added_tile_factories_and_grid_coordinates() {
         PackedTileId::from_value(tile.value()).unwrap().value(),
         tile.value()
     );
+    assert_eq!(tile.center_wgs84(), (-45.0, -45.0));
+    assert_eq!(tile.south_west_wgs84(), (-90.0, -90.0));
+    assert_eq!(tile.north_east_wgs84(), (0.0, 0.0));
+    assert_eq!(tile.wgs84_size(), (90.0, 90.0));
+    assert_eq!(
+        PackedTileId::wgs84_from_nds_coordinates(1i64 << 31, 1i64 << 30),
+        (180.0, 90.0)
+    );
 
     let from_nds = PackedTileId::from_nds_coordinates(-65537, -65537, 15).unwrap();
     let from_wgs =
@@ -74,6 +82,19 @@ fn added_tile_factory_validation() {
 
     assert!(PackedTileId::from_nds_coordinates(0, 0, 16).is_err());
     assert!(PackedTileId::from_wgs84(0.0, 0.0, 16).is_err());
+}
+
+#[test]
+fn relative_neighbour_wrapping() {
+    let tile = PackedTileId::from_tile_xy(0, 0, 1).unwrap();
+    assert_eq!(tile.neighbour(1, 0), tile.east_neighbour());
+    assert_eq!(tile.neighbour(0, 1), tile.north_neighbour());
+    assert_eq!(
+        tile.neighbour(-1, -1),
+        PackedTileId::from_tile_xy(3, 1, 1).unwrap()
+    );
+    assert_eq!(tile.neighbour(4, 2), tile);
+    assert_eq!(tile.neighbor(4, 2), tile.neighbour(4, 2));
 }
 
 #[test]

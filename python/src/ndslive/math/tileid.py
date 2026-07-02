@@ -288,6 +288,28 @@ class PackedTileId:
         half_size = self.size() // 2
         return x + half_size, y + half_size
 
+    @staticmethod
+    def wgs84_from_nds_coordinates(x: int, y: int) -> tuple[float, float]:
+        """Convert NDS coordinates to lon/lat degrees without edge normalization."""
+        return x * 360.0 / (2**32), y * 180.0 / (2**31)
+
+    def center_wgs84(self) -> tuple[float, float]:
+        """Center of the tile in lon/lat degrees."""
+        return self.wgs84_from_nds_coordinates(*self.center())
+
+    def south_west_wgs84(self) -> tuple[float, float]:
+        """South-west tile corner in lon/lat degrees."""
+        return self.wgs84_from_nds_coordinates(*self.south_west_corner())
+
+    def north_east_wgs84(self) -> tuple[float, float]:
+        """Exclusive north-east tile corner in lon/lat degrees."""
+        return self.wgs84_from_nds_coordinates(*self.north_east_corner())
+
+    def wgs84_size(self) -> tuple[float, float]:
+        """Tile width/height in lon/lat degrees."""
+        tile_size = self.size()
+        return tile_size * 360.0 / (2**32), tile_size * 180.0 / (2**31)
+
     def south_west_corner(self) -> tuple[int, int]:
         """
         Returns the south-west corner of the tile in NDS coordinates.
@@ -497,6 +519,18 @@ class PackedTileId:
 
         new_morton = self._interleave_coords(x, y, level)
         return PackedTileId.from_tile_index(new_morton, level)
+
+    def neighbour(self, offset_x: int, offset_y: int) -> PackedTileId:
+        """Return the same-level tile at a relative grid offset, with wrapping."""
+        level = self.level()
+        x, y = self._deinterleave_morton(self.morton_number(), level)
+        x = (x + offset_x) % (1 << (level + 1))
+        y = (y + offset_y) % (1 << level)
+        return PackedTileId.from_tile_index(self._interleave_coords(x, y, level), level)
+
+    def neighbor(self, offset_x: int, offset_y: int) -> PackedTileId:
+        """American-English alias for :meth:`neighbour`."""
+        return self.neighbour(offset_x, offset_y)
 
     def print_with_neighbors(self, radius: int = 1) -> None:
         """

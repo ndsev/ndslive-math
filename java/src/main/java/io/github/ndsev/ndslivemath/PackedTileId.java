@@ -233,6 +233,51 @@ public final class PackedTileId {
 	}
 
 	/**
+	 * Convert NDS integer coordinates to lon/lat degrees without normalizing edge
+	 * maxima such as {@code +180} longitude or {@code +90} latitude.
+	 *
+	 * @return a {@code double[]} of {@code {longitude, latitude}}
+	 */
+	public static double[] wgs84FromNdsCoordinates(long x, long y) {
+		return new double[]{x * 360.0 / TWO_POW_32, y * 180.0 / TWO_POW_31};
+	}
+
+	/**
+	 * @return the center of the tile in lon/lat degrees as {@code {longitude,
+	 *         latitude}}
+	 */
+	public double[] centerWgs84() {
+		long[] center = center();
+		return wgs84FromNdsCoordinates(center[0], center[1]);
+	}
+
+	/**
+	 * @return the south-west tile corner in lon/lat degrees as {@code {longitude,
+	 *         latitude}}
+	 */
+	public double[] southWestWgs84() {
+		long[] sw = southWestCorner();
+		return wgs84FromNdsCoordinates(sw[0], sw[1]);
+	}
+
+	/**
+	 * @return the exclusive north-east tile corner in lon/lat degrees as
+	 *         {@code {longitude, latitude}}
+	 */
+	public double[] northEastWgs84() {
+		long[] ne = northEastCorner();
+		return wgs84FromNdsCoordinates(ne[0], ne[1]);
+	}
+
+	/**
+	 * @return the tile width/height in lon/lat degrees as {@code {width, height}}
+	 */
+	public double[] wgs84Size() {
+		long tileSize = size();
+		return new double[]{tileSize * 360.0 / TWO_POW_32, tileSize * 180.0 / TWO_POW_31};
+	}
+
+	/**
 	 * @return the south-west corner of the tile in NDS coordinates as {@code {x,
 	 *         y}}
 	 */
@@ -326,52 +371,56 @@ public final class PackedTileId {
 		return morton;
 	}
 
+	private static long wrappedOffset(long coordinate, long offset, long modulo) {
+		long shifted = (coordinate + offset) % modulo;
+		return shifted < 0 ? shifted + modulo : shifted;
+	}
+
+	/**
+	 * Return the same-level tile at a relative grid offset, wrapping at the
+	 * respective limits.
+	 */
+	public PackedTileId neighbour(long offsetX, long offsetY) {
+		int level = level();
+		long[] xy = deinterleaveMorton(mortonNumber(), level);
+		long x = wrappedOffset(xy[0], offsetX, 1L << (level + 1));
+		long y = wrappedOffset(xy[1], offsetY, 1L << level);
+		return fromTileIndex(interleaveCoords(x, y, level), level);
+	}
+
+	/**
+	 * American-English alias for {@link #neighbour(long, long)}.
+	 */
+	public PackedTileId neighbor(long offsetX, long offsetY) {
+		return neighbour(offsetX, offsetY);
+	}
+
 	/**
 	 * @return the tile to the west at the same level, wrapping at the antimeridian
 	 */
 	public PackedTileId westNeighbour() {
-		int level = level();
-		long[] xy = deinterleaveMorton(mortonNumber(), level);
-		long maxX = (1L << (level + 1)) - 1;
-		long x = (xy[0] - 1) & maxX;
-		long newMorton = interleaveCoords(x, xy[1], level);
-		return fromTileIndex(newMorton, level);
+		return neighbour(-1, 0);
 	}
 
 	/**
 	 * @return the tile to the east at the same level, wrapping at the antimeridian
 	 */
 	public PackedTileId eastNeighbour() {
-		int level = level();
-		long[] xy = deinterleaveMorton(mortonNumber(), level);
-		long maxX = (1L << (level + 1)) - 1;
-		long x = (xy[0] + 1) & maxX;
-		long newMorton = interleaveCoords(x, xy[1], level);
-		return fromTileIndex(newMorton, level);
+		return neighbour(1, 0);
 	}
 
 	/**
 	 * @return the tile to the south at the same level, wrapping at the south pole
 	 */
 	public PackedTileId southNeighbour() {
-		int level = level();
-		long[] xy = deinterleaveMorton(mortonNumber(), level);
-		long maxY = (1L << level) - 1;
-		long y = (xy[1] - 1) & maxY;
-		long newMorton = interleaveCoords(xy[0], y, level);
-		return fromTileIndex(newMorton, level);
+		return neighbour(0, -1);
 	}
 
 	/**
 	 * @return the tile to the north at the same level, wrapping at the north pole
 	 */
 	public PackedTileId northNeighbour() {
-		int level = level();
-		long[] xy = deinterleaveMorton(mortonNumber(), level);
-		long maxY = (1L << level) - 1;
-		long y = (xy[1] + 1) & maxY;
-		long newMorton = interleaveCoords(xy[0], y, level);
-		return fromTileIndex(newMorton, level);
+		return neighbour(0, 1);
 	}
 
 	@Override
