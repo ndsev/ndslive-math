@@ -32,7 +32,7 @@ jobs:
           - language: c-cpp
             build-mode: manual
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - if: matrix.language == 'java-kotlin'
         uses: actions/setup-java@v5
