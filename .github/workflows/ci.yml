@@ -134,7 +134,7 @@ jobs:
         (cd go && go vet ./...)
 
     # JavaScript/TypeScript (eslint + prettier)
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       with:
         node-version: '20'
         cache: npm
@@ -254,7 +254,7 @@ jobs:
     timeout-minutes: 15
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       with:
         node-version: '20'
         cache: npm
@@ -385,7 +385,7 @@ jobs:
       id-token: write   # npm provenance
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       with:
         node-version: '20'
         registry-url: https://registry.npmjs.org
