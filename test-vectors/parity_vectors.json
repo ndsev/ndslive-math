@@ -278,6 +278,8 @@
       "value": 65536,
       "computed_level": 0,
       "computed_morton_number": 0,
+      "grid_x": 0,
+      "grid_y": 0,
       "size": 2147483648,
       "sw": [
         0,
@@ -298,6 +300,8 @@
       "value": 65537,
       "computed_level": 0,
       "computed_morton_number": 1,
+      "grid_x": 1,
+      "grid_y": 0,
       "size": 2147483648,
       "sw": [
         -2147483648,
@@ -318,6 +322,8 @@
       "value": 131072,
       "computed_level": 1,
       "computed_morton_number": 0,
+      "grid_x": 0,
+      "grid_y": 0,
       "size": 1073741824,
       "sw": [
         0,
@@ -338,6 +344,8 @@
       "value": 131075,
       "computed_level": 1,
       "computed_morton_number": 3,
+      "grid_x": 1,
+      "grid_y": 1,
       "size": 1073741824,
       "sw": [
         1073741824,
@@ -358,6 +366,8 @@
       "value": 131079,
       "computed_level": 1,
       "computed_morton_number": 7,
+      "grid_x": 3,
+      "grid_y": 1,
       "size": 1073741824,
       "sw": [
         -1073741824,
@@ -378,6 +388,8 @@
       "value": 262144,
       "computed_level": 2,
       "computed_morton_number": 0,
+      "grid_x": 0,
+      "grid_y": 0,
       "size": 536870912,
       "sw": [
         0,
@@ -398,6 +410,8 @@
       "value": 262148,
       "computed_level": 2,
       "computed_morton_number": 4,
+      "grid_x": 2,
+      "grid_y": 0,
       "size": 536870912,
       "sw": [
         1073741824,
@@ -418,6 +432,8 @@
       "value": 262175,
       "computed_level": 2,
       "computed_morton_number": 31,
+      "grid_x": 7,
+      "grid_y": 3,
       "size": 536870912,
       "sw": [
         -536870912,
@@ -438,6 +454,8 @@
       "value": 536870912,
       "computed_level": 13,
       "computed_morton_number": 0,
+      "grid_x": 0,
+      "grid_y": 0,
       "size": 262144,
       "sw": [
         0,
@@ -458,6 +476,8 @@
       "value": 536883257,
       "computed_level": 13,
       "computed_morton_number": 12345,
+      "grid_x": 69,
+      "grid_y": 70,
       "size": 262144,
       "sw": [
         18087936,
@@ -478,6 +498,8 @@
       "value": 1073741824,
       "computed_level": 14,
       "computed_morton_number": 0,
+      "grid_x": 0,
+      "grid_y": 0,
       "size": 131072,
       "sw": [
         0,
@@ -498,6 +520,8 @@
       "value": 1074790400,
       "computed_level": 14,
       "computed_morton_number": 1048576,
+      "grid_x": 1024,
+      "grid_y": 0,
       "size": 131072,
       "sw": [
         134217728,
@@ -518,6 +542,8 @@
       "value": -2147483648,
       "computed_level": 15,
       "computed_morton_number": 0,
+      "grid_x": 0,
+      "grid_y": 0,
       "size": 65536,
       "sw": [
         0,
@@ -538,6 +564,8 @@
       "value": -1,
       "computed_level": 15,
       "computed_morton_number": 2147483647,
+      "grid_x": 65535,
+      "grid_y": 32767,
       "size": 65536,
       "sw": [
         -65536,
@@ -558,6 +586,8 @@
       "value": -2146249081,
       "computed_level": 15,
       "computed_morton_number": 1234567,
+      "grid_x": 1251,
+      "grid_y": 409,
       "size": 65536,
       "sw": [
         81985536,
@@ -721,6 +751,89 @@
       "computed_morton_number": 536870911
     }
   ],
+  "packed_tile_from_wgs84": [
+    {
+      "lon": 0.0,
+      "lat": 0.0,
+      "level": 0,
+      "value": 65536,
+      "computed_morton_number": 0,
+      "grid_x": 0,
+      "grid_y": 0
+    },
+    {
+      "lon": 13.404954,
+      "lat": 52.520008,
+      "level": 13,
+      "value": 545666604,
+      "computed_morton_number": 8795692,
+      "grid_x": 610,
+      "grid_y": 2390
+    },
+    {
+      "lon": 11.585,
+      "lat": 48.137,
+      "level": 13,
+      "value": 545554685,
+      "computed_morton_number": 8683773,
+      "grid_x": 527,
+      "grid_y": 2190
+    },
+    {
+      "lon": -122.4194,
+      "lat": 37.7749,
+      "level": 10,
+      "value": 68268605,
+      "computed_morton_number": 1159741,
+      "grid_x": 1351,
+      "grid_y": 214
+    },
+    {
+      "lon": 179.9,
+      "lat": 0.0,
+      "level": 5,
+      "value": 2097493,
+      "computed_morton_number": 341,
+      "grid_x": 31,
+      "grid_y": 0
+    },
+    {
+      "lon": -179.9,
+      "lat": 0.0,
+      "level": 5,
+      "value": 2098176,
+      "computed_morton_number": 1024,
+      "grid_x": 32,
+      "grid_y": 0
+    },
+    {
+      "lon": 180.0,
+      "lat": 90.0,
+      "level": 15,
+      "value": -1610612737,
+      "computed_morton_number": 536870911,
+      "grid_x": 32767,
+      "grid_y": 16383
+    },
+    {
+      "lon": -180.0,
+      "lat": -90.0,
+      "level": 15,
+      "value": -536870912,
+      "computed_morton_number": 1610612736,
+      "grid_x": 32768,
+      "grid_y": 16384
+    },
+    {
+      "lon": -0.005493205972015858,
+      "lat": -0.005493205972015858,
+      "level": 15,
+      "value": -4,
+      "computed_morton_number": 2147483644,
+      "grid_x": 65534,
+      "grid_y": 32766
+    }
+  ],
   "tiles_for_bbox": [
     {
       "sw_x": 0,
@@ -754,6 +867,32 @@
       "tile_values": [
         131072,
         131073
+      ]
+    },
+    {
+      "sw_x": -1,
+      "sw_y": -1,
+      "ne_x": 0,
+      "ne_y": 0,
+      "level": 1,
+      "tile_values": [
+        131079,
+        131074,
+        131077,
+        131072
+      ]
+    },
+    {
+      "sw_x": -1000000,
+      "sw_y": -500000,
+      "ne_x": 1000000,
+      "ne_y": 500000,
+      "level": 8,
+      "tile_values": [
+        16908287,
+        16820906,
+        16864597,
+        16777216
       ]
     }
   ],

@@ -2,7 +2,10 @@
 
 package ndslivemath
 
-import "fmt"
+import (
+	"fmt"
+	"math"
+)
 
 // PackedTileId represents a tile in the hierarchical NDS.Live tiling system.
 //
@@ -48,6 +51,12 @@ func NewPackedTileIdFromUnsigned(value uint64) (PackedTileId, error) {
 	return t, nil
 }
 
+// PackedTileIdFromValue constructs a PackedTileId from the signed NDS.Live
+// public value.
+func PackedTileIdFromValue(value int32) (PackedTileId, error) {
+	return NewPackedTileId(value)
+}
+
 // PackedTileIdFromTileIndex creates a PackedTileId directly from a tile morton
 // number and level, without any coordinate conversion.
 //
@@ -69,6 +78,36 @@ func PackedTileIdFromTileIndex(mortonNumber uint32, level int) (PackedTileId, er
 		return PackedTileId{}, err
 	}
 	return t, nil
+}
+
+// PackedTileIdFromTileXY creates a PackedTileId from tile-grid coordinates at
+// the given level. X is in [0, 2^(level+1)-1], Y is in [0, 2^level-1].
+// Coordinates use the NDS Morton tile-grid order and are inverse to X and Y.
+func PackedTileIdFromTileXY(x, y uint32, level int) (PackedTileId, error) {
+	if level < 0 || level > 15 {
+		return PackedTileId{}, fmt.Errorf("invalid level %d (must be 0-15)", level)
+	}
+	maxX := (uint32(1) << (level + 1)) - 1
+	maxY := (uint32(1) << level) - 1
+	if x > maxX || y > maxY {
+		return PackedTileId{}, fmt.Errorf(
+			"invalid tile coordinates (%d, %d) for level %d (allowed x: 0-%d, y: 0-%d)",
+			x, y, level, maxX, maxY)
+	}
+	return PackedTileIdFromTileIndex(interleaveCoords(x, y, level), level)
+}
+
+// PackedTileIdFromNdsCoordinates returns the tile at level that contains the
+// given NDS integer coordinate.
+func PackedTileIdFromNdsCoordinates(x, y int32, level int) (PackedTileId, error) {
+	return PackedTileIdFromMortonAndLevel(MortonFromNdsCoordinates(x, y), level)
+}
+
+// PackedTileIdFromWgs84 returns the tile at level that contains the given
+// WGS84 coordinate.
+func PackedTileIdFromWgs84(longitude, latitude float64, level int) (PackedTileId, error) {
+	x, y := NewWgs84(longitude, latitude, 0).ToNdsCoordinates()
+	return PackedTileIdFromNdsCoordinates(x, y, level)
 }
 
 // PackedTileIdFromMortonAndLevel creates the PackedTileId of the tile at the
@@ -140,6 +179,18 @@ func (t PackedTileId) MortonNumber() uint32 {
 	return t.value - (uint32(1) << (16 + tileLevel))
 }
 
+// X returns the tile-grid X coordinate at this tile's level.
+func (t PackedTileId) X() uint32 {
+	x, _ := deinterleaveMorton(t.MortonNumber(), t.Level())
+	return x
+}
+
+// Y returns the tile-grid Y coordinate at this tile's level.
+func (t PackedTileId) Y() uint32 {
+	_, y := deinterleaveMorton(t.MortonNumber(), t.Level())
+	return y
+}
+
 // Center returns the center of the tile in NDS coordinates.
 //
 // Returned as int64 because, although the center always fits in int32 for
@@ -148,6 +199,37 @@ func (t PackedTileId) Center() (int64, int64) {
 	x, y := t.SouthWestCorner()
 	halfSize := int64(t.Size() / 2)
 	return x + halfSize, y + halfSize
+}
+
+// PackedTileIdWgs84FromNdsCoordinates converts NDS integer coordinates to
+// lon/lat degrees without WGS84 edge normalization.
+func PackedTileIdWgs84FromNdsCoordinates(x, y int64) (float64, float64) {
+	return float64(x) * 360.0 / math.Exp2(32), float64(y) * 180.0 / math.Exp2(31)
+}
+
+// CenterWgs84 returns the center of the tile in lon/lat degrees.
+func (t PackedTileId) CenterWgs84() (float64, float64) {
+	x, y := t.Center()
+	return PackedTileIdWgs84FromNdsCoordinates(x, y)
+}
+
+// SouthWestWgs84 returns the south-west tile corner in lon/lat degrees.
+func (t PackedTileId) SouthWestWgs84() (float64, float64) {
+	x, y := t.SouthWestCorner()
+	return PackedTileIdWgs84FromNdsCoordinates(x, y)
+}
+
+// NorthEastWgs84 returns the exclusive north-east tile corner in lon/lat
+// degrees.
+func (t PackedTileId) NorthEastWgs84() (float64, float64) {
+	x, y := t.NorthEastCorner()
+	return PackedTileIdWgs84FromNdsCoordinates(x, y)
+}
+
+// Wgs84Size returns the tile width/height in lon/lat degrees.
+func (t PackedTileId) Wgs84Size() (float64, float64) {
+	tileSize := float64(t.Size())
+	return tileSize * 360.0 / math.Exp2(32), tileSize * 180.0 / math.Exp2(31)
 }
 
 // SouthWestCorner returns the south-west (inclusive) corner of the tile in NDS
@@ -238,8 +320,19 @@ func interleaveCoords(x, y uint32, level int) uint32 {
 	return morton
 }
 
+// Neighbour returns the same-level tile at a relative grid offset, with
+// wrap-around at the respective limits.
+func (t PackedTileId) Neighbour(dx, dy int) PackedTileId {
+	return t.neighbour(dx, dy)
+}
+
+// Neighbor is an American-English alias for Neighbour.
+func (t PackedTileId) Neighbor(dx, dy int) PackedTileId {
+	return t.Neighbour(dx, dy)
+}
+
 // neighbour returns the same-level neighbour after applying dx to X and dy to
-// Y, with wrap-around at the respective limits. dx/dy are +1 or -1.
+// Y, with wrap-around at the respective limits.
 func (t PackedTileId) neighbour(dx, dy int) PackedTileId {
 	level := t.Level()
 	morton := t.MortonNumber()

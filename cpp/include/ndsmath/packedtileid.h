@@ -6,6 +6,7 @@
 #include "mortoncode.h"
 #include "wgs84.h"
 #include <cstdint>
+#include <utility>
 #include <vector>
 
 namespace ndsmath
@@ -23,6 +24,10 @@ public:
     //! Constructor.
     explicit PackedTileId(uint32_t value);
 
+    //! Create a PackedTileId from the signed NDS.Live public value.
+    //! Level 15 values are negative and are reinterpreted as their unsigned bit pattern.
+    static PackedTileId fromValue(int32_t value);
+
     //! Create a PackedTileId that contains the point encoded by a MortonCode.
     //! This finds the tile at the specified level containing the full-precision
     //! NDS coordinates. The resulting mortonNumber() will NOT equal the input
@@ -34,6 +39,17 @@ public:
     //! @param level Tile level (0-15)
     //! @return PackedTileId with the specified morton number at the given level
     static PackedTileId fromTileIndex(uint32_t mortonNumber, int level);
+
+    //! Create a PackedTileId from tile-grid coordinates at the given level.
+    //! X is in [0, 2^(level+1)-1], Y is in [0, 2^level-1]. Coordinates follow
+    //! the NDS Morton tile-grid order and are inverse to x()/y().
+    static PackedTileId fromTileXY(uint32_t x, uint32_t y, int level);
+
+    //! Create a PackedTileId containing the given NDS integer coordinate.
+    static PackedTileId fromNdsCoordinates(int32_t x, int32_t y, int level);
+
+    //! Create a PackedTileId containing the given WGS84 coordinate.
+    static PackedTileId fromWgs84(double longitude, double latitude, int level);
 
     ///! Checks if the internal value represents an actual PackedTileId or not
     bool isValid() const;
@@ -59,14 +75,46 @@ public:
     //! Get the tile id below the current tile.
     PackedTileId southNeighbour() const;
 
+    //! Get the same-level tile at a relative grid offset.
+    //! Offsets wrap in packed tile-grid space, matching the directional
+    //! neighbour helpers but allowing multi-tile steps.
+    PackedTileId neighbour(int32_t offsetX, int32_t offsetY) const;
+
+    //! American-English alias for neighbour().
+    PackedTileId neighbor(int32_t offsetX, int32_t offsetY) const;
+
     //! Get the tile center.
     void center(int32_t &centerX, int32_t &centerY) const;
+
+    //! Convert NDS integer coordinates to lon/lat degrees without normalizing
+    //! boundary maxima such as +180 longitude or +90 latitude.
+    static std::pair<double, double> wgs84FromNdsCoordinates(int64_t x, int64_t y);
+
+    //! Center of the tile in lon/lat degrees.
+    std::pair<double, double> centerWgs84() const;
+
+    //! South-west tile corner in lon/lat degrees.
+    std::pair<double, double> southWestWgs84() const;
+
+    //! Exclusive north-east tile corner in lon/lat degrees.
+    std::pair<double, double> northEastWgs84() const;
+
+    //! Tile width/height in lon/lat degrees.
+    std::pair<double, double> wgs84Size() const;
 
     //! Get the level of the tile id.
     int level() const;
 
     //! Tile number according to Morton scheme
     uint32_t mortonNumber() const;
+
+    //! Tile-grid X coordinate at this tile's level.
+    //! This is the deinterleaved Morton X coordinate and has level+1 bits.
+    uint32_t x() const;
+
+    //! Tile-grid Y coordinate at this tile's level.
+    //! This is the deinterleaved Morton Y coordinate and has level bits.
+    uint32_t y() const;
 
     //! Width and height of the tile in NDS coord units
     uint32_t size() const;

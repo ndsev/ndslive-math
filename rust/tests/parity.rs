@@ -26,6 +26,7 @@ struct Vectors {
     packed_tile_from_index: Vec<PackedTileFromIndex>,
     tile_neighbours: Vec<TileNeighbours>,
     from_morton_and_level: Vec<FromMortonAndLevel>,
+    packed_tile_from_wgs84: Vec<PackedTileFromWgs84>,
     tiles_for_bbox: Vec<TilesForBbox>,
     bbox_from_tiles: Vec<BboxFromTiles>,
     nds_bbox_ops: Vec<NdsBboxOps>,
@@ -79,6 +80,8 @@ struct PackedTileFromIndex {
     value: i32,
     computed_level: u32,
     computed_morton_number: u32,
+    grid_x: u32,
+    grid_y: u32,
     size: i64,
     sw: [i64; 2],
     ne: [i64; 2],
@@ -103,6 +106,17 @@ struct FromMortonAndLevel {
     value: i32,
     computed_level: u32,
     computed_morton_number: u32,
+}
+
+#[derive(Debug, Deserialize)]
+struct PackedTileFromWgs84 {
+    lon: f64,
+    lat: f64,
+    level: u32,
+    value: i32,
+    computed_morton_number: u32,
+    grid_x: u32,
+    grid_y: u32,
 }
 
 #[derive(Debug, Deserialize)]
@@ -348,6 +362,20 @@ fn packed_tile_from_index() {
             row.level
         );
         assert_eq!(
+            t.x(),
+            row.grid_x,
+            "grid_x m={} l={}",
+            row.morton_number,
+            row.level
+        );
+        assert_eq!(
+            t.y(),
+            row.grid_y,
+            "grid_y m={} l={}",
+            row.morton_number,
+            row.level
+        );
+        assert_eq!(
             t.size(),
             row.size,
             "size m={} l={}",
@@ -374,6 +402,16 @@ fn packed_tile_from_index() {
             "center m={} l={}",
             row.morton_number,
             row.level
+        );
+        assert_eq!(
+            PackedTileId::from_value(row.value).unwrap().value(),
+            row.value
+        );
+        assert_eq!(
+            PackedTileId::from_tile_xy(row.grid_x, row.grid_y, row.level)
+                .unwrap()
+                .value(),
+            row.value
         );
     }
 }
@@ -446,6 +484,39 @@ fn from_morton_and_level() {
             row.y,
             row.level
         );
+        assert_eq!(
+            PackedTileId::from_nds_coordinates(row.x, row.y, row.level)
+                .unwrap()
+                .value(),
+            row.value
+        );
+    }
+}
+
+#[test]
+fn packed_tile_from_wgs84() {
+    let v = load();
+    assert!(!v.packed_tile_from_wgs84.is_empty());
+    for row in &v.packed_tile_from_wgs84 {
+        let t = PackedTileId::from_wgs84(row.lon, row.lat, row.level).unwrap();
+        assert_eq!(
+            t.value(),
+            row.value,
+            "value lon={} lat={} l={}",
+            row.lon,
+            row.lat,
+            row.level
+        );
+        assert_eq!(
+            t.morton_number(),
+            row.computed_morton_number,
+            "morton_number lon={} lat={} l={}",
+            row.lon,
+            row.lat,
+            row.level
+        );
+        assert_eq!(t.x(), row.grid_x);
+        assert_eq!(t.y(), row.grid_y);
     }
 }
 

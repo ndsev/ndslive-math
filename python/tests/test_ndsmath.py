@@ -267,6 +267,19 @@ class TestPackedTileId(unittest.TestCase):
         self.assertEqual(sw_x, 0)
         self.assertEqual(sw_y, 0)
 
+    def test_wgs84_inspection_helpers(self):
+        """PackedTileId exposes lon/lat helpers without WGS84 edge normalization."""
+        tile = PackedTileId.from_tile_xy(3, 1, 1)
+        self.assertEqual(tile.center_wgs84(), (-45.0, -45.0))
+        self.assertEqual(tile.south_west_wgs84(), (-90.0, -90.0))
+        self.assertEqual(tile.north_east_wgs84(), (0.0, 0.0))
+        self.assertEqual(tile.wgs84_size(), (90.0, 90.0))
+        self.assertEqual(PackedTileId.wgs84_from_nds_coordinates(1 << 31, 1 << 30), (180.0, 90.0))
+
+        world_edge = PackedTileId.from_tile_xy(1, 0, 0)
+        self.assertEqual(world_edge.center_wgs84(), (-90.0, 90.0))
+        self.assertEqual(world_edge.north_east_wgs84(), (0.0, 180.0))
+
     def test_from_tile_index(self):
         """Test creating a tile directly from morton number and level."""
         # Test basic case - the original bug report
@@ -367,6 +380,34 @@ class TestPackedTileId(unittest.TestCase):
         with self.assertRaises(ValueError) as ctx:
             PackedTileId.from_tile_index(-1, 2)
         self.assertIn("morton number", str(ctx.exception))
+
+    def test_added_factories_and_grid_coordinates(self):
+        """Test added PackedTileId factory helpers and grid accessors."""
+        tile = PackedTileId.from_tile_xy(3, 1, 1)
+        self.assertEqual(tile.value, 131079)
+        self.assertEqual(tile.x(), 3)
+        self.assertEqual(tile.y(), 1)
+        self.assertEqual(PackedTileId.from_value(tile.value).value, tile.value)
+
+        from_nds = PackedTileId.from_nds_coordinates(-65537, -65537, 15)
+        from_wgs = PackedTileId.from_wgs84(-0.005493205972015858, -0.005493205972015858, 15)
+        self.assertEqual(from_nds.value, -4)
+        self.assertEqual(from_wgs.value, -4)
+
+    def test_added_factory_validation(self):
+        """Test validation in added PackedTileId factory helpers."""
+        with self.assertRaises(ValueError):
+            PackedTileId.from_value(0)
+        with self.assertRaises(ValueError):
+            PackedTileId.from_tile_xy(0, 0, -1)
+        with self.assertRaises(ValueError):
+            PackedTileId.from_tile_xy(4, 0, 1)
+        with self.assertRaises(ValueError):
+            PackedTileId.from_tile_xy(0, 2, 1)
+        with self.assertRaises(ValueError):
+            PackedTileId.from_nds_coordinates(0, 0, 16)
+        with self.assertRaises(ValueError):
+            PackedTileId.from_wgs84(0.0, 0.0, 16)
 
     def test_from_morton_and_level_validation(self):
         """Test that from_morton_and_level validates level."""
@@ -576,6 +617,15 @@ class TestPackedTileId(unittest.TestCase):
         self.assertEqual(tile, south.north_neighbour())
         self.assertEqual(tile, east.west_neighbour())
         self.assertEqual(tile, west.east_neighbour())
+
+    def test_relative_neighbour(self):
+        """Relative neighbour supports one-step and multi-step wrapped offsets."""
+        tile = PackedTileId.from_tile_xy(0, 0, 1)
+        self.assertEqual(tile.neighbour(1, 0), tile.east_neighbour())
+        self.assertEqual(tile.neighbour(0, 1), tile.north_neighbour())
+        self.assertEqual(tile.neighbour(-1, -1), PackedTileId.from_tile_xy(3, 1, 1))
+        self.assertEqual(tile.neighbour(4, 2), tile)
+        self.assertEqual(tile.neighbor(4, 2), tile.neighbour(4, 2))
 
     def test_level15_validation_accepts_negative(self):
         """Validation should accept negative values for level 15."""

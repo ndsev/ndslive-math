@@ -163,6 +163,74 @@ func TestPackedTileIdInvalid(t *testing.T) {
 	}
 }
 
+func TestPackedTileIdAddedFactoriesAndGridCoordinates(t *testing.T) {
+	tile, err := PackedTileIdFromTileXY(3, 1, 1)
+	if err != nil {
+		t.Fatalf("PackedTileIdFromTileXY error: %v", err)
+	}
+	if tile.Value() != 131079 || tile.X() != 3 || tile.Y() != 1 {
+		t.Errorf("from tile xy = value %d grid (%d,%d), want 131079 grid (3,1)", tile.Value(), tile.X(), tile.Y())
+	}
+	if lon, lat := tile.CenterWgs84(); lon != -45.0 || lat != -45.0 {
+		t.Errorf("CenterWgs84 = (%v,%v), want (-45,-45)", lon, lat)
+	}
+	if lon, lat := tile.SouthWestWgs84(); lon != -90.0 || lat != -90.0 {
+		t.Errorf("SouthWestWgs84 = (%v,%v), want (-90,-90)", lon, lat)
+	}
+	if lon, lat := tile.NorthEastWgs84(); lon != 0.0 || lat != 0.0 {
+		t.Errorf("NorthEastWgs84 = (%v,%v), want (0,0)", lon, lat)
+	}
+	if lon, lat := tile.Wgs84Size(); lon != 90.0 || lat != 90.0 {
+		t.Errorf("Wgs84Size = (%v,%v), want (90,90)", lon, lat)
+	}
+
+	fromValue, err := PackedTileIdFromValue(tile.Value())
+	if err != nil {
+		t.Fatalf("PackedTileIdFromValue error: %v", err)
+	}
+	if fromValue.Value() != tile.Value() {
+		t.Errorf("from value = %d, want %d", fromValue.Value(), tile.Value())
+	}
+
+	fromNds, err := PackedTileIdFromNdsCoordinates(-1, -1, 15)
+	if err != nil {
+		t.Fatalf("PackedTileIdFromNdsCoordinates error: %v", err)
+	}
+	fromWgs, err := PackedTileIdFromWgs84(-0.005493205972015858, -0.005493205972015858, 15)
+	if err != nil {
+		t.Fatalf("PackedTileIdFromWgs84 error: %v", err)
+	}
+	if fromNds.Level() != 15 || fromWgs.Value() != -4 {
+		t.Errorf("coordinate factories = level %d value %d, want level 15 value -4", fromNds.Level(), fromWgs.Value())
+	}
+
+	lon, lat := PackedTileIdWgs84FromNdsCoordinates(1<<31, 1<<30)
+	if lon != 180.0 || lat != 90.0 {
+		t.Errorf("PackedTileIdWgs84FromNdsCoordinates = (%v,%v), want (180,90)", lon, lat)
+	}
+}
+
+func TestPackedTileIdAddedFactoryValidation(t *testing.T) {
+	if _, err := PackedTileIdFromValue(0); err == nil {
+		t.Error("expected error for invalid packed value")
+	}
+	if _, err := PackedTileIdFromTileXY(0, 0, -1); err == nil {
+		t.Error("expected error for invalid tile xy level")
+	}
+	if _, err := PackedTileIdFromTileXY(4, 0, 1); err == nil {
+		t.Error("expected error for x outside level range")
+	}
+	if _, err := PackedTileIdFromTileXY(0, 2, 1); err == nil {
+		t.Error("expected error for y outside level range")
+	}
+	if _, err := PackedTileIdFromNdsCoordinates(0, 0, 16); err == nil {
+		t.Error("expected error for invalid NDS factory level")
+	}
+	if _, err := PackedTileIdFromWgs84(0, 0, 16); err == nil {
+		t.Error("expected error for invalid WGS84 factory level")
+	}
+}
+
 func TestNorthEastCornerExclusive(t *testing.T) {
 	// Level 0, morton 0: NE corner is the exclusive 2^31 in both axes.
 	tile, err := PackedTileIdFromTileIndex(0, 0)
@@ -176,6 +244,32 @@ func TestNorthEastCornerExclusive(t *testing.T) {
 	swX, swY := tile.SouthWestCorner()
 	if swX != 0 || swY != 0 {
 		t.Errorf("SW corner = (%d,%d), want (0,0)", swX, swY)
+	}
+}
+
+func TestPackedTileIdRelativeNeighbour(t *testing.T) {
+	tile, err := PackedTileIdFromTileXY(0, 0, 1)
+	if err != nil {
+		t.Fatalf("PackedTileIdFromTileXY error: %v", err)
+	}
+	if got := tile.Neighbour(1, 0); got.Value() != tile.EastNeighbour().Value() {
+		t.Errorf("Neighbour(1,0) = %d, want east %d", got.Value(), tile.EastNeighbour().Value())
+	}
+	if got := tile.Neighbour(0, 1); got.Value() != tile.NorthNeighbour().Value() {
+		t.Errorf("Neighbour(0,1) = %d, want north %d", got.Value(), tile.NorthNeighbour().Value())
+	}
+	wrapped, err := PackedTileIdFromTileXY(3, 1, 1)
+	if err != nil {
+		t.Fatalf("PackedTileIdFromTileXY wrapped error: %v", err)
+	}
+	if got := tile.Neighbour(-1, -1); got.Value() != wrapped.Value() {
+		t.Errorf("Neighbour(-1,-1) = %d, want %d", got.Value(), wrapped.Value())
+	}
+	if got := tile.Neighbour(4, 2); got.Value() != tile.Value() {
+		t.Errorf("Neighbour(4,2) = %d, want %d", got.Value(), tile.Value())
+	}
+	if got := tile.Neighbor(4, 2); got.Value() != tile.Neighbour(4, 2).Value() {
+		t.Errorf("Neighbor alias = %d, want %d", got.Value(), tile.Neighbour(4, 2).Value())
 	}
 }
 

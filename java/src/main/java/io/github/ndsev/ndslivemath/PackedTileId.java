@@ -77,6 +77,17 @@ public final class PackedTileId {
 	}
 
 	/**
+	 * Create a PackedTileId from the signed NDS.Live public value.
+	 *
+	 * @param value
+	 *            signed int32 tile id value
+	 * @return the PackedTileId represented by {@code value}
+	 */
+	public static PackedTileId fromValue(int value) {
+		return new PackedTileId(value);
+	}
+
+	/**
 	 * Create a PackedTileId directly from a tile morton number and level, without
 	 * any coordinate conversion.
 	 *
@@ -99,6 +110,48 @@ public final class PackedTileId {
 		}
 		long value = mortonNumber + (1L << (16 + level));
 		return new PackedTileId(value);
+	}
+
+	/**
+	 * Create a PackedTileId from tile-grid coordinates at the given level. X is in
+	 * {@code [0, 2^(level+1)-1]}, Y is in {@code [0, 2^level-1]}. Coordinates use
+	 * the NDS Morton tile-grid order and are inverse to {@link #x()} and
+	 * {@link #y()}.
+	 *
+	 * @param x
+	 *            tile-grid X coordinate
+	 * @param y
+	 *            tile-grid Y coordinate
+	 * @param level
+	 *            tile level (0-15)
+	 * @return the PackedTileId for the given grid coordinate
+	 */
+	public static PackedTileId fromTileXY(long x, long y, int level) {
+		if (level < 0 || level > 15) {
+			throw new IllegalArgumentException("Invalid level " + level + " (must be 0-15)");
+		}
+		long maxX = (1L << (level + 1)) - 1;
+		long maxY = (1L << level) - 1;
+		if (x < 0 || x > maxX || y < 0 || y > maxY) {
+			throw new IllegalArgumentException("Invalid tile coordinates (" + x + ", " + y + ") for level " + level
+					+ " (allowed x: 0-" + maxX + ", y: 0-" + maxY + ")");
+		}
+		return fromTileIndex(interleaveCoords(x, y, level), level);
+	}
+
+	/**
+	 * Create the tile at {@code level} that contains the given NDS coordinate.
+	 */
+	public static PackedTileId fromNdsCoordinates(long x, long y, int level) {
+		return fromMortonAndLevel(MortonCode.fromNdsCoordinates(x, y), level);
+	}
+
+	/**
+	 * Create the tile at {@code level} that contains the given WGS84 coordinate.
+	 */
+	public static PackedTileId fromWgs84(double longitude, double latitude, int level) {
+		long[] xy = new Wgs84(longitude, latitude).toNdsCoordinates();
+		return fromNdsCoordinates(xy[0], xy[1], level);
 	}
 
 	/**
@@ -180,6 +233,51 @@ public final class PackedTileId {
 	}
 
 	/**
+	 * Convert NDS integer coordinates to lon/lat degrees without normalizing edge
+	 * maxima such as {@code +180} longitude or {@code +90} latitude.
+	 *
+	 * @return a {@code double[]} of {@code {longitude, latitude}}
+	 */
+	public static double[] wgs84FromNdsCoordinates(long x, long y) {
+		return new double[]{x * 360.0 / TWO_POW_32, y * 180.0 / TWO_POW_31};
+	}
+
+	/**
+	 * @return the center of the tile in lon/lat degrees as {@code {longitude,
+	 *         latitude}}
+	 */
+	public double[] centerWgs84() {
+		long[] center = center();
+		return wgs84FromNdsCoordinates(center[0], center[1]);
+	}
+
+	/**
+	 * @return the south-west tile corner in lon/lat degrees as {@code {longitude,
+	 *         latitude}}
+	 */
+	public double[] southWestWgs84() {
+		long[] sw = southWestCorner();
+		return wgs84FromNdsCoordinates(sw[0], sw[1]);
+	}
+
+	/**
+	 * @return the exclusive north-east tile corner in lon/lat degrees as
+	 *         {@code {longitude, latitude}}
+	 */
+	public double[] northEastWgs84() {
+		long[] ne = northEastCorner();
+		return wgs84FromNdsCoordinates(ne[0], ne[1]);
+	}
+
+	/**
+	 * @return the tile width/height in lon/lat degrees as {@code {width, height}}
+	 */
+	public double[] wgs84Size() {
+		long tileSize = size();
+		return new double[]{tileSize * 360.0 / TWO_POW_32, tileSize * 180.0 / TWO_POW_31};
+	}
+
+	/**
 	 * @return the south-west corner of the tile in NDS coordinates as {@code {x,
 	 *         y}}
 	 */
@@ -207,6 +305,20 @@ public final class PackedTileId {
 	public long mortonNumber() {
 		int tileLevel = level();
 		return this.value - (1L << (16 + tileLevel));
+	}
+
+	/**
+	 * @return the tile-grid X coordinate at this tile's level
+	 */
+	public long x() {
+		return deinterleaveMorton(mortonNumber(), level())[0];
+	}
+
+	/**
+	 * @return the tile-grid Y coordinate at this tile's level
+	 */
+	public long y() {
+		return deinterleaveMorton(mortonNumber(), level())[1];
 	}
 
 	private void validate() {
@@ -259,52 +371,56 @@ public final class PackedTileId {
 		return morton;
 	}
 
+	private static long wrappedOffset(long coordinate, long offset, long modulo) {
+		long shifted = (coordinate + offset) % modulo;
+		return shifted < 0 ? shifted + modulo : shifted;
+	}
+
+	/**
+	 * Return the same-level tile at a relative grid offset, wrapping at the
+	 * respective limits.
+	 */
+	public PackedTileId neighbour(long offsetX, long offsetY) {
+		int level = level();
+		long[] xy = deinterleaveMorton(mortonNumber(), level);
+		long x = wrappedOffset(xy[0], offsetX, 1L << (level + 1));
+		long y = wrappedOffset(xy[1], offsetY, 1L << level);
+		return fromTileIndex(interleaveCoords(x, y, level), level);
+	}
+
+	/**
+	 * American-English alias for {@link #neighbour(long, long)}.
+	 */
+	public PackedTileId neighbor(long offsetX, long offsetY) {
+		return neighbour(offsetX, offsetY);
+	}
+
 	/**
 	 * @return the tile to the west at the same level, wrapping at the antimeridian
 	 */
 	public PackedTileId westNeighbour() {
-		int level = level();
-		long[] xy = deinterleaveMorton(mortonNumber(), level);
-		long maxX = (1L << (level + 1)) - 1;
-		long x = (xy[0] - 1) & maxX;
-		long newMorton = interleaveCoords(x, xy[1], level);
-		return fromTileIndex(newMorton, level);
+		return neighbour(-1, 0);
 	}
 
 	/**
 	 * @return the tile to the east at the same level, wrapping at the antimeridian
 	 */
 	public PackedTileId eastNeighbour() {
-		int level = level();
-		long[] xy = deinterleaveMorton(mortonNumber(), level);
-		long maxX = (1L << (level + 1)) - 1;
-		long x = (xy[0] + 1) & maxX;
-		long newMorton = interleaveCoords(x, xy[1], level);
-		return fromTileIndex(newMorton, level);
+		return neighbour(1, 0);
 	}
 
 	/**
 	 * @return the tile to the south at the same level, wrapping at the south pole
 	 */
 	public PackedTileId southNeighbour() {
-		int level = level();
-		long[] xy = deinterleaveMorton(mortonNumber(), level);
-		long maxY = (1L << level) - 1;
-		long y = (xy[1] - 1) & maxY;
-		long newMorton = interleaveCoords(xy[0], y, level);
-		return fromTileIndex(newMorton, level);
+		return neighbour(0, -1);
 	}
 
 	/**
 	 * @return the tile to the north at the same level, wrapping at the north pole
 	 */
 	public PackedTileId northNeighbour() {
-		int level = level();
-		long[] xy = deinterleaveMorton(mortonNumber(), level);
-		long maxY = (1L << level) - 1;
-		long y = (xy[1] + 1) & maxY;
-		long newMorton = interleaveCoords(xy[0], y, level);
-		return fromTileIndex(newMorton, level);
+		return neighbour(0, 1);
 	}
 
 	@Override

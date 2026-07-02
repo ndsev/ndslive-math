@@ -38,6 +38,106 @@ int main()
              static_cast<int32_t>(-1)); // 0xFFFFFFFF -> -1
     CHECK_EQ(PackedTileId::fromTileIndex(0, 14).value(),
              static_cast<int32_t>(1u << 30)); // 1073741824 (positive)
+    CHECK_EQ(PackedTileId::fromValue(std::numeric_limits<int32_t>::min()).value(),
+             std::numeric_limits<int32_t>::min());
+
+    // The explicit factory validates, while the raw constructor preserves the
+    // legacy "construct then query isValid()" behavior.
+    {
+        bool threw = false;
+        try
+        {
+            (void)PackedTileId::fromValue(0);
+        }
+        catch (const std::out_of_range &)
+        {
+            threw = true;
+        }
+        CHECK(threw);
+    }
+
+    // Added PackedTileId factories and tile-grid coordinate accessors.
+    {
+        auto tile = PackedTileId::fromTileXY(3, 1, 1);
+        CHECK_EQ(tile.value(), static_cast<int32_t>(131079));
+        CHECK_EQ(tile.x(), static_cast<uint32_t>(3));
+        CHECK_EQ(tile.y(), static_cast<uint32_t>(1));
+        CHECK_EQ(PackedTileId::fromValue(tile.value()).value(), tile.value());
+        CHECK_EQ(tile.centerWgs84().first, -45.0);
+        CHECK_EQ(tile.centerWgs84().second, -45.0);
+        CHECK_EQ(tile.southWestWgs84().first, -90.0);
+        CHECK_EQ(tile.southWestWgs84().second, -90.0);
+        CHECK_EQ(tile.northEastWgs84().first, 0.0);
+        CHECK_EQ(tile.northEastWgs84().second, 0.0);
+        CHECK_EQ(tile.wgs84Size().first, 90.0);
+        CHECK_EQ(tile.wgs84Size().second, 90.0);
+        auto boundary = PackedTileId::wgs84FromNdsCoordinates(1LL << 31, 1LL << 30);
+        CHECK_EQ(boundary.first, 180.0);
+        CHECK_EQ(boundary.second, 90.0);
+
+        auto fromNds = PackedTileId::fromNdsCoordinates(-65537, -65537, 15);
+        auto fromWgs = PackedTileId::fromWgs84(-0.005493205972015858, -0.005493205972015858, 15);
+        CHECK_EQ(fromNds.value(), static_cast<int32_t>(-4));
+        CHECK_EQ(fromWgs.value(), static_cast<int32_t>(-4));
+    }
+
+    // Added factories reject invalid levels and grid coordinates.
+    {
+        bool threw = false;
+        try
+        {
+            (void)PackedTileId::fromTileIndex(0, 16);
+        }
+        catch (const std::out_of_range &)
+        {
+            threw = true;
+        }
+        CHECK(threw);
+
+        threw = false;
+        try
+        {
+            (void)PackedTileId::fromTileXY(4, 0, 1);
+        }
+        catch (const std::out_of_range &)
+        {
+            threw = true;
+        }
+        CHECK(threw);
+
+        threw = false;
+        try
+        {
+            (void)PackedTileId::fromTileXY(0, 2, 1);
+        }
+        catch (const std::out_of_range &)
+        {
+            threw = true;
+        }
+        CHECK(threw);
+
+        threw = false;
+        try
+        {
+            (void)PackedTileId::fromNdsCoordinates(0, 0, 16);
+        }
+        catch (const std::out_of_range &)
+        {
+            threw = true;
+        }
+        CHECK(threw);
+
+        threw = false;
+        try
+        {
+            (void)PackedTileId::fromWgs84(0.0, 0.0, 16);
+        }
+        catch (const std::out_of_range &)
+        {
+            threw = true;
+        }
+        CHECK(threw);
+    }
 
     // Corners of a level-13 tile at the SW origin.
     constexpr uint32_t L13 = 1u << (32 - 14); // tile length in NDS units
@@ -66,6 +166,10 @@ int main()
         // Round-trip in both directions.
         CHECK(t1.eastNeighbour().westNeighbour() == t1);
         CHECK(t1.westNeighbour().eastNeighbour() == t1);
+        CHECK(t1.neighbour(1, 0) == t1.eastNeighbour());
+        CHECK(t1.neighbour(-1, 0) == t1.westNeighbour());
+        CHECK(t1.neighbour(2, 0) == t1.eastNeighbour().eastNeighbour());
+        CHECK(t1.neighbor(2, 0) == t1.neighbour(2, 0));
     }
 
     // Bounding-box enumeration: a 2x2 span yields four tiles.

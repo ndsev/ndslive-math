@@ -69,6 +69,11 @@ impl PackedTileId {
         Self::from_i64(value as i64)
     }
 
+    /// Construct a `PackedTileId` from the signed NDS.Live public value.
+    pub fn from_value(value: i32) -> Result<Self, TileIdError> {
+        Self::new(value)
+    }
+
     /// Construct a `PackedTileId` from an `i64`, accepting both signed and
     /// unsigned 32-bit representations (matching the Python constructor).
     ///
@@ -120,6 +125,45 @@ impl PackedTileId {
 
         let value: u32 = morton_number + (1u32 << (16 + level));
         PackedTileId::from_i64(value as i64)
+    }
+
+    /// Create a `PackedTileId` from tile-grid coordinates at the given level.
+    ///
+    /// X is in `0..=2^(level+1)-1`, Y is in `0..=2^level-1`. Coordinates use
+    /// the NDS Morton tile-grid order and are inverse to [`PackedTileId::x`]
+    /// and [`PackedTileId::y`].
+    pub fn from_tile_xy(x: u32, y: u32, level: u32) -> Result<Self, TileIdError> {
+        if level > 15 {
+            return Err(TileIdError::InvalidLevel(level));
+        }
+        let max_x = (1u32 << (level + 1)) - 1;
+        let max_y = (1u32 << level) - 1;
+        if x > max_x {
+            return Err(TileIdError::InvalidMortonNumber {
+                morton: x as i64,
+                level,
+                max: max_x as u64,
+            });
+        }
+        if y > max_y {
+            return Err(TileIdError::InvalidMortonNumber {
+                morton: y as i64,
+                level,
+                max: max_y as u64,
+            });
+        }
+        Self::from_tile_index(Self::interleave_coords(x, y, level), level)
+    }
+
+    /// Create the tile at `level` that contains the given NDS coordinate.
+    pub fn from_nds_coordinates(x: i32, y: i32, level: u32) -> Result<Self, TileIdError> {
+        Self::from_morton_and_level(MortonCode::from_nds_coordinates(x, y), level)
+    }
+
+    /// Create the tile at `level` that contains the given WGS84 coordinate.
+    pub fn from_wgs84(longitude: f64, latitude: f64, level: u32) -> Result<Self, TileIdError> {
+        let (x, y) = Wgs84::new(longitude, latitude).to_nds_coordinates();
+        Self::from_nds_coordinates(x, y, level)
     }
 
     /// Create a `PackedTileId` for the tile at `level` that contains the
@@ -189,6 +233,42 @@ impl PackedTileId {
         (x + half_size, y + half_size)
     }
 
+    /// Convert NDS integer coordinates to lon/lat degrees without edge
+    /// normalization.
+    pub fn wgs84_from_nds_coordinates(x: i64, y: i64) -> (f64, f64) {
+        (
+            (x as f64) * 360.0 / 4294967296.0,
+            (y as f64) * 180.0 / 2147483648.0,
+        )
+    }
+
+    /// Center of the tile in lon/lat degrees.
+    pub fn center_wgs84(&self) -> (f64, f64) {
+        let (x, y) = self.center();
+        Self::wgs84_from_nds_coordinates(x, y)
+    }
+
+    /// South-west tile corner in lon/lat degrees.
+    pub fn south_west_wgs84(&self) -> (f64, f64) {
+        let (x, y) = self.south_west_corner();
+        Self::wgs84_from_nds_coordinates(x, y)
+    }
+
+    /// Exclusive north-east tile corner in lon/lat degrees.
+    pub fn north_east_wgs84(&self) -> (f64, f64) {
+        let (x, y) = self.north_east_corner();
+        Self::wgs84_from_nds_coordinates(x, y)
+    }
+
+    /// Tile width/height in lon/lat degrees.
+    pub fn wgs84_size(&self) -> (f64, f64) {
+        let tile_size = self.size() as f64;
+        (
+            tile_size * 360.0 / 4294967296.0,
+            tile_size * 180.0 / 2147483648.0,
+        )
+    }
+
     /// South-west corner of the tile in NDS coordinates `(x, y)`.
     pub fn south_west_corner(&self) -> (i64, i64) {
         let morton_number = self.morton_number() as u64;
@@ -211,6 +291,16 @@ impl PackedTileId {
     pub fn morton_number(&self) -> u32 {
         let tile_level = self.level();
         self.value - (1u32 << (16 + tile_level))
+    }
+
+    /// Tile-grid X coordinate at this tile's level.
+    pub fn x(&self) -> u32 {
+        Self::deinterleave_morton(self.morton_number(), self.level()).0
+    }
+
+    /// Tile-grid Y coordinate at this tile's level.
+    pub fn y(&self) -> u32 {
+        Self::deinterleave_morton(self.morton_number(), self.level()).1
     }
 
     /// Validate this tile id against the NDS constraints.
@@ -277,48 +367,45 @@ impl PackedTileId {
         morton
     }
 
-    /// Tile to the west at the same level (wraps at the antimeridian).
-    pub fn west_neighbour(&self) -> PackedTileId {
+    fn wrapped_offset(coordinate: u32, offset: i32, modulo: u32) -> u32 {
+        ((coordinate as i64 + offset as i64).rem_euclid(modulo as i64)) as u32
+    }
+
+    /// Same-level tile at a relative grid offset, wrapping at the respective
+    /// limits.
+    pub fn neighbour(&self, offset_x: i32, offset_y: i32) -> PackedTileId {
         let level = self.level();
         let morton = self.morton_number();
-        let (mut x, y) = Self::deinterleave_morton(morton, level);
-        let max_x = (1u32 << (level + 1)) - 1;
-        x = x.wrapping_sub(1) & max_x;
+        let (x, y) = Self::deinterleave_morton(morton, level);
+        let x = Self::wrapped_offset(x, offset_x, 1u32 << (level + 1));
+        let y = Self::wrapped_offset(y, offset_y, 1u32 << level);
         let new_morton = Self::interleave_coords(x, y, level);
         PackedTileId::from_tile_index(new_morton, level).expect("valid neighbour")
+    }
+
+    /// American-English alias for [`PackedTileId::neighbour`].
+    pub fn neighbor(&self, offset_x: i32, offset_y: i32) -> PackedTileId {
+        self.neighbour(offset_x, offset_y)
+    }
+
+    /// Tile to the west at the same level (wraps at the antimeridian).
+    pub fn west_neighbour(&self) -> PackedTileId {
+        self.neighbour(-1, 0)
     }
 
     /// Tile to the east at the same level (wraps at the antimeridian).
     pub fn east_neighbour(&self) -> PackedTileId {
-        let level = self.level();
-        let morton = self.morton_number();
-        let (mut x, y) = Self::deinterleave_morton(morton, level);
-        let max_x = (1u32 << (level + 1)) - 1;
-        x = x.wrapping_add(1) & max_x;
-        let new_morton = Self::interleave_coords(x, y, level);
-        PackedTileId::from_tile_index(new_morton, level).expect("valid neighbour")
+        self.neighbour(1, 0)
     }
 
     /// Tile to the south at the same level (wraps at the south pole).
     pub fn south_neighbour(&self) -> PackedTileId {
-        let level = self.level();
-        let morton = self.morton_number();
-        let (x, mut y) = Self::deinterleave_morton(morton, level);
-        let max_y = (1u32 << level) - 1;
-        y = y.wrapping_sub(1) & max_y;
-        let new_morton = Self::interleave_coords(x, y, level);
-        PackedTileId::from_tile_index(new_morton, level).expect("valid neighbour")
+        self.neighbour(0, -1)
     }
 
     /// Tile to the north at the same level (wraps at the north pole).
     pub fn north_neighbour(&self) -> PackedTileId {
-        let level = self.level();
-        let morton = self.morton_number();
-        let (x, mut y) = Self::deinterleave_morton(morton, level);
-        let max_y = (1u32 << level) - 1;
-        y = y.wrapping_add(1) & max_y;
-        let new_morton = Self::interleave_coords(x, y, level);
-        PackedTileId::from_tile_index(new_morton, level).expect("valid neighbour")
+        self.neighbour(0, 1)
     }
 }
 
