@@ -3,7 +3,7 @@ plugins {
     id 'jacoco'
     id 'com.diffplug.spotless' version '8.7.0'
     // Publishes to the Maven Central Portal and signs artifacts (in-memory GPG).
-    id 'com.vanniktech.maven.publish' version '0.30.0'
+    id 'com.vanniktech.maven.publish' version '0.37.0'
 }
 
 group = 'live.nds'
