@@ -72,8 +72,6 @@ func MortonFromNdsCoordinates(xIn, yIn int32) MortonCode {
 	}
 
 	morton |= uint64(x & bit)
-	x <<= 1
-	bit <<= 1
 
 	morton &^= 1 << 63 // clear bit 63 (Go's AND NOT)
 
@@ -103,7 +101,6 @@ func (m MortonCode) ToNdsCoordinates() (int32, int32) {
 	}
 
 	x |= morton & bit
-	morton >>= 1
 
 	// Sign-adjust: x has up to 32 magnitude bits, y up to 31. Convert the
 	// extracted unsigned magnitudes back into signed NDS coordinates.
