@@ -9,10 +9,9 @@
 #include <vector>
 #include <sstream>
 
-#define GLM_ENABLE_EXPERIMENTAL // glm::transform API may change in a future version
 #include <glm/glm.hpp>
+#include <glm/gtc/constants.hpp>
 #include <glm/vec3.hpp>
-#include <glm/ext.hpp>
 
 namespace ndsmath
 {
