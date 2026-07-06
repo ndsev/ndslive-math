@@ -322,8 +322,10 @@ private:
             while (true)
             {
                 // C++ uses pow2 deltas here, while the reference ports use
-                // (2^n - 1) deltas for this snap check. Include exact one-step
-                // boundary values so +180/+90 normalize to the right/top edge.
+                // (2^n - 1) deltas for this snap check. With a strict <
+                // comparison, exact +180/+90 inputs miss the snap threshold
+                // and fail cross-language parity; <= includes that one-step
+                // boundary so they normalize to the right/top edge.
                 if (std::abs(x - lonMax) <= lonNdsDelta)
                 {
                     x = lonMax;
