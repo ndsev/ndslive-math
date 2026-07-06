@@ -12,27 +12,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   `fromTileXY`/`from_tile_xy`, `fromNdsCoordinates`/`from_nds_coordinates`, and
   `fromWgs84`/`from_wgs84`), with shared parity vectors covering the new API.
 
-### Fixed
-- **C++:** `PackedTileId::fromWgs84()` now follows the same floor-based
-  WGS84-to-NDS conversion path as the other bindings, fixing negative
-  fractional coordinate boundary cases.
-
-### C++
-- vcpkg overlay port: pinned the `v1.0.0` source `SHA512` in
-  `cpp/vcpkg-port/portfile.cmake`, so the port is installable as-is (and ready
-  for upstream `microsoft/vcpkg` submission).
-
 ### Project
 - CI: npm now publishes via **OIDC trusted publishing** instead of a stored
   token — the `publish-npm` job upgrades npm to ≥ 11.5.1 and drops
   `NODE_AUTH_TOKEN` (keeping `--provenance --access public`).
-
-### Project
 - CodeQL: scoped analysis to our own code by ignoring the `build/` tree (which
   CMake/FetchContent fills with third-party GLM/Catch2 sources), removing the
   bulk of the open alerts, and cleared the remaining minor source findings.
+- Dependency maintenance: merged Dependabot bumps for GitHub Actions,
+  Java/Gradle tooling, and JavaScript development dependencies.
+
+### C++
+- vcpkg overlay port metadata now targets `1.1.0`; the source `SHA512` remains
+  the release-time placeholder until the `v1.1.0` archive exists.
 
 ### Fixed
+- **C++:** `PackedTileId::fromWgs84()` now follows the same floor-based
+  WGS84-to-NDS conversion path as the other bindings, fixing negative
+  fractional coordinate boundary cases.
 - **Go:** removed dead-store assignments in `morton.go` (no behavior change).
 - **C++:** dropped a redundant, always-true sign-adjust branch in
   `MortonCode::toNdsCoordinates` — an `int32_t` already carries the sign bit of
