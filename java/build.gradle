@@ -78,7 +78,7 @@ check.dependsOn jacocoTestCoverageVerification
 mavenPublishing {
     // Upload to the new Maven Central Portal; sign all artifacts with the
     // in-memory GPG key (ORG_GRADLE_PROJECT_signingInMemoryKey[Password]).
-    publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL)
+    publishToMavenCentral()
     signAllPublications()
     coordinates('live.nds', 'ndslive-math', version.toString())
 

@@ -322,8 +322,10 @@ private:
         {
             while (true)
             {
-                // Gracefully allow a longitude close enough to 180 to mean "rightmost"
-                if (std::abs(x - lonMax) < lonNdsDelta)
+                // C++ uses pow2 deltas here, while the reference ports use
+                // (2^n - 1) deltas for this snap check. Include exact one-step
+                // boundary values so +180/+90 normalize to the right/top edge.
+                if (std::abs(x - lonMax) <= lonNdsDelta)
                 {
                     x = lonMax;
                     break;
@@ -339,7 +341,7 @@ private:
 
             while (true)
             {
-                if (std::abs(y - latMax) < latNdsDelta)
+                if (std::abs(y - latMax) <= latNdsDelta)
                 {
                     y = latMax;
                     break;
