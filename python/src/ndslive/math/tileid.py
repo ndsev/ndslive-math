@@ -436,7 +436,7 @@ class PackedTileId:
         the westernmost tile returns the easternmost tile at the same level.
 
         Returns:
-            PackedTileId of the western neighbor (with wrapping)
+            PackedTileId of the western neighbour (with wrapping)
         """
         level = self.level()
         morton = self.morton_number()
@@ -462,7 +462,7 @@ class PackedTileId:
         the easternmost tile returns the westernmost tile at the same level.
 
         Returns:
-            PackedTileId of the eastern neighbor (with wrapping)
+            PackedTileId of the eastern neighbour (with wrapping)
         """
         level = self.level()
         morton = self.morton_number()
@@ -485,7 +485,7 @@ class PackedTileId:
         tile returns the northernmost tile at the same level.
 
         Returns:
-            PackedTileId of the southern neighbor (with wrapping)
+            PackedTileId of the southern neighbour (with wrapping)
         """
         level = self.level()
         morton = self.morton_number()
@@ -508,7 +508,7 @@ class PackedTileId:
         tile returns the southernmost tile at the same level.
 
         Returns:
-            PackedTileId of the northern neighbor (with wrapping)
+            PackedTileId of the northern neighbour (with wrapping)
         """
         level = self.level()
         morton = self.morton_number()
@@ -533,13 +533,13 @@ class PackedTileId:
 
     def print_with_neighbors(self, radius: int = 1) -> None:
         """
-        Print a debug visualization showing this tile and its neighbors.
+        Print a debug visualization showing this tile and its neighbours.
 
-        Shows the current tile's binary encoding first, then displays a grid of neighbors.
+        Shows the current tile's binary encoding first, then displays a grid of neighbours.
         Grid size depends on radius:
-        - radius=1: 3x3 grid (default, current + 8 immediate neighbors)
-        - radius=2: 5x5 grid (current + 24 neighbors within 2 tiles)
-        - radius=3: 7x7 grid (current + 48 neighbors within 3 tiles)
+        - radius=1: 3x3 grid (default, current + 8 immediate neighbours)
+        - radius=2: 5x5 grid (current + 24 neighbours within 2 tiles)
+        - radius=3: 7x7 grid (current + 48 neighbours within 3 tiles)
 
         Args:
             radius (int): How many tiles away to show in each direction (default: 1)
@@ -662,8 +662,8 @@ class PackedTileId:
         # Print grid with directional labels
         border = "+" + ("-" * col_width + "+") * grid_size
 
-        # Print "Neighbors:" label
-        print("Neighbors:")
+        # Print "Neighbours:" label
+        print("Neighbours:")
 
         # North label and border should align with grid (2 spaces for west labels)
         north_label = "North".center(len(border))
