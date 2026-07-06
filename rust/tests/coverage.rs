@@ -94,7 +94,6 @@ fn relative_neighbour_wrapping() {
         PackedTileId::from_tile_xy(3, 1, 1).unwrap()
     );
     assert_eq!(tile.neighbour(4, 2), tile);
-    assert_eq!(tile.neighbor(4, 2), tile.neighbour(4, 2));
 }
 
 #[test]

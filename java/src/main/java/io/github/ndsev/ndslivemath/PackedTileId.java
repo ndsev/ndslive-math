@@ -389,13 +389,6 @@ public final class PackedTileId {
 	}
 
 	/**
-	 * American-English alias for {@link #neighbour(long, long)}.
-	 */
-	public PackedTileId neighbor(long offsetX, long offsetY) {
-		return neighbour(offsetX, offsetY);
-	}
-
-	/**
 	 * @return the tile to the west at the same level, wrapping at the antimeridian
 	 */
 	public PackedTileId westNeighbour() {

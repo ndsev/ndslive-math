@@ -300,13 +300,12 @@ describe('neighbour wrapping', () => {
     expect(t.northNeighbour().value).toBe(t.southNeighbour().value);
   });
 
-  it('relative offsets support multi-step wrapping and alias spelling', () => {
+  it('relative offsets support multi-step wrapping', () => {
     const tile = PackedTileId.fromTileXY(0, 0, 1);
     expect(tile.neighbour(1, 0).value).toBe(tile.eastNeighbour().value);
     expect(tile.neighbour(0, 1).value).toBe(tile.northNeighbour().value);
     expect(tile.neighbour(-1, -1).value).toBe(PackedTileId.fromTileXY(3, 1, 1).value);
     expect(tile.neighbour(4, 2).value).toBe(tile.value);
-    expect(tile.neighbor(4, 2).value).toBe(tile.neighbour(4, 2).value);
   });
 });
 

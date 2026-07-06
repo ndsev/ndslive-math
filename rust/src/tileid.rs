@@ -383,11 +383,6 @@ impl PackedTileId {
         PackedTileId::from_tile_index(new_morton, level).expect("valid neighbour")
     }
 
-    /// American-English alias for [`PackedTileId::neighbour`].
-    pub fn neighbor(&self, offset_x: i32, offset_y: i32) -> PackedTileId {
-        self.neighbour(offset_x, offset_y)
-    }
-
     /// Tile to the west at the same level (wraps at the antimeridian).
     pub fn west_neighbour(&self) -> PackedTileId {
         self.neighbour(-1, 0)

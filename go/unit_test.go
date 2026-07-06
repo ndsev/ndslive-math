@@ -268,9 +268,6 @@ func TestPackedTileIdRelativeNeighbour(t *testing.T) {
 	if got := tile.Neighbour(4, 2); got.Value() != tile.Value() {
 		t.Errorf("Neighbour(4,2) = %d, want %d", got.Value(), tile.Value())
 	}
-	if got := tile.Neighbor(4, 2); got.Value() != tile.Neighbour(4, 2).Value() {
-		t.Errorf("Neighbor alias = %d, want %d", got.Value(), tile.Neighbour(4, 2).Value())
-	}
 }
 
 func TestNeighbourWrapAround(t *testing.T) {

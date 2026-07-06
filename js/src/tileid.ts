@@ -345,11 +345,6 @@ export class PackedTileId {
     );
   }
 
-  /** American-English alias for {@link PackedTileId.neighbour}. */
-  neighbor(offsetX: number, offsetY: number): PackedTileId {
-    return this.neighbour(offsetX, offsetY);
-  }
-
   /**
    * Returns the tile to the west at the same level, wrapping at the
    * antimeridian (180° longitude).

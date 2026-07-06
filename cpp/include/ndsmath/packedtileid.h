@@ -80,9 +80,6 @@ public:
     //! neighbour helpers but allowing multi-tile steps.
     PackedTileId neighbour(int32_t offsetX, int32_t offsetY) const;
 
-    //! American-English alias for neighbour().
-    PackedTileId neighbor(int32_t offsetX, int32_t offsetY) const;
-
     //! Get the tile center.
     void center(int32_t &centerX, int32_t &centerY) const;
 

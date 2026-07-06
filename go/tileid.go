@@ -326,11 +326,6 @@ func (t PackedTileId) Neighbour(dx, dy int) PackedTileId {
 	return t.neighbour(dx, dy)
 }
 
-// Neighbor is an American-English alias for Neighbour.
-func (t PackedTileId) Neighbor(dx, dy int) PackedTileId {
-	return t.Neighbour(dx, dy)
-}
-
 // neighbour returns the same-level neighbour after applying dx to X and dy to
 // Y, with wrap-around at the respective limits.
 func (t PackedTileId) neighbour(dx, dy int) PackedTileId {

@@ -625,7 +625,6 @@ class TestPackedTileId(unittest.TestCase):
         self.assertEqual(tile.neighbour(0, 1), tile.north_neighbour())
         self.assertEqual(tile.neighbour(-1, -1), PackedTileId.from_tile_xy(3, 1, 1))
         self.assertEqual(tile.neighbour(4, 2), tile)
-        self.assertEqual(tile.neighbor(4, 2), tile.neighbour(4, 2))
 
     def test_level15_validation_accepts_negative(self):
         """Validation should accept negative values for level 15."""

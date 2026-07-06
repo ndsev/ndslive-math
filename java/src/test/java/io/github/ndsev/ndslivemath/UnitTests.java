@@ -235,7 +235,6 @@ class UnitTests {
 		assertEquals(t.northNeighbour(), t.neighbour(0, 1));
 		assertEquals(PackedTileId.fromTileXY(3, 1, 1), t.neighbour(-1, -1));
 		assertEquals(t, t.neighbour(4, 2));
-		assertEquals(t.neighbour(4, 2), t.neighbor(4, 2));
 	}
 
 	@Test

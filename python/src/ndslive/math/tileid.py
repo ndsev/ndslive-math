@@ -528,10 +528,6 @@ class PackedTileId:
         y = (y + offset_y) % (1 << level)
         return PackedTileId.from_tile_index(self._interleave_coords(x, y, level), level)
 
-    def neighbor(self, offset_x: int, offset_y: int) -> PackedTileId:
-        """American-English alias for :meth:`neighbour`."""
-        return self.neighbour(offset_x, offset_y)
-
     def print_with_neighbors(self, radius: int = 1) -> None:
         """
         Print a debug visualization showing this tile and its neighbors.

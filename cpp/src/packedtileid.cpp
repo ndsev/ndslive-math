@@ -155,11 +155,6 @@ PackedTileId PackedTileId::neighbour(int32_t offsetX, int32_t offsetY) const
     return fromTileIndex(interleaveCoords(x, y, lvl), lvl);
 }
 
-PackedTileId PackedTileId::neighbor(int32_t offsetX, int32_t offsetY) const
-{
-    return neighbour(offsetX, offsetY);
-}
-
 PackedTileId::PackedTileId(MortonCode mortonCode, const int level)
 {
     validateLevel(level);
