@@ -4,7 +4,41 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [v1.1.0] - 2026-07-06
+
+### Added
+- **PackedTileId parity:** added tile-grid coordinate accessors and factory
+  helpers across all six language bindings (`fromValue`/`from_value`,
+  `fromTileXY`/`from_tile_xy`, `fromNdsCoordinates`/`from_nds_coordinates`, and
+  `fromWgs84`/`from_wgs84`), with shared parity vectors covering the new API.
+
+### Project
+- CI: npm now publishes via **OIDC trusted publishing** instead of a stored
+  token — the `publish-npm` job upgrades npm to ≥ 11.5.1 and drops
+  `NODE_AUTH_TOKEN` (keeping `--provenance --access public`).
+- CodeQL: scoped analysis to our own code by ignoring the `build/` tree (which
+  CMake/FetchContent fills with third-party GLM/Catch2 sources), removing the
+  bulk of the open alerts, and cleared the remaining minor source findings.
+- Dependency maintenance: merged Dependabot bumps for GitHub Actions,
+  Java/Gradle tooling, and JavaScript development dependencies.
+
+### C++
+- vcpkg overlay port metadata now targets `1.1.0`; the source `SHA512` remains
+  the release-time placeholder until the `v1.1.0` archive exists.
+
+### Fixed
+- **C++:** `PackedTileId::fromWgs84()` now follows the same floor-based
+  WGS84-to-NDS conversion path as the other bindings, fixing negative
+  fractional coordinate boundary cases.
+- **Go:** removed dead-store assignments in `morton.go` (no behavior change).
+- **C++:** dropped a redundant, always-true sign-adjust branch in
+  `MortonCode::toNdsCoordinates` — an `int32_t` already carries the sign bit of
+  the 32-bit `x` coordinate (`XBASE = 1<<31` had silently overflowed to
+  `INT32_MIN`, making the guard always true). Decode output is unchanged
+  (parity-verified).
+- **Java:** renamed shadowing locals in `Wgs84.bearingFrom`.
+- **Python:** `PackedTileId` uses `functools.total_ordering` for full, consistent
+  comparison operators.
 
 ## [v1.0.0] - 2026-06-26
 

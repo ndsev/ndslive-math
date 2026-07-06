@@ -220,16 +220,19 @@ describe('packed_tile_from_index', () => {
     expect(tile.value).toBe(v.value);
     expect(tile.level()).toBe(v.computed_level);
     expect(tile.mortonNumber()).toBe(v.computed_morton_number);
+    expect(tile.x()).toBe(v.grid_x);
+    expect(tile.y()).toBe(v.grid_y);
     expect(tile.size()).toBe(v.size);
     expect(tile.southWestCorner()).toEqual(v.sw);
     expect(tile.northEastCorner()).toEqual(v.ne);
     expect(tile.center()).toEqual(v.center);
 
     // Constructing from the signed value reproduces the same tile.
-    const fromValue = new PackedTileId(v.value);
+    const fromValue = PackedTileId.fromValue(v.value);
     expect(fromValue.value).toBe(v.value);
     expect(fromValue.level()).toBe(v.computed_level);
     expect(fromValue.mortonNumber()).toBe(v.computed_morton_number);
+    expect(PackedTileId.fromTileXY(v.grid_x, v.grid_y, v.level).value).toBe(v.value);
   });
 });
 
@@ -250,6 +253,17 @@ describe('from_morton_and_level', () => {
     expect(tile.value).toBe(v.value);
     expect(tile.level()).toBe(v.computed_level);
     expect(tile.mortonNumber()).toBe(v.computed_morton_number);
+    expect(PackedTileId.fromNdsCoordinates(v.x, v.y, v.level).value).toBe(v.value);
+  });
+});
+
+describe('packed_tile_from_wgs84', () => {
+  it.each(vectors.packed_tile_from_wgs84)('lon=$lon lat=$lat level=$level', (v) => {
+    const tile = PackedTileId.fromWgs84(v.lon, v.lat, v.level);
+    expect(tile.value).toBe(v.value);
+    expect(tile.mortonNumber()).toBe(v.computed_morton_number);
+    expect(tile.x()).toBe(v.grid_x);
+    expect(tile.y()).toBe(v.grid_y);
   });
 });
 

@@ -5,7 +5,7 @@ from ndslive.math import MortonCode, NdsBoundingBox, PackedTileId, Wgs84
 from ndslive.math.tileid import bounding_box_from_tile_ids, get_tile_ids_for_bounding_box
 
 
-def print_level1_grid(current_morton, neighbor_morton=None, direction=""):
+def print_level1_grid(current_morton, neighbour_morton=None, direction=""):
     """
     Print a visual representation of level 1 tiling grid.
 
@@ -17,8 +17,8 @@ def print_level1_grid(current_morton, neighbor_morton=None, direction=""):
 
     Args:
         current_morton: Morton number of current tile (0-7)
-        neighbor_morton: Morton number of expected neighbor (0-7) or None
-        direction: Direction of neighbor (N/S/E/W)
+        neighbour_morton: Morton number of expected neighbour (0-7) or None
+        direction: Direction of neighbour (N/S/E/W)
     """
     # Geographic arrangement: West (X=2,3) then East (X=0,1)
     # Level 1 tile labels (format: level0-level1)
@@ -34,7 +34,7 @@ def print_level1_grid(current_morton, neighbor_morton=None, direction=""):
 
     print(
         f"\nLevel 1 Grid - Current tile: {current_morton}, "
-        f"Expected {direction} neighbor: {neighbor_morton}"
+        f"Expected {direction} neighbour: {neighbour_morton}"
     )
     print("=" * 60)
 
@@ -49,7 +49,7 @@ def print_level1_grid(current_morton, neighbor_morton=None, direction=""):
             label = labels[row][col]
             if morton == current_morton:
                 line += f" [{label}]|"
-            elif morton == neighbor_morton:
+            elif morton == neighbour_morton:
                 line += f" *{label}*|"
             else:
                 line += f"  {label} |"
@@ -61,7 +61,7 @@ def print_level1_grid(current_morton, neighbor_morton=None, direction=""):
             morton = morton_grid[row][col]
             if morton == current_morton:
                 line += "  [X]  |"
-            elif morton == neighbor_morton:
+            elif morton == neighbour_morton:
                 line += "  [*]  |"
             else:
                 line += f"   {morton}   |"
@@ -267,6 +267,19 @@ class TestPackedTileId(unittest.TestCase):
         self.assertEqual(sw_x, 0)
         self.assertEqual(sw_y, 0)
 
+    def test_wgs84_inspection_helpers(self):
+        """PackedTileId exposes lon/lat helpers without WGS84 edge normalization."""
+        tile = PackedTileId.from_tile_xy(3, 1, 1)
+        self.assertEqual(tile.center_wgs84(), (-45.0, -45.0))
+        self.assertEqual(tile.south_west_wgs84(), (-90.0, -90.0))
+        self.assertEqual(tile.north_east_wgs84(), (0.0, 0.0))
+        self.assertEqual(tile.wgs84_size(), (90.0, 90.0))
+        self.assertEqual(PackedTileId.wgs84_from_nds_coordinates(1 << 31, 1 << 30), (180.0, 90.0))
+
+        world_edge = PackedTileId.from_tile_xy(1, 0, 0)
+        self.assertEqual(world_edge.center_wgs84(), (-90.0, 90.0))
+        self.assertEqual(world_edge.north_east_wgs84(), (0.0, 180.0))
+
     def test_from_tile_index(self):
         """Test creating a tile directly from morton number and level."""
         # Test basic case - the original bug report
@@ -367,6 +380,34 @@ class TestPackedTileId(unittest.TestCase):
         with self.assertRaises(ValueError) as ctx:
             PackedTileId.from_tile_index(-1, 2)
         self.assertIn("morton number", str(ctx.exception))
+
+    def test_added_factories_and_grid_coordinates(self):
+        """Test added PackedTileId factory helpers and grid accessors."""
+        tile = PackedTileId.from_tile_xy(3, 1, 1)
+        self.assertEqual(tile.value, 131079)
+        self.assertEqual(tile.x(), 3)
+        self.assertEqual(tile.y(), 1)
+        self.assertEqual(PackedTileId.from_value(tile.value).value, tile.value)
+
+        from_nds = PackedTileId.from_nds_coordinates(-65537, -65537, 15)
+        from_wgs = PackedTileId.from_wgs84(-0.005493205972015858, -0.005493205972015858, 15)
+        self.assertEqual(from_nds.value, -4)
+        self.assertEqual(from_wgs.value, -4)
+
+    def test_added_factory_validation(self):
+        """Test validation in added PackedTileId factory helpers."""
+        with self.assertRaises(ValueError):
+            PackedTileId.from_value(0)
+        with self.assertRaises(ValueError):
+            PackedTileId.from_tile_xy(0, 0, -1)
+        with self.assertRaises(ValueError):
+            PackedTileId.from_tile_xy(4, 0, 1)
+        with self.assertRaises(ValueError):
+            PackedTileId.from_tile_xy(0, 2, 1)
+        with self.assertRaises(ValueError):
+            PackedTileId.from_nds_coordinates(0, 0, 16)
+        with self.assertRaises(ValueError):
+            PackedTileId.from_wgs84(0.0, 0.0, 16)
 
     def test_from_morton_and_level_validation(self):
         """Test that from_morton_and_level validates level."""
@@ -548,34 +589,42 @@ class TestPackedTileId(unittest.TestCase):
                         tile_max.value, 0, f"Level {level} max morton should be positive"
                     )
 
-    def test_level15_neighbors(self):
-        """Neighbor functions should work correctly with level 15 negative values."""
+    def test_level15_neighbours(self):
+        """Neighbour functions should work correctly with level 15 negative values."""
         # Test with a mid-range morton number
         tile = PackedTileId.from_tile_index(100, 15)
         self.assertLess(tile.value, 0, "Level 15 tile should be negative")
 
-        # All neighbors should also be level 15 with negative values
+        # All neighbours should also be level 15 with negative values
         north = tile.north_neighbour()
         self.assertEqual(north.level(), 15)
-        self.assertLess(north.value, 0, "Level 15 neighbor should be negative")
+        self.assertLess(north.value, 0, "Level 15 neighbour should be negative")
 
         south = tile.south_neighbour()
         self.assertEqual(south.level(), 15)
-        self.assertLess(south.value, 0, "Level 15 neighbor should be negative")
+        self.assertLess(south.value, 0, "Level 15 neighbour should be negative")
 
         east = tile.east_neighbour()
         self.assertEqual(east.level(), 15)
-        self.assertLess(east.value, 0, "Level 15 neighbor should be negative")
+        self.assertLess(east.value, 0, "Level 15 neighbour should be negative")
 
         west = tile.west_neighbour()
         self.assertEqual(west.level(), 15)
-        self.assertLess(west.value, 0, "Level 15 neighbor should be negative")
+        self.assertLess(west.value, 0, "Level 15 neighbour should be negative")
 
         # Test reversibility
         self.assertEqual(tile, north.south_neighbour())
         self.assertEqual(tile, south.north_neighbour())
         self.assertEqual(tile, east.west_neighbour())
         self.assertEqual(tile, west.east_neighbour())
+
+    def test_relative_neighbour(self):
+        """Relative neighbour supports one-step and multi-step wrapped offsets."""
+        tile = PackedTileId.from_tile_xy(0, 0, 1)
+        self.assertEqual(tile.neighbour(1, 0), tile.east_neighbour())
+        self.assertEqual(tile.neighbour(0, 1), tile.north_neighbour())
+        self.assertEqual(tile.neighbour(-1, -1), PackedTileId.from_tile_xy(3, 1, 1))
+        self.assertEqual(tile.neighbour(4, 2), tile)
 
     def test_level15_validation_accepts_negative(self):
         """Validation should accept negative values for level 15."""
@@ -628,47 +677,47 @@ class TestPackedTileId(unittest.TestCase):
             self.fail(f"print_with_neighbors failed for level 15: {e}")
 
 
-class TestPackedTileIdLevel1Neighbors(unittest.TestCase):
-    """Visual tests for level 1 neighbor wrapping behavior."""
+class TestPackedTileIdLevel1Neighbours(unittest.TestCase):
+    """Visual tests for level 1 neighbour wrapping behavior."""
 
     def test_tile_0_north(self):
-        """Test north neighbor of tile 0 (0-00, northwest)."""
-        print_level1_grid(current_morton=0, neighbor_morton=2, direction="NORTH")
+        """Test north neighbour of tile 0 (0-00, northwest)."""
+        print_level1_grid(current_morton=0, neighbour_morton=2, direction="NORTH")
         tile = PackedTileId.from_tile_index(0, 1)
         north = tile.north_neighbour()
         self.assertEqual(north.morton_number(), 2, "North of 0-00 should wrap to 0-10")
 
     def test_tile_0_south(self):
-        """Test south neighbor of tile 0 (0-00)."""
-        print_level1_grid(current_morton=0, neighbor_morton=2, direction="SOUTH")
+        """Test south neighbour of tile 0 (0-00)."""
+        print_level1_grid(current_morton=0, neighbour_morton=2, direction="SOUTH")
         tile = PackedTileId.from_tile_index(0, 1)
         south = tile.south_neighbour()
         self.assertEqual(south.morton_number(), 2, "South of 0-00 should be 0-10")
 
     def test_tile_0_east(self):
-        """Test east neighbor of tile 0 (0-00)."""
-        print_level1_grid(current_morton=0, neighbor_morton=1, direction="EAST")
+        """Test east neighbour of tile 0 (0-00)."""
+        print_level1_grid(current_morton=0, neighbour_morton=1, direction="EAST")
         tile = PackedTileId.from_tile_index(0, 1)
         east = tile.east_neighbour()
         self.assertEqual(east.morton_number(), 1, "East of 0-00 should be 0-01")
 
     def test_tile_0_west(self):
-        """Test west neighbor of tile 0 (0-00)."""
-        print_level1_grid(current_morton=0, neighbor_morton=5, direction="WEST")
+        """Test west neighbour of tile 0 (0-00)."""
+        print_level1_grid(current_morton=0, neighbour_morton=5, direction="WEST")
         tile = PackedTileId.from_tile_index(0, 1)
         west = tile.west_neighbour()
         self.assertEqual(west.morton_number(), 5, "West of 0-00 should wrap to 1-01 (X=3)")
 
     def test_tile_1_east(self):
-        """Test east neighbor of tile 1 (0-01), wraps to other hemisphere."""
-        print_level1_grid(current_morton=1, neighbor_morton=4, direction="EAST")
+        """Test east neighbour of tile 1 (0-01), wraps to other hemisphere."""
+        print_level1_grid(current_morton=1, neighbour_morton=4, direction="EAST")
         tile = PackedTileId.from_tile_index(1, 1)
         east = tile.east_neighbour()
         self.assertEqual(east.morton_number(), 4, "East of 0-01 should wrap to 1-00")
 
     def test_tile_4_west(self):
-        """Test west neighbor of tile 4 (1-00), wraps to other hemisphere."""
-        print_level1_grid(current_morton=4, neighbor_morton=1, direction="WEST")
+        """Test west neighbour of tile 4 (1-00), wraps to other hemisphere."""
+        print_level1_grid(current_morton=4, neighbour_morton=1, direction="WEST")
         tile = PackedTileId.from_tile_index(4, 1)
         west = tile.west_neighbour()
         self.assertEqual(west.morton_number(), 1, "West of 1-00 should wrap to 0-01")
@@ -800,7 +849,7 @@ class TestBoundingBoxToTileIds(unittest.TestCase):
         # Start at tile boundary
         sw_x = 0
         sw_y = 0
-        # End just inside the neighboring tiles
+        # End just inside the neighbouring tiles
         ne_x = tile_size + 1
         ne_y = tile_size + 1
 

@@ -9,10 +9,9 @@
 #include <vector>
 #include <sstream>
 
-#define GLM_ENABLE_EXPERIMENTAL // glm::transform API may change in a future version
 #include <glm/glm.hpp>
+#include <glm/gtc/constants.hpp>
 #include <glm/vec3.hpp>
-#include <glm/ext.hpp>
 
 namespace ndsmath
 {
@@ -322,8 +321,12 @@ private:
         {
             while (true)
             {
-                // Gracefully allow a longitude close enough to 180 to mean "rightmost"
-                if (std::abs(x - lonMax) < lonNdsDelta)
+                // C++ uses pow2 deltas here, while the reference ports use
+                // (2^n - 1) deltas for this snap check. With a strict <
+                // comparison, exact +180/+90 inputs miss the snap threshold
+                // and fail cross-language parity; <= includes that one-step
+                // boundary so they normalize to the right/top edge.
+                if (std::abs(x - lonMax) <= lonNdsDelta)
                 {
                     x = lonMax;
                     break;
@@ -339,7 +342,7 @@ private:
 
             while (true)
             {
-                if (std::abs(y - latMax) < latNdsDelta)
+                if (std::abs(y - latMax) <= latNdsDelta)
                 {
                     y = latMax;
                     break;

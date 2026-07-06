@@ -119,10 +119,16 @@ class ParityVectorsTest {
 			assertEquals(e.getInt("value"), t.value(), "value @" + i);
 			assertEquals(e.getInt("computed_level"), t.level(), "level @" + i);
 			assertEquals(e.getLong("computed_morton_number"), t.mortonNumber(), "morton_number @" + i);
+			assertEquals(e.getLong("grid_x"), t.x(), "grid_x @" + i);
+			assertEquals(e.getLong("grid_y"), t.y(), "grid_y @" + i);
 			assertEquals(e.getLong("size"), t.size(), "size @" + i);
 			assertPair(e.getJSONArray("sw"), t.southWestCorner(), "sw @" + i);
 			assertPair(e.getJSONArray("ne"), t.northEastCorner(), "ne @" + i);
 			assertPair(e.getJSONArray("center"), t.center(), "center @" + i);
+			assertEquals(e.getInt("value"), PackedTileId.fromValue(e.getInt("value")).value(), "fromValue @" + i);
+			assertEquals(e.getInt("value"),
+					PackedTileId.fromTileXY(e.getLong("grid_x"), e.getLong("grid_y"), e.getInt("level")).value(),
+					"fromTileXY @" + i);
 		}
 	}
 
@@ -149,6 +155,22 @@ class ParityVectorsTest {
 			assertEquals(e.getInt("value"), t.value(), "value @" + i);
 			assertEquals(e.getInt("computed_level"), t.level(), "level @" + i);
 			assertEquals(e.getLong("computed_morton_number"), t.mortonNumber(), "morton_number @" + i);
+			assertEquals(e.getInt("value"),
+					PackedTileId.fromNdsCoordinates(e.getLong("x"), e.getLong("y"), e.getInt("level")).value(),
+					"fromNdsCoordinates @" + i);
+		}
+	}
+
+	@Test
+	void packedTileFromWgs84() {
+		JSONArray arr = data.getJSONArray("packed_tile_from_wgs84");
+		for (int i = 0; i < arr.length(); i++) {
+			JSONObject e = arr.getJSONObject(i);
+			PackedTileId t = PackedTileId.fromWgs84(e.getDouble("lon"), e.getDouble("lat"), e.getInt("level"));
+			assertEquals(e.getInt("value"), t.value(), "value @" + i);
+			assertEquals(e.getLong("computed_morton_number"), t.mortonNumber(), "morton_number @" + i);
+			assertEquals(e.getLong("grid_x"), t.x(), "grid_x @" + i);
+			assertEquals(e.getLong("grid_y"), t.y(), "grid_y @" + i);
 		}
 	}
 

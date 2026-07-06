@@ -1,9 +1,12 @@
 # SPDX-License-Identifier: BSD-3-Clause
 from __future__ import annotations
 
+import functools
+
 from .morton import MortonCode
 
 
+@functools.total_ordering
 class PackedTileId:
     """
     Represents a tile in a hierarchical tiling system following the NDS.Live standard.
@@ -122,6 +125,11 @@ class PackedTileId:
         return self._value
 
     @classmethod
+    def from_value(cls, value: int) -> PackedTileId:
+        """Create a PackedTileId from the signed NDS.Live public value."""
+        return cls(value)
+
+    @classmethod
     def from_tile_index(cls, morton_number: int, level: int) -> PackedTileId:
         """
         Create a PackedTileId directly from a tile morton number and level.
@@ -207,6 +215,38 @@ class PackedTileId:
 
         return cls(value)
 
+    @classmethod
+    def from_tile_xy(cls, x: int, y: int, level: int) -> PackedTileId:
+        """Create a tile from tile-grid coordinates at the given level.
+
+        ``x`` is in ``[0, 2^(level+1)-1]`` and ``y`` is in
+        ``[0, 2^level-1]``. Coordinates use the NDS Morton tile-grid order and
+        are inverse to :meth:`x` and :meth:`y`.
+        """
+        if not (0 <= level <= 15):
+            raise ValueError(f"Invalid level {level} (must be 0-15)")
+        max_x = (1 << (level + 1)) - 1
+        max_y = (1 << level) - 1
+        if not (0 <= x <= max_x and 0 <= y <= max_y):
+            raise ValueError(
+                f"Invalid tile coordinates ({x}, {y}) for level {level} "
+                f"(allowed x: 0-{max_x}, y: 0-{max_y})"
+            )
+        return cls.from_tile_index(cls._interleave_coords(x, y, level), level)
+
+    @classmethod
+    def from_nds_coordinates(cls, x: int, y: int, level: int) -> PackedTileId:
+        """Create the tile at ``level`` that contains the given NDS coordinate."""
+        return cls.from_morton_and_level(MortonCode.from_nds_coordinates(x, y), level)
+
+    @classmethod
+    def from_wgs84(cls, longitude: float, latitude: float, level: int) -> PackedTileId:
+        """Create the tile at ``level`` that contains the given WGS84 coordinate."""
+        from .wgs84 import Wgs84
+
+        x, y = Wgs84(longitude, latitude).to_nds_coordinates()
+        return cls.from_nds_coordinates(x, y, level)
+
     def level(self) -> int:
         """
         Level of the tile (0..15)
@@ -251,6 +291,28 @@ class PackedTileId:
         half_size = self.size() // 2
         return x + half_size, y + half_size
 
+    @staticmethod
+    def wgs84_from_nds_coordinates(x: int, y: int) -> tuple[float, float]:
+        """Convert NDS coordinates to lon/lat degrees without edge normalization."""
+        return x * 360.0 / (2**32), y * 180.0 / (2**31)
+
+    def center_wgs84(self) -> tuple[float, float]:
+        """Center of the tile in lon/lat degrees."""
+        return self.wgs84_from_nds_coordinates(*self.center())
+
+    def south_west_wgs84(self) -> tuple[float, float]:
+        """South-west tile corner in lon/lat degrees."""
+        return self.wgs84_from_nds_coordinates(*self.south_west_corner())
+
+    def north_east_wgs84(self) -> tuple[float, float]:
+        """Exclusive north-east tile corner in lon/lat degrees."""
+        return self.wgs84_from_nds_coordinates(*self.north_east_corner())
+
+    def wgs84_size(self) -> tuple[float, float]:
+        """Tile width/height in lon/lat degrees."""
+        tile_size = self.size()
+        return tile_size * 360.0 / (2**32), tile_size * 180.0 / (2**31)
+
     def south_west_corner(self) -> tuple[int, int]:
         """
         Returns the south-west corner of the tile in NDS coordinates.
@@ -273,6 +335,14 @@ class PackedTileId:
         """
         tile_level = self.level()
         return self._value - (1 << (16 + tile_level))
+
+    def x(self) -> int:
+        """Tile-grid X coordinate at this tile's level."""
+        return self._deinterleave_morton(self.morton_number(), self.level())[0]
+
+    def y(self) -> int:
+        """Tile-grid Y coordinate at this tile's level."""
+        return self._deinterleave_morton(self.morton_number(), self.level())[1]
 
     def _validate(self) -> None:
         """
@@ -303,7 +373,8 @@ class PackedTileId:
                 f"exceeds valid range for level {tile_level} (allowed: 0-{max_morton})"
             )
 
-    def _deinterleave_morton(self, morton: int, level: int) -> tuple[int, int]:
+    @staticmethod
+    def _deinterleave_morton(morton: int, level: int) -> tuple[int, int]:
         """
         Extract X and Y coordinates from morton number.
 
@@ -330,7 +401,8 @@ class PackedTileId:
             x |= 1 << level
         return x, y
 
-    def _interleave_coords(self, x: int, y: int, level: int) -> int:
+    @staticmethod
+    def _interleave_coords(x: int, y: int, level: int) -> int:
         """
         Create morton number from X and Y coordinates.
 
@@ -364,7 +436,7 @@ class PackedTileId:
         the westernmost tile returns the easternmost tile at the same level.
 
         Returns:
-            PackedTileId of the western neighbor (with wrapping)
+            PackedTileId of the western neighbour (with wrapping)
         """
         level = self.level()
         morton = self.morton_number()
@@ -390,7 +462,7 @@ class PackedTileId:
         the easternmost tile returns the westernmost tile at the same level.
 
         Returns:
-            PackedTileId of the eastern neighbor (with wrapping)
+            PackedTileId of the eastern neighbour (with wrapping)
         """
         level = self.level()
         morton = self.morton_number()
@@ -413,7 +485,7 @@ class PackedTileId:
         tile returns the northernmost tile at the same level.
 
         Returns:
-            PackedTileId of the southern neighbor (with wrapping)
+            PackedTileId of the southern neighbour (with wrapping)
         """
         level = self.level()
         morton = self.morton_number()
@@ -436,7 +508,7 @@ class PackedTileId:
         tile returns the southernmost tile at the same level.
 
         Returns:
-            PackedTileId of the northern neighbor (with wrapping)
+            PackedTileId of the northern neighbour (with wrapping)
         """
         level = self.level()
         morton = self.morton_number()
@@ -451,15 +523,23 @@ class PackedTileId:
         new_morton = self._interleave_coords(x, y, level)
         return PackedTileId.from_tile_index(new_morton, level)
 
+    def neighbour(self, offset_x: int, offset_y: int) -> PackedTileId:
+        """Return the same-level tile at a relative grid offset, with wrapping."""
+        level = self.level()
+        x, y = self._deinterleave_morton(self.morton_number(), level)
+        x = (x + offset_x) % (1 << (level + 1))
+        y = (y + offset_y) % (1 << level)
+        return PackedTileId.from_tile_index(self._interleave_coords(x, y, level), level)
+
     def print_with_neighbors(self, radius: int = 1) -> None:
         """
-        Print a debug visualization showing this tile and its neighbors.
+        Print a debug visualization showing this tile and its neighbours.
 
-        Shows the current tile's binary encoding first, then displays a grid of neighbors.
+        Shows the current tile's binary encoding first, then displays a grid of neighbours.
         Grid size depends on radius:
-        - radius=1: 3x3 grid (default, current + 8 immediate neighbors)
-        - radius=2: 5x5 grid (current + 24 neighbors within 2 tiles)
-        - radius=3: 7x7 grid (current + 48 neighbors within 3 tiles)
+        - radius=1: 3x3 grid (default, current + 8 immediate neighbours)
+        - radius=2: 5x5 grid (current + 24 neighbours within 2 tiles)
+        - radius=3: 7x7 grid (current + 48 neighbours within 3 tiles)
 
         Args:
             radius (int): How many tiles away to show in each direction (default: 1)
@@ -582,8 +662,8 @@ class PackedTileId:
         # Print grid with directional labels
         border = "+" + ("-" * col_width + "+") * grid_size
 
-        # Print "Neighbors:" label
-        print("Neighbors:")
+        # Print "Neighbours:" label
+        print("Neighbours:")
 
         # North label and border should align with grid (2 spaces for west labels)
         north_label = "North".center(len(border))

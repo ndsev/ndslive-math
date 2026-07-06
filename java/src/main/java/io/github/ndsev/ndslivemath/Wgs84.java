@@ -347,9 +347,9 @@ public final class Wgs84 {
 		double lon1 = Math.toRadians(this.x);
 		double lat2 = Math.toRadians(other.y);
 		double lon2 = Math.toRadians(other.x);
-		double y = Math.sin(lon2 - lon1) * Math.cos(lat2);
-		double x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1);
-		return Math.atan2(y, x);
+		double bearingY = Math.sin(lon2 - lon1) * Math.cos(lat2);
+		double bearingX = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1);
+		return Math.atan2(bearingY, bearingX);
 	}
 
 	@Override

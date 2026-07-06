@@ -1,9 +1,9 @@
 plugins {
     id 'java-library'
     id 'jacoco'
-    id 'com.diffplug.spotless' version '8.7.0'
+    id 'com.diffplug.spotless' version '8.8.0'
     // Publishes to the Maven Central Portal and signs artifacts (in-memory GPG).
-    id 'com.vanniktech.maven.publish' version '0.30.0'
+    id 'com.vanniktech.maven.publish' version '0.37.0'
 }
 
 group = 'live.nds'
@@ -39,7 +39,7 @@ spotless {
 dependencies {
     // org.json: minimal JSON parsing for the parity-vector test suite (test only).
     testImplementation 'org.json:json:20260522'
-    testImplementation platform('org.junit:junit-bom:6.1.0')
+    testImplementation platform('org.junit:junit-bom:6.1.1')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
@@ -78,7 +78,7 @@ check.dependsOn jacocoTestCoverageVerification
 mavenPublishing {
     // Upload to the new Maven Central Portal; sign all artifacts with the
     // in-memory GPG key (ORG_GRADLE_PROJECT_signingInMemoryKey[Password]).
-    publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL)
+    publishToMavenCentral()
     signAllPublications()
     coordinates('live.nds', 'ndslive-math', version.toString())
 

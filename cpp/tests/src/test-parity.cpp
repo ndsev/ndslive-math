@@ -117,6 +117,8 @@ int main()
         CHECK_EQ(t.level(), r["computed_level"].get<int>());
         CHECK_EQ(static_cast<int64_t>(t.mortonNumber()),
                  r["computed_morton_number"].get<int64_t>());
+        CHECK_EQ(static_cast<int64_t>(t.x()), r["grid_x"].get<int64_t>());
+        CHECK_EQ(static_cast<int64_t>(t.y()), r["grid_y"].get<int64_t>());
         CHECK_EQ(static_cast<int64_t>(t.size()), r["size"].get<int64_t>());
         int32_t sx, sy, nx, ny, cx, cy;
         t.southWestCorner().toNdsCoordinates(sx, sy);
@@ -137,6 +139,12 @@ int main()
         }
         CHECK_EQ(static_cast<int64_t>(cx), r["center"][0].get<int64_t>());
         CHECK_EQ(static_cast<int64_t>(cy), r["center"][1].get<int64_t>());
+        CHECK_EQ(static_cast<int64_t>(PackedTileId::fromValue(r["value"].get<int32_t>()).value()),
+                 r["value"].get<int64_t>());
+        CHECK_EQ(static_cast<int64_t>(PackedTileId::fromTileXY(r["grid_x"].get<uint32_t>(),
+                                                               r["grid_y"].get<uint32_t>(), level)
+                                          .value()),
+                 r["value"].get<int64_t>());
     }
 
     // 5. Neighbours (all four directions)
@@ -163,6 +171,23 @@ int main()
         CHECK_EQ(t.level(), r["computed_level"].get<int>());
         CHECK_EQ(static_cast<int64_t>(t.mortonNumber()),
                  r["computed_morton_number"].get<int64_t>());
+        PackedTileId fromNds = PackedTileId::fromNdsCoordinates(static_cast<int32_t>(x),
+                                                                static_cast<int32_t>(y), level);
+        CHECK_EQ(static_cast<int64_t>(fromNds.value()), r["value"].get<int64_t>());
+    }
+
+    // 6b. from_wgs84 (containing tile)
+    for (const auto &r : data["packed_tile_from_wgs84"])
+    {
+        double lon = r["lon"].get<double>();
+        double lat = r["lat"].get<double>();
+        int level = r["level"].get<int>();
+        PackedTileId t = PackedTileId::fromWgs84(lon, lat, level);
+        CHECK_EQ(static_cast<int64_t>(t.value()), r["value"].get<int64_t>());
+        CHECK_EQ(static_cast<int64_t>(t.mortonNumber()),
+                 r["computed_morton_number"].get<int64_t>());
+        CHECK_EQ(static_cast<int64_t>(t.x()), r["grid_x"].get<int64_t>());
+        CHECK_EQ(static_cast<int64_t>(t.y()), r["grid_y"].get<int64_t>());
     }
 
     // 7. getTileIdsForBoundingBox
