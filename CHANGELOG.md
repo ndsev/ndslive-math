@@ -6,19 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+Nothing here changes the library code in any language; it goes out with the
+next release that does.
+
 ### Project
 - Dependabot updates `vitest` and `@vitest/*` in one pull request.
   `@vitest/coverage-v8` requires exactly its own `vitest` version, so separate
   updates failed to install
   ([#88](https://github.com/ndsev/ndslive-math/pull/88),
   [#89](https://github.com/ndsev/ndslive-math/pull/89)).
-
-## [v1.1.1] - 2026-11-02
-
-The library code is unchanged in every language. This release brings the
-build, test and publishing setup up to date.
-
-### Project
 - npm packages are published with Node 24 and npm's trusted publishing,
   without the extra npm upgrade step.
 - Dependabot updates, all for building, testing or CI, so none of them reaches
@@ -44,11 +40,11 @@ build, test and publishing setup up to date.
     [#82](https://github.com/ndsev/ndslive-math/pull/82))
 
 ### C++
-- The CMake project and the vcpkg port say 1.1.1; the port's `SHA512` stays the
-  placeholder until the `v1.1.1` archive exists.
+- The CMake project and the vcpkg port already say 1.1.1, the next release's
+  number; the port's `SHA512` stays the placeholder until that archive exists.
 
 ### JavaScript, Rust
-- `package.json` and `Cargo.toml` say 1.1.1.
+- `package.json` and `Cargo.toml` already say 1.1.1, the next release's number.
 
 ## [v1.1.0] - 2026-07-06
 
