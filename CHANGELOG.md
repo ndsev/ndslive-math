@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Project
+- Dependabot updates `vitest` and `@vitest/*` in one pull request.
+  `@vitest/coverage-v8` requires exactly its own `vitest` version, so separate
+  updates failed to install
+  ([#88](https://github.com/ndsev/ndslive-math/pull/88),
+  [#89](https://github.com/ndsev/ndslive-math/pull/89)).
+
 ## [v1.1.1] - 2026-11-02
 
 The library code is unchanged in every language. This release brings the
