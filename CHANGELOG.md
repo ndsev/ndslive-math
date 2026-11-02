@@ -4,6 +4,43 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [v1.1.1] - 2026-11-02
+
+The library code is unchanged in every language. This release brings the
+build, test and publishing setup up to date.
+
+### Project
+- npm packages are published with Node 24 and npm's trusted publishing,
+  without the extra npm upgrade step.
+- Dependabot updates, all for building, testing or CI, so none of them reaches
+  users of the packages:
+  - GitHub Actions: `setup-go`, `setup-node` and `setup-python` 7,
+    `setup-java` 6
+    ([#59](https://github.com/ndsev/ndslive-math/pull/59),
+    [#61](https://github.com/ndsev/ndslive-math/pull/61),
+    [#65](https://github.com/ndsev/ndslive-math/pull/65),
+    [#71](https://github.com/ndsev/ndslive-math/pull/71))
+  - Java: Gradle wrapper 9.8.2, Spotless 8.10.4, and for the tests JUnit 6.1.3
+    and `org.json` 20260814
+    ([#79](https://github.com/ndsev/ndslive-math/pull/79),
+    [#86](https://github.com/ndsev/ndslive-math/pull/86),
+    [#80](https://github.com/ndsev/ndslive-math/pull/80),
+    [#67](https://github.com/ndsev/ndslive-math/pull/67),
+    [#69](https://github.com/ndsev/ndslive-math/pull/69))
+  - JavaScript: eslint 10.13.0, typescript-eslint 8.72.0, prettier 3.9.10
+    ([#84](https://github.com/ndsev/ndslive-math/pull/84),
+    [#85](https://github.com/ndsev/ndslive-math/pull/85),
+    [#81](https://github.com/ndsev/ndslive-math/pull/81),
+    [#87](https://github.com/ndsev/ndslive-math/pull/87),
+    [#82](https://github.com/ndsev/ndslive-math/pull/82))
+
+### C++
+- The CMake project and the vcpkg port say 1.1.1; the port's `SHA512` stays the
+  placeholder until the `v1.1.1` archive exists.
+
+### JavaScript, Rust
+- `package.json` and `Cargo.toml` say 1.1.1.
+
 ## [v1.1.0] - 2026-07-06
 
 ### Added
