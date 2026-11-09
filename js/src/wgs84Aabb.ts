@@ -14,8 +14,9 @@ import { Wgs84 } from './wgs84.js';
  * *not* normalized).
  *
  * The geometry layer deliberately uses the power-of-two NDS deltas
- * (`Wgs84.LON_NDS_DELTA_POW2` etc.) so antimeridian handling and
- * tile-from-index construction match the C++ reference bit-for-bit.
+ * (`Wgs84.LON_NDS_DELTA_POW2` etc.) for antimeridian handling and tile-from-index
+ * construction, as the C++ reference does. Constructor normalization still
+ * follows this port's Wgs84, so the shared constants alone do not ensure parity.
  */
 export class Wgs84Aabb {
   private readonly _sw: Wgs84;
@@ -26,7 +27,8 @@ export class Wgs84Aabb {
    *
    * After storing, if the box is {@link Wgs84Aabb.valid}, the height is clamped
    * so the top never exceeds +90 degrees (`excessHeight` correction). An
-   * invalid box stores `size` unmodified.
+   * invalid box stores `size` unmodified. Both arguments are retained by reference;
+   * the height clamp mutates the supplied size, and later caller edits affect the box.
    *
    * @param sw South-west corner. Defaults to `Wgs84(0, 0)`.
    * @param size Raw `(dx, dy)` extent. Defaults to `Vec2(0, 0)`.
@@ -46,13 +48,14 @@ export class Wgs84Aabb {
   }
 
   /**
-   * Construct an AABB covering a tile (Path A: via {@link Wgs84.fromMortonCode}).
+   * Construct an AABB from a tile (via {@link Wgs84.fromMortonCode}).
    *
-   * Mirrors the C++ `Wgs84AABB(PackedTileId)` constructor: the SW/NE NDS
-   * corners are wrapped into {@link MortonCode} and converted via
-   * {@link Wgs84.fromMortonCode}, so both axes are scaled by `360 / 2^32` (NOT
-   * `fromNdsCoordinates`, which scales latitude by `180 / 2^31` and would
-   * diverge from C++).
+   * Like the C++ `Wgs84AABB(PackedTileId)` constructor, this wraps the SW/NE
+   * NDS corners into {@link MortonCode} and converts them to WGS84. Both axes
+   * use the same scale: `360 / 2^32 = 180 / 2^31`.
+   * At the world edge, the NE corner can wrap to the opposite side. Taking
+   * the absolute corner difference then produces an almost-world-wide box
+   * instead of the tile's width.
    *
    * @param tileId The tile whose extent the AABB should cover.
    */
@@ -70,12 +73,15 @@ export class Wgs84Aabb {
   /**
    * Construct an AABB from a center, a soft tile-count limit, and a level.
    *
+   * The target area is softLimit tile footprints, not a cap on enumerated tiles.
+   * Pole clamping can move the final center.
+   *
    * @param center The center coordinate of the box.
-   * @param softLimit Approximate maximum number of tiles to cover.
-   * @param level NDS tile level.
+   * @param softLimit Nonnegative target area in tile footprints.
+   * @param level NDS tile level (0..15).
    */
   static fromCenterAndTileLimit(center: Wgs84, softLimit: number, level: number): Wgs84Aabb {
-    const targetAspectRatio = 0.7; // approx. height / width
+    const targetAspectRatio = 0.7; // height/width is this factor squared
     const tileWidth = 180.0 / 2 ** level;
     const targetSize = Math.sqrt(softLimit) * tileWidth;
     const targetSizeVec = new Vec2(targetSize / targetAspectRatio, targetSize * targetAspectRatio);
@@ -93,7 +99,7 @@ export class Wgs84Aabb {
     return this._size.x >= 0 && this._size.y >= 0 && this._size.x <= 360.0 && this._size.y <= 180.0;
   }
 
-  /** The south-west corner. */
+  /** The south-west corner. Returns the stored point, so changes to it affect the box. */
   sw(): Wgs84 {
     return this._sw;
   }
@@ -118,7 +124,7 @@ export class Wgs84Aabb {
     return [this.sw(), this.se(), this.ne(), this.nw()];
   }
 
-  /** The raw `(dx, dy)` size of the box. */
+  /** The raw `(dx, dy)` size of the box. Returns the stored, mutable vector. */
   size(): Vec2 {
     return this._size;
   }
@@ -157,10 +163,11 @@ export class Wgs84Aabb {
   }
 
   /**
-   * The Mercator-projection vertical stretch factor.
+   * The Mercator-projection vertical stretch factor, averaged over the box.
    *
    * Transcendental; not part of the cross-language parity vectors (asserted
-   * only for finiteness in unit tests).
+   * only for finiteness in unit tests). Requires nonzero height and finite
+   * projected latitudes.
    */
   avgMercatorStretch(): number {
     const latTop = toRadians(this._sw.latitude() + this._size.y);
@@ -177,8 +184,8 @@ export class Wgs84Aabb {
    *
    * Mirrors the C++ `numTileIds`: `tileWidth = 180 / float(2^lv)` and a
    * component-wise `ceil` of `size / tileWidth`. For an invalid (negative-size)
-   * box the product can be negative; this matches the Python reference (which
-   * keeps the signed product rather than the C++ `uint32_t` wrap-around).
+   * box the product can be negative. This method retains the signed product;
+   * the C++ implementation clamps nonpositive counts to zero.
    */
   numTileIds(lv: number): number {
     const tileWidth = 180.0 / 2 ** lv;
@@ -206,7 +213,8 @@ export class Wgs84Aabb {
     return 15;
   }
 
-  /** Whether `point` lies within the box (inclusive on all edges). */
+  /** Whether `point` lies within the box (inclusive on all edges).
+   * Split anti-meridian boxes first; longitude is not unwrapped here. */
   contains(point: Wgs84): boolean {
     return (
       point.longitude() >= this._sw.longitude() &&
@@ -219,9 +227,10 @@ export class Wgs84Aabb {
   /**
    * Axis-aligned interval-overlap test against another box.
    *
-   * This is the *fixed* test: a pure interval overlap on longitude and
+   * This is the fixed test: a pure interval overlap on longitude and
    * latitude. Edge-touching counts as intersecting; it correctly detects
    * cross-shaped overlaps and never recurses on disjoint boxes.
+   * Split anti-meridian boxes before comparing; longitude is not unwrapped here.
    */
   intersects(other: Wgs84Aabb): boolean {
     const aMaxX = this._sw.longitude() + this._size.x;

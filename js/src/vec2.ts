@@ -15,6 +15,7 @@
 export class Vec2 {
   /** The longitude/horizontal component. */
   x: number;
+
   /** The latitude/vertical component. */
   y: number;
 

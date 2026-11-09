@@ -45,9 +45,11 @@ struct NdsBoundingBox
         return NdsBoundingBox(swX, swY, neX, neY);
     }
 
-    //! Create bounding box from a tile ID.
+    //! Create a bounding box from a tile ID.
+    //! Uses the tile's south-west and exclusive north-east coordinates.
+    //! World-edge wrapping can invert these bounds. Use boundingBoxFromTileIds()
+    //! for inclusive interior bounds suitable for tile enumeration.
     //! @param tile PackedTileId to create bbox from
-    //! @return NdsBoundingBox covering the tile's area
     static NdsBoundingBox fromTile(const PackedTileId &tile)
     {
         int32_t swX, swY, neX, neY;
@@ -57,7 +59,8 @@ struct NdsBoundingBox
     }
 
     //! Check if this bbox intersects (overlaps) with another.
-    //! Two bounding boxes intersect if they share any area.
+    //! Closed intervals include contact along an edge or at one point. Callers must
+    //! supply ordered bounds in each coordinate; wraparound is not handled here.
     //! @param other Another bounding box to check against
     //! @return True if the bounding boxes overlap
     bool intersects(const NdsBoundingBox &other) const

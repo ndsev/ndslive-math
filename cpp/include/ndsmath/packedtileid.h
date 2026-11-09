@@ -18,24 +18,26 @@ namespace ndsmath
 class PackedTileId
 {
 public:
-    //! Constructor with no value.
+    //! Construct the invalid zero sentinel; validate before using geometric operations.
     explicit PackedTileId();
 
-    //! Constructor.
+    //! Store raw packed bits without validation; fromValue() validates external signed IDs.
     explicit PackedTileId(uint32_t value);
 
     //! Create a PackedTileId from the signed NDS.Live public value.
     //! Level 15 values are negative and are reinterpreted as their unsigned bit pattern.
+    //! Throws std::out_of_range when the packed value is invalid.
     static PackedTileId fromValue(int32_t value);
 
     //! Create a PackedTileId that contains the point encoded by a MortonCode.
     //! This finds the tile at the specified level containing the full-precision
-    //! NDS coordinates. The resulting mortonNumber() will NOT equal the input
-    //! mortonCode.value(). Use fromTileIndex() if you need a specific morton number.
+    //! NDS coordinates. The resulting mortonNumber() is a tile-grid index, so
+    //! do not expect it to preserve the full-precision input mortonCode.value().
+    //! Use fromTileIndex() if you need a specific tile Morton number.
     PackedTileId(MortonCode mortonCode, const int level);
 
     //! Create a PackedTileId directly from a tile morton number and level.
-    //! @param mortonNumber The tile's morton number (0 to 4^level - 1)
+    //! @param mortonNumber The tile's Morton number (0 to 2^(2*level+1) - 1)
     //! @param level Tile level (0-15)
     //! @return PackedTileId with the specified morton number at the given level
     static PackedTileId fromTileIndex(uint32_t mortonNumber, int level);
@@ -51,16 +53,16 @@ public:
     //! Create a PackedTileId containing the given WGS84 coordinate.
     static PackedTileId fromWgs84(double longitude, double latitude, int level);
 
-    ///! Checks if the internal value represents an actual PackedTileId or not
+    //! Check whether the internal value represents a valid PackedTileId.
+    //! Checks the level marker and the Morton-number range for that level.
     bool isValid() const;
 
 public:
-    //! Get the morton code of the south west corner
-    //! from a the tile id.
+    //! Get the full-precision Morton code of the tile's south-west corner.
     MortonCode southWestCorner() const;
 
-    //! Get the morton code of the north east corner
-    //! from a the tile id.
+    //! Get the exclusive north-east corner as a Morton code. Encoding wraps
+    //! world-edge maxima; northEastWgs84() retains the unwrapped +180/+90 values.
     MortonCode northEastCorner() const;
 
     //! Get the tile id left from the current tile.
@@ -144,6 +146,9 @@ private:
 using PackedTileIds = std::vector<PackedTileId>;
 
 //! Get all tile IDs that intersect with a bounding box defined by NDS coordinates.
+//! Bounds must be ordered and are inclusive. Tiles are returned row by row (Y then X).
+//! Split dateline-crossing bounds first. There is no result cap; callers must bound
+//! the requested area and level before allocating the complete vector.
 //! @param swX South-west corner X coordinate (longitude) in NDS coordinates
 //! @param swY South-west corner Y coordinate (latitude) in NDS coordinates
 //! @param neX North-east corner X coordinate (longitude) in NDS coordinates

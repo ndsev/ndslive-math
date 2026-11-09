@@ -17,7 +17,9 @@ namespace ndsmath
 {
 class MortonCode;
 
-//! Template class representing WGS84 coordinates (in degrees).
+//! Template class representing WGS84 coordinates (longitude/latitude in degrees).
+//! Construction and arithmetic normalize coordinates; use raw vectors for extents
+//! that must not wrap or reflect.
 template <typename T> class Wgs84 : public glm::vec<2, T, glm::highp>
 {
 public:
@@ -83,7 +85,8 @@ public:
         yOut = static_cast<int32_t>(std::floor((y / 180.0) * std::ldexp(1.0, 31)));
     }
 
-    //! Distance to another wgs coordinate in meters.
+    //! Distance to another WGS84 coordinate in meters.
+    //! Uses great-circle distance on a sphere of EARTH_RADIUS_IN_METERS.
     T distanceTo(const Wgs84 &other) const
     {
         const double dLat = glm::radians(other.latitude() - y);
@@ -95,6 +98,8 @@ public:
         return static_cast<T>(EARTH_RADIUS_IN_METERS * c);
     }
 
+    //! Initial bearing from this point toward other, clockwise from north in radians.
+    //! For example, (0, 0).bearingFrom((90, 0)) is +pi/2 (east).
     T bearingFrom(const Wgs84 &other) const
     {
         const T lat1f = glm::radians(y);
@@ -108,6 +113,8 @@ public:
         return glm::atan(y, x);
     }
 
+    //! Apply a planar longitude/latitude ray-crossing test to a simple ring.
+    //! Fewer than three vertices yield false; split dateline-crossing rings first.
     bool isInsidePolygon(const std::vector<Wgs84<T>> &polygon) const
     {
         bool isInside = false;
@@ -144,6 +151,7 @@ public:
         return Wgs84(lonMultiplier * static_cast<T>(x), latMultiplier * static_cast<T>(y));
     }
 
+    //! Decode NDS coordinates at the common angular scale 360/2^32 == 180/2^31.
     static Wgs84 fromMortonCode(const MortonCode &mortonCode)
     {
         const T bitScaling = 360.0 / (std::numeric_limits<uint32_t>::max() + 1.0);
@@ -154,6 +162,7 @@ public:
     }
 
     //! Convert degree distances to meters at a given latitude.
+    //! Approximates 111320 m/degree, with a cosine factor for longitude distances.
     //! @param lonDegrees Longitude distance in degrees
     //! @param latDegrees Latitude distance in degrees
     //! @param atLatitude The latitude where measurement is taken (affects longitude distance)
@@ -184,6 +193,7 @@ public:
         return degreesToMeters(lonDegrees, latDegrees, atLatitude);
     }
 
+    //! Map onto a sphere of refRadius: +Y is north and +Z is longitude zero at the equator.
     glm::dvec3 toEuclidean(T refRadius = EARTH_RADIUS_IN_METERS) const
     {
         const T theta = y * glm::pi<double>() / 180.;
@@ -192,6 +202,7 @@ public:
                 refRadius * std::cos(theta) * std::cos(phi)};
     }
 
+    //! Move in place along a spherical great circle; bearing is clockwise from north in radians.
     Wgs84<T> &move(T distanceInMeters, T bearing)
     {
         T latitudeInRad = glm::radians(y);
@@ -215,6 +226,8 @@ public:
         return *this;
     }
 
+    //! Return an angular offset obtained by moving distanceInMeters from this point,
+    //! 90 degrees clockwise from the bearing toward from. The result is in degrees.
     Wgs84<T> normal(Wgs84 const &from, T distanceInMeters = static_cast<T>(1.)) const
     {
         auto bearing = bearingFrom(from);

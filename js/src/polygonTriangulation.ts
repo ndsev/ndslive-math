@@ -13,12 +13,11 @@ import { Wgs84Polygon } from './wgs84Polygon.js';
  * array of {@link PartitionVertex} (`previous` / `next` integer indices) to
  * avoid manual memory management while reproducing the same traversal.
  *
- * NOTE: the *set* of output triangles is deterministic, but the ordering of
- * triangles and the rotation of each triangle's three vertices are
- * implementation-specific (driven by the "most extruded ear" tie-break and
- * floating-point `angle` comparisons). Triangulation output is therefore
- * **not** part of the cross-language parity vectors; tests assert structure
- * (type and vertex count) only.
+ * The ordering of triangles and the rotation of each triangle's three vertices
+ * are implementation-specific (driven by the "most extruded ear" tie-break
+ * and floating-point `angle` comparisons). Triangulation output is therefore
+ * not part of the cross-language parity vectors. Tests check the resulting
+ * geometry and structure rather than requiring identical triangle ordering.
  */
 
 /** A node in the ear-clipping ring (index-linked replacement for pointers). */
@@ -38,7 +37,9 @@ export class PolygonTriangulation {
    * Triangulate a CCW simple polygon into a `TRIANGLE_LIST`.
    *
    * @param polygon A `SIMPLE_POLYGON` with at least 3 vertices, in
-   *   counter-clockwise order.
+   *   counter-clockwise order, without holes or dateline crossings. Three
+   *   vertices are copied without a winding check. Output reuses the input
+   *   Wgs84 objects; their coordinates are not modified here.
    * @returns A {@link Wgs84Polygon} of type `TRIANGLE_LIST` on success
    *   (`3 * (n - 2)` vertices), or a polygon of type `UNKNOWN` on failure
    *   (wrong type, too few vertices, or no ear found).
@@ -79,7 +80,7 @@ export class PolygonTriangulation {
     for (let i = 0; i < numVertices - 3; i++) {
       let earFound = false;
 
-      // Find the most extruded ear (largest angle; first wins ties).
+      // Find the most extruded ear (largest cosine angle score; first wins ties).
       for (let j = 0; j < numVertices; j++) {
         if (!vertices[j].isActive || !vertices[j].isEar) {
           continue;
@@ -129,8 +130,8 @@ export class PolygonTriangulation {
    * Vector-normalize `p`; `(0, 0)` if it has zero length.
    *
    * Mirrors the C++ `normalize`: the unit vector is wrapped back into a
-   * {@link Wgs84} (which re-normalizes as a coordinate). Odd, but part of the
-   * reference behavior.
+   * {@link Wgs84} (which re-normalizes as a coordinate). Odd, but part of
+   * the reference behavior.
    */
   private normalize(p: Wgs84): Wgs84 {
     const n = Math.sqrt(p.x * p.x + p.y * p.y);
@@ -145,7 +146,7 @@ export class PolygonTriangulation {
     return (p3.y - p1.y) * (p2.x - p1.x) - (p3.x - p1.x) * (p2.y - p1.y) > 0.0;
   }
 
-  /** Whether point `p` lies inside triangle `(p1, p2, p3)`. */
+  /** Whether point `p` lies inside triangle `(p1, p2, p3)`, including its boundary (CCW winding). */
   private isInside(p1: Wgs84, p2: Wgs84, p3: Wgs84, p: Wgs84): boolean {
     return !this.isConvex(p1, p, p2) && !this.isConvex(p2, p, p3) && !this.isConvex(p3, p, p1);
   }

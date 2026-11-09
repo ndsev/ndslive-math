@@ -22,8 +22,8 @@ class Vec2:
     """A raw, un-normalized 2D vector ``(x, y)``.
 
     ``x`` is the longitude/horizontal component, ``y`` the latitude/vertical
-    component. Supports component-wise ``+`` / ``-`` / ``*`` (with another
-    :class:`Vec2`) and scalar multiplication.
+    component. Supports component-wise addition/subtraction with another
+    :class:`Vec2` and multiplication by a scalar.
     """
 
     x: float = 0.0

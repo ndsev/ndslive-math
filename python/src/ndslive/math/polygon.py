@@ -55,7 +55,7 @@ class Polygon:
 
         Args:
             polygon_type: The polygon topology. Defaults to ``UNKNOWN``.
-            vertices: Optional initial vertices (copied).
+            vertices: Optional initial list (shallow-copied; Wgs84 objects remain shared).
         """
         self._polygon_type = polygon_type
         self._vertices: list[Wgs84] = list(vertices) if vertices is not None else []
@@ -69,7 +69,7 @@ class Polygon:
         self._vertices.extend(vertices)
 
     def __getitem__(self, index: int) -> Wgs84:
-        """Array subscript access to a vertex (no bounds check, like C++)."""
+        """Read a vertex using Python list indexing, including negative indices and IndexError."""
         return self._vertices[index]
 
     def __setitem__(self, index: int, value: Wgs84) -> None:
