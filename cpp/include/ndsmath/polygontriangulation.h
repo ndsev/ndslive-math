@@ -35,10 +35,11 @@ private:
         PartitionVertex *next = nullptr;
     };
 
-    //! Test whether the three-point turn has a strictly positive planar cross product.
+    //! Check whether p1, p2 and p3 form a convex turn (positive planar cross product).
     bool isConvex(const HighPrecWgs84 &p1, const HighPrecWgs84 &p2, const HighPrecWgs84 &p3);
 
-    //! Test containment in a counter-clockwise triangle, including its boundary.
+    //! Check whether p is inside the counter-clockwise triangle (p1, p2, p3),
+    //! including its boundary.
     bool isInside(const HighPrecWgs84 &p1, const HighPrecWgs84 &p2, const HighPrecWgs84 &p3,
                   const HighPrecWgs84 &p);
 
@@ -49,7 +50,7 @@ private:
     //! Normalize a point treated as a vector; return (0, 0) for zero length.
     HighPrecWgs84 normalize(const HighPrecWgs84 &p);
 
-    //! Recompute the turn, cosine angle score and ear occupancy after ring neighbours change.
+    //! Update a vertex's convexity, angle score and ear status after its neighbours change.
     void updateVertex(PartitionVertex *v, PartitionVertex *vertices, int numVertices);
 
 }; // class PolygonTriangulation

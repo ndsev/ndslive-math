@@ -20,9 +20,15 @@ export class Wgs84 {
   /** Latitude quantization step of the NDS coordinate grid (degrees). */
   static readonly LAT_NDS_DELTA = 180 / (2 ** 31 - 1);
 
-  // Geometry uses power-of-two NDS units and the C++ world-edge maxima.
-  // normalize() retains separate (2^n - 1) steps for its boundary snap;
-  // keep those compatibility values distinct from the geometry grid.
+  // Geometry-layer constants mirroring the C++ `Wgs84<double>` static members
+  // (`cpp/include/ndsmath/wgs84.h`). These intentionally use a power-of-two
+  // denominator (`2^32` / `2^31`) rather than the `LON_NDS_DELTA` /
+  // `LAT_NDS_DELTA` above (which use `2^32 - 1` / `2^31 - 1`). The
+  // difference shows up in the 10th significant digit, but matters for
+  // `Wgs84Aabb` antimeridian handling and tile-from-index construction:
+  // those calculations use the power-of-two grid of the C++ geometry layer.
+  // Do NOT reuse `LON_NDS_DELTA` / `LAT_NDS_DELTA` here; normalization
+  // keeps its separate steps for snapping coordinates at the world boundary.
   /** Longitude quantization step using a power-of-two denominator. */
   static readonly LON_NDS_DELTA_POW2 = 360.0 / 2 ** 32; // == 8.381903171539307e-08
 
@@ -155,9 +161,11 @@ export class Wgs84 {
   /**
    * Construct a {@link Wgs84} point from a {@link MortonCode}.
    *
-   * Decode the NDS integer pair, then use the common angular scale
-   * `360 / 2^32 = 180 / 2^31`. This is the same scale as
-   * {@link Wgs84.fromNdsCoordinates}, followed by constructor normalization.
+   * Mirrors the C++ `Wgs84<double>::fromMortonCode`
+   * (`cpp/include/ndsmath/wgs84.h`), also used by the tile-to-AABB conversion.
+   * Both NDS coordinates use the same angular scale: `360 / 2^32 = 180 / 2^31`.
+   * This equals the scale in {@link Wgs84.fromNdsCoordinates}; constructing
+   * the point then normalizes it.
    *
    * @param mortonCode A MortonCode encoding NDS integer coordinates.
    * @returns Wgs84 point with longitude / latitude in degrees and `alt = 0`.
@@ -169,7 +177,8 @@ export class Wgs84 {
   }
 
   /**
-   * Approximate degree extents using 111320 m/degree and a longitude cosine factor.
+   * Convert degree distances to meters at a given latitude.
+   * Approximates 111320 m/degree, with a cosine factor for longitude distances.
    *
    * Longitude distance varies by latitude (shrinks toward poles); latitude
    * distance is constant.
@@ -270,22 +279,22 @@ export class Wgs84 {
     return isClose(this.x, other.x) && isClose(this.y, other.y);
   }
 
-  /** Add longitude/latitude, normalizing the new point and resetting altitude to zero. */
+  /** Component-wise addition of longitude/latitude; returns a new, normalized point with zero altitude. */
   add(other: Wgs84): Wgs84 {
     return new Wgs84(this.x + other.x, this.y + other.y);
   }
 
-  /** Subtract longitude/latitude, normalizing the new point and resetting altitude to zero. */
+  /** Component-wise subtraction of longitude/latitude; returns a new, normalized point with zero altitude. */
   sub(other: Wgs84): Wgs84 {
     return new Wgs84(this.x - other.x, this.y - other.y);
   }
 
-  /** Multiply longitude/latitude, normalizing the new point and resetting altitude to zero. */
+  /** Component-wise multiplication of longitude/latitude; returns a new, normalized point with zero altitude. */
   mul(other: Wgs84): Wgs84 {
     return new Wgs84(this.x * other.x, this.y * other.y);
   }
 
-  /** Divide longitude/latitude, normalizing the new point and resetting altitude to zero. */
+  /** Component-wise division of longitude/latitude; returns a new, normalized point with zero altitude. */
   div(other: Wgs84): Wgs84 {
     return new Wgs84(this.x / other.x, this.y / other.y);
   }

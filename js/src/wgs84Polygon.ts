@@ -123,7 +123,8 @@ export class Wgs84Polygon extends Polygon {
   }
 
   /**
-   * Test collision of convex polygons with at least 3 vertices using planar SAT.
+   * Whether this polygon collides with `other` (Separating-Axis Theorem).
+   * Requires convex polygons with at least 3 vertices; calculations are planar.
    * Edge contact counts as collision. Concavity and validity are not checked;
    * split dateline crossings and decompose concave inputs before calling.
    *
@@ -140,8 +141,8 @@ export class Wgs84Polygon extends Polygon {
     if (this.areSeparate(other, this)) {
       return false;
     }
-    // The second axis set comes from the other polygon; each test still
-    // projects both polygons onto that axis.
+    // NOTE: the C++ reference passes (other, other) here — axes come from
+    // `other`'s edges, projecting both `this` and `other`. Preserved exactly.
     if (this.areSeparate(other, other)) {
       return false;
     }

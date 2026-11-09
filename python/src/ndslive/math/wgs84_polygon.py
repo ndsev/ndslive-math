@@ -114,8 +114,9 @@ class Wgs84Polygon(Polygon):
         return Wgs84(med_lon, med_lat)
 
     def collides_with(self, other: Wgs84Polygon) -> bool:
-        """Test collision of convex polygons with at least 3 vertices using planar SAT.
+        """Whether this polygon collides with ``other`` (Separating-Axis Theorem).
 
+        Requires convex polygons with at least 3 vertices; calculations are planar.
         Edge contact counts as collision. Concavity and validity are not checked;
         split dateline crossings and decompose concave inputs before calling.
 
@@ -129,8 +130,8 @@ class Wgs84Polygon(Polygon):
             return True
         if self._are_separate(other, self):
             return False
-        # The second axis set comes from the other polygon; each test still
-        # projects both polygons onto that axis.
+        # NOTE: the C++ reference passes (other, other) here — axes come from
+        # ``other``'s edges, projecting both ``self`` and ``other``. Preserved exactly.
         if self._are_separate(other, other):
             return False
         return True

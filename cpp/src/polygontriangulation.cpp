@@ -77,7 +77,7 @@ PolygonTriangulation::triangulateByEarClipping(const HighPrecWgs84Polygon &polyg
 
     auto numVertices = polygon.vertices().size();
 
-    // A three-vertex input already has the requested triangle-list shape.
+    // Nothing to do for a single triangle.
     if (numVertices == 3)
     {
         result.addVertices(polygon.vertices());
@@ -102,7 +102,7 @@ PolygonTriangulation::triangulateByEarClipping(const HighPrecWgs84Polygon &polyg
     {
         bool earFound = false;
 
-        // Prefer the largest cosine angle score; the first candidate wins ties.
+        // Find the most extruded ear (largest cosine angle score; first wins ties).
         for (auto j = 0; j < numVertices; j++)
         {
             if (!vertices[j].isActive || !vertices[j].isEar)

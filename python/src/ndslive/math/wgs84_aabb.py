@@ -7,8 +7,9 @@ specialized to ``double``. The box is stored as a south-west corner
 size (a ``(dx, dy)`` extent that is *not* normalized).
 
 The geometry layer deliberately uses the power-of-two NDS deltas
-(``Wgs84.LON_NDS_DELTA_POW2`` etc.) and world-edge constants used by the
-C++ geometry APIs. Constructor normalization still follows this port's Wgs84.
+(``Wgs84.LON_NDS_DELTA_POW2`` etc.) for antimeridian handling and tile-from-index
+construction, as the C++ reference does. Constructor normalization still follows
+this port's Wgs84, so the shared constants alone do not ensure parity.
 """
 
 from __future__ import annotations
@@ -48,11 +49,14 @@ class Wgs84Aabb:
 
     @classmethod
     def from_tile(cls, tile_id: PackedTileId) -> Wgs84Aabb:
-        """Build an AABB from normalized tile corners via ``from_morton_code``.
+        """Construct an AABB from a tile (via ``from_morton_code``).
 
-        The scale is the same on both axes: ``360 / 2^32 = 180 / 2^31``.
-        Raw corner differences determine size, so wrapped world-edge corners
-        do not preserve an unwrapped tile extent.
+        Like the C++ ``Wgs84AABB(PackedTileId)`` constructor, this wraps the SW/NE
+        NDS corners into :class:`~ndslive.math.morton.MortonCode` and converts
+        them to WGS84. Both axes use the same scale: ``360 / 2^32 = 180 / 2^31``.
+        At the world edge, the NE corner can wrap to the opposite side. Taking
+        the absolute corner difference then produces an almost-world-wide box
+        instead of the tile's width.
 
         Args:
             tile_id: The tile whose extent the AABB should cover.
@@ -103,7 +107,7 @@ class Wgs84Aabb:
         )
 
     def sw(self) -> Wgs84:
-        """Borrow the stored mutable south-west corner."""
+        """The south-west corner. Returns the stored point, so changes to it affect the box."""
         return self._sw
 
     def ne(self) -> Wgs84:
@@ -123,7 +127,7 @@ class Wgs84Aabb:
         return [self.sw(), self.se(), self.ne(), self.nw()]
 
     def size(self) -> Vec2:
-        """Borrow the stored mutable raw ``(dx, dy)`` extent."""
+        """The raw ``(dx, dy)`` size of the box. Returns the stored, mutable vector."""
         return self._size
 
     def contains_anti_meridian(self) -> bool:
@@ -156,9 +160,11 @@ class Wgs84Aabb:
         return None
 
     def avg_mercator_stretch(self) -> float:
-        """Average the projection's vertical stretch over a nonzero latitude span.
+        """The Mercator-projection vertical stretch factor, averaged over the box.
 
-        Callers must avoid singular projection latitudes.
+        Transcendental; not part of the cross-language parity vectors (asserted
+        only for finiteness in unit tests). Requires nonzero height and finite
+        projected latitudes.
         """
         lat_top = math.radians(self._sw.latitude() + self._size.y)
         lat_bottom = math.radians(self._sw.latitude())
@@ -193,7 +199,8 @@ class Wgs84Aabb:
         return 15
 
     def contains(self, point: Wgs84) -> bool:
-        """Test inclusive raw coordinate intervals; split anti-meridian boxes first."""
+        """Whether ``point`` lies within the box (inclusive on all edges).
+        Split anti-meridian boxes first; longitude is not unwrapped here."""
         return (
             point.longitude() >= self._sw.longitude()
             and point.longitude() <= self._sw.longitude() + self._size.x
@@ -204,8 +211,10 @@ class Wgs84Aabb:
     def intersects(self, other: Wgs84Aabb) -> bool:
         """Axis-aligned interval-overlap test against another box.
 
-        Edge contact counts as intersection. Longitude is not unwrapped here;
-        split anti-meridian boxes before comparing them.
+        This is the fixed test: a pure interval overlap on longitude and
+        latitude. Edge-touching counts as intersecting; it correctly detects
+        cross-shaped overlaps and never recurses on disjoint boxes.
+        Split anti-meridian boxes before comparing; longitude is not unwrapped here.
         """
         a_max_x = self._sw.longitude() + self._size.x
         a_max_y = self._sw.latitude() + self._size.y

@@ -55,7 +55,7 @@ public:
     {
     }
 
-    //! Append one vertex.
+    //! Add a vertex.
     void addVertex(const Position &position) { vertices_.push_back(position); }
 
     //! Add a list of vertices.
@@ -79,13 +79,14 @@ public:
     //! Set the polygon type.
     void setType(PolygonType polygonType) { polygonType_ = polygonType; }
 
-    //! Base container check: at least one vertex, without topology validation.
+    //! Is this a valid polygon? The base class only checks for at least one vertex;
+    //! it does not validate the polygon's topology.
     virtual bool isValid() const { return !vertices_.empty(); }
 
-    //! Borrow the stored vertices; references/iterators follow the container's invalidation rules.
+    //! Get the list of vertices.
     const Vector &vertices() const { return vertices_; }
 
-    //! Borrow the mutable vertex container; edits directly change the polygon.
+    //! Get the mutable list of vertices.
     Vector &vertices() { return vertices_; }
 
     //! Get the orientation of the polygon. Only works for simple polygons

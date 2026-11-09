@@ -102,7 +102,7 @@ export class Polygon {
     return this.verts.length > 0;
   }
 
-  /** Return the stored mutable list; edits directly change this polygon. */
+  /** Get the (mutable) list of vertices. */
   vertices(): Wgs84[] {
     return this.verts;
   }

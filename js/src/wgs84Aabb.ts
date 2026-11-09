@@ -14,8 +14,9 @@ import { Wgs84 } from './wgs84.js';
  * *not* normalized).
  *
  * The geometry layer deliberately uses the power-of-two NDS deltas
- * (`Wgs84.LON_NDS_DELTA_POW2` etc.) and world-edge constants used by the
- * C++ geometry APIs. Constructor normalization still follows this port's Wgs84.
+ * (`Wgs84.LON_NDS_DELTA_POW2` etc.) for antimeridian handling and tile-from-index
+ * construction, as the C++ reference does. Constructor normalization still
+ * follows this port's Wgs84, so the shared constants alone do not ensure parity.
  */
 export class Wgs84Aabb {
   private readonly _sw: Wgs84;
@@ -47,10 +48,14 @@ export class Wgs84Aabb {
   }
 
   /**
-   * Build an AABB from normalized tile corners via {@link Wgs84.fromMortonCode}.
-   * The coordinate scale is the same on both axes: `360 / 2^32 = 180 / 2^31`.
-   * Raw corner differences determine size, so wrapped world-edge corners do
-   * not preserve an unwrapped tile extent.
+   * Construct an AABB from a tile (via {@link Wgs84.fromMortonCode}).
+   *
+   * Like the C++ `Wgs84AABB(PackedTileId)` constructor, this wraps the SW/NE
+   * NDS corners into {@link MortonCode} and converts them to WGS84. Both axes
+   * use the same scale: `360 / 2^32 = 180 / 2^31`.
+   * At the world edge, the NE corner can wrap to the opposite side. Taking
+   * the absolute corner difference then produces an almost-world-wide box
+   * instead of the tile's width.
    *
    * @param tileId The tile whose extent the AABB should cover.
    */
@@ -68,10 +73,10 @@ export class Wgs84Aabb {
   /**
    * Construct an AABB from a center, a soft tile-count limit, and a level.
    *
-   * @param center The center coordinate of the box.
    * The target area is softLimit tile footprints, not a cap on enumerated tiles.
    * Pole clamping can move the final center.
    *
+   * @param center The center coordinate of the box.
    * @param softLimit Nonnegative target area in tile footprints.
    * @param level NDS tile level (0..15).
    */
@@ -94,7 +99,7 @@ export class Wgs84Aabb {
     return this._size.x >= 0 && this._size.y >= 0 && this._size.x <= 360.0 && this._size.y <= 180.0;
   }
 
-  /** Borrow the stored mutable south-west corner. */
+  /** The south-west corner. Returns the stored point, so changes to it affect the box. */
   sw(): Wgs84 {
     return this._sw;
   }
@@ -119,7 +124,7 @@ export class Wgs84Aabb {
     return [this.sw(), this.se(), this.ne(), this.nw()];
   }
 
-  /** Borrow the stored mutable raw `(dx, dy)` extent. */
+  /** The raw `(dx, dy)` size of the box. Returns the stored, mutable vector. */
   size(): Vec2 {
     return this._size;
   }
@@ -158,8 +163,11 @@ export class Wgs84Aabb {
   }
 
   /**
-   * Average the projection's vertical stretch over a nonzero latitude span.
-   * Callers must avoid singular projection latitudes.
+   * The Mercator-projection vertical stretch factor, averaged over the box.
+   *
+   * Transcendental; not part of the cross-language parity vectors (asserted
+   * only for finiteness in unit tests). Requires nonzero height and finite
+   * projected latitudes.
    */
   avgMercatorStretch(): number {
     const latTop = toRadians(this._sw.latitude() + this._size.y);
@@ -205,7 +213,8 @@ export class Wgs84Aabb {
     return 15;
   }
 
-  /** Test inclusive raw coordinate intervals; split anti-meridian boxes first. */
+  /** Whether `point` lies within the box (inclusive on all edges).
+   * Split anti-meridian boxes first; longitude is not unwrapped here. */
   contains(point: Wgs84): boolean {
     return (
       point.longitude() >= this._sw.longitude() &&
@@ -218,8 +227,10 @@ export class Wgs84Aabb {
   /**
    * Axis-aligned interval-overlap test against another box.
    *
-   * Edge contact counts as intersection. Longitude is not unwrapped here;
-   * split anti-meridian boxes before comparing them.
+   * This is the fixed test: a pure interval overlap on longitude and
+   * latitude. Edge-touching counts as intersecting; it correctly detects
+   * cross-shaped overlaps and never recurses on disjoint boxes.
+   * Split anti-meridian boxes before comparing; longitude is not unwrapped here.
    */
   intersects(other: Wgs84Aabb): boolean {
     const aMaxX = this._sw.longitude() + this._size.x;

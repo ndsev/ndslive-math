@@ -174,9 +174,12 @@ class PackedTileId:
         Create a PackedTileId that contains the point encoded by a MortonCode.
 
         This method finds the tile at the specified level that contains the
-        full-precision NDS coordinates encoded in the MortonCode, reducing
-        coordinate precision to a tile-grid index. Use from_tile_index() when
-        the input already is a tile Morton number.
+        full-precision NDS coordinates encoded in the MortonCode. The resulting
+        tile's morton_number() is a tile-grid index, so do not expect it to
+        preserve the full-precision input morton_code.value().
+
+        Note: If you want to create a tile with a specific Morton number, use
+        from_tile_index() instead.
 
         Args:
             morton_code: A MortonCode representing full-precision NDS coordinates
@@ -391,7 +394,7 @@ class PackedTileId:
         """
         x = y = 0
         # Y has 'level' bits, X has 'level + 1' bits
-        # Interleave X/Y pairs from low bits, then append X's extra high bit.
+        # Morton bits: X0 Y0 X1 Y1 ... X{level-1} Y{level-1} X{level}.
         for i in range(level):
             if morton & (1 << (2 * i)):
                 x |= 1 << i
@@ -756,7 +759,8 @@ def get_tile_ids_for_bounding_box(
     sw_x: int, sw_y: int, ne_x: int, ne_y: int, level: int
 ) -> list[PackedTileId]:
     """
-    Enumerate tiles intersecting ordered, inclusive NDS bounds, row by row (Y then X).
+    Get all tile IDs that intersect with a bounding box defined by NDS coordinates.
+    Bounds must be ordered and are inclusive. Tiles are returned row by row (Y then X).
 
     Split dateline-crossing bounds first. There is no result cap; callers must
     bound the area and level before allocating the complete list.

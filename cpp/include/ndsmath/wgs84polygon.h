@@ -63,7 +63,8 @@ struct HighPrecWgs84Polygon : public Polygon<std::vector<HighPrecWgs84>>
         return true;
     }
 
-    //! Bound raw longitude/latitude extrema with a south-west corner and size.
+    //! Return the axis-aligned bounding box as a south-west corner and size.
+    //! Bounds are computed from the raw longitude/latitude extrema.
     //! Fewer than three vertices yield the default zero-size box. Dateline-crossing
     //! polygons are not unwrapped, so their bounds may span most of the world.
     Wgs84AABB<typename HighPrecWgs84::prec> aaBb() const

@@ -31,8 +31,9 @@ public:
 
     //! Create a PackedTileId that contains the point encoded by a MortonCode.
     //! This finds the tile at the specified level containing the full-precision
-    //! NDS coordinates. It reduces coordinate precision to a tile-grid index;
-    //! use fromTileIndex() when the input already is a tile Morton number.
+    //! NDS coordinates. The resulting mortonNumber() is a tile-grid index, so
+    //! do not expect it to preserve the full-precision input mortonCode.value().
+    //! Use fromTileIndex() if you need a specific tile Morton number.
     PackedTileId(MortonCode mortonCode, const int level);
 
     //! Create a PackedTileId directly from a tile morton number and level.
@@ -52,7 +53,8 @@ public:
     //! Create a PackedTileId containing the given WGS84 coordinate.
     static PackedTileId fromWgs84(double longitude, double latitude, int level);
 
-    //! Check the level marker and the Morton-number range for that level.
+    //! Check whether the internal value represents a valid PackedTileId.
+    //! Checks the level marker and the Morton-number range for that level.
     bool isValid() const;
 
 public:
@@ -143,7 +145,8 @@ private:
 
 using PackedTileIds = std::vector<PackedTileId>;
 
-//! Enumerate tiles intersecting ordered, inclusive NDS bounds, row by row (Y then X).
+//! Get all tile IDs that intersect with a bounding box defined by NDS coordinates.
+//! Bounds must be ordered and are inclusive. Tiles are returned row by row (Y then X).
 //! Split dateline-crossing bounds first. There is no result cap; callers must bound
 //! the requested area and level before allocating the complete vector.
 //! @param swX South-west corner X coordinate (longitude) in NDS coordinates

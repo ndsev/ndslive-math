@@ -45,7 +45,8 @@ struct NdsBoundingBox
         return NdsBoundingBox(swX, swY, neX, neY);
     }
 
-    //! Copy the tile's SW and wrapped exclusive NE coordinates into a box.
+    //! Create a bounding box from a tile ID.
+    //! Uses the tile's south-west and exclusive north-east coordinates.
     //! World-edge wrapping can invert these bounds. Use boundingBoxFromTileIds()
     //! for inclusive interior bounds suitable for tile enumeration.
     //! @param tile PackedTileId to create bbox from

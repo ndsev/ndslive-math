@@ -20,9 +20,15 @@ class Wgs84:
     LON_NDS_DELTA = 360 / (2**32 - 1)
     LAT_NDS_DELTA = 180 / (2**31 - 1)
 
-    # Geometry uses power-of-two NDS units and the C++ world-edge maxima.
-    # normalize() retains separate (2^n - 1) steps for its boundary snap;
-    # keep those compatibility values distinct from the geometry grid.
+    # Geometry-layer constants mirroring the C++ ``Wgs84<double>`` static members
+    # (``cpp/include/ndsmath/wgs84.h``). These intentionally use a power-of-two
+    # denominator (``2^32`` / ``2^31``) rather than the ``LON_NDS_DELTA`` /
+    # ``LAT_NDS_DELTA`` above (which use ``2^32 - 1`` / ``2^31 - 1``). The
+    # difference shows up in the 10th significant digit, but matters for
+    # ``Wgs84Aabb`` antimeridian handling and tile-from-index construction:
+    # those calculations use the power-of-two grid of the C++ geometry layer.
+    # Do NOT reuse ``LON_NDS_DELTA`` / ``LAT_NDS_DELTA`` here; normalization
+    # keeps its separate steps for snapping coordinates at the world boundary.
     LON_NDS_DELTA_POW2 = 360.0 / 2**32  # == 8.381903171539307e-08
     LAT_NDS_DELTA_POW2 = 180.0 / 2**31  # == 8.381903171539307e-08 (numerically equal)
     LON_MIN = -180.0
@@ -65,7 +71,7 @@ class Wgs84:
         Called automatically by ``__init__``; call explicitly after mutating
         ``x`` (longitude) or ``y`` (latitude) directly.
         """
-        # Preserve the input sign before snapping and wrapping the world boundary.
+        # Use math.fmod to preserve the sign, matching C++ std::fmod behavior.
         self.x = math.fmod(self.x, 360.0)
 
         # Snap values within one normalization step of the positive edge to its
@@ -127,9 +133,11 @@ class Wgs84:
     def from_morton_code(morton_code: MortonCode) -> Wgs84:
         """Construct a :class:`Wgs84` point from a Morton code.
 
-        Decode the NDS integer pair, then use the common angular scale
-        ``360 / 2^32 = 180 / 2^31``. This is the same scale as
-        :meth:`from_nds_coordinates`, followed by constructor normalization.
+        Mirrors the C++ ``Wgs84<double>::fromMortonCode``
+        (``cpp/include/ndsmath/wgs84.h``), also used by the tile-to-AABB conversion.
+        Both NDS coordinates use the same angular scale: ``360 / 2^32 = 180 / 2^31``.
+        This equals the scale in :meth:`from_nds_coordinates`; constructing
+        the point then normalizes it.
 
         Args:
             morton_code: A :class:`MortonCode` encoding NDS integer coordinates.
@@ -146,7 +154,8 @@ class Wgs84:
         lon_degrees: float, lat_degrees: float, at_latitude: float
     ) -> tuple[float, float]:
         """
-        Approximate degree extents using 111320 m/degree and a longitude cosine factor.
+        Convert degree distances to meters at a given latitude.
+        Approximates 111320 m/degree, with a cosine factor for longitude distances.
 
         Args:
             lon_degrees: Longitude distance in degrees

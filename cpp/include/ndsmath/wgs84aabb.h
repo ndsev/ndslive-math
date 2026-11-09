@@ -23,8 +23,9 @@ public:
     Wgs84AABB() = default;
     Wgs84AABB(Wgs84AABB const &other) = default;
 
-    /// Copy a south-west corner and raw angular extent. Valid extents are shortened
-    /// at the north pole; invalid extents are retained for valid() to report.
+    /// Construct an AABB from a south-west position and a size in degrees.
+    /// For a valid box, clamp the height at the north pole. Invalid sizes are
+    /// retained so that valid() can report them.
     Wgs84AABB(Wgs84<T> const &sw, vec2_t size) : sw_(sw), size_(size)
     {
         if (!valid())
@@ -44,7 +45,8 @@ public:
     {
     }
 
-    /// Construct extents targeting softLimit tile footprints at a level in [0, 15].
+    /// Construct an AABB from a center position, a soft tile-count limit and a tile level.
+    /// The target area is softLimit times one tile's area at a level in [0, 15].
     /// Actual tile coverage may be larger; the pole clamp can also move the final center.
     static Wgs84AABB<T> fromCenterAndTileLimit(Wgs84<T> const &center, uint32_t softLimit,
                                                uint16_t level)
@@ -108,8 +110,8 @@ public:
         return {};
     }
 
-    /// Average the projection's vertical stretch across a nonzero latitude span.
-    /// Callers must avoid singular projection latitudes.
+    /// Calculate the Mercator-projection vertical stretch factor, averaged across
+    /// the box's latitude span. Requires nonzero height and finite projected latitudes.
     inline double avgMercatorStretch()
     {
         T const latTop = glm::radians(sw_.latitude() + size_.y);
@@ -128,8 +130,10 @@ public:
         T const tileWidth = 180. / static_cast<float>(1u << lv);
         auto const tilesPerDim = glm::ceil(size_ / tileWidth);
         auto const count = tilesPerDim.x * tilesPerDim.y;
-        // Invalid extents can produce a negative count, which cannot safely be
-        // converted to uint32_t. Treat nonpositive counts as zero. This does not
+        // A negative-size box can yield a negative count. Converting that to
+        // uint32_t is undefined behaviour: previous compiler-dependent results
+        // included zero and huge wrapped values, also corrupting tileLevel().
+        // Treat nonpositive counts as zero. This does not
         // validate the box: two negative extents can still give a positive product.
         return count > 0 ? static_cast<uint32_t>(count) : 0u;
     }
@@ -146,7 +150,8 @@ public:
         return 15;
     }
 
-    /// Test inclusive longitude/latitude intervals. Split anti-meridian boxes first.
+    /// Determine whether this bounding rect contains the given point, including its edges.
+    /// Split anti-meridian boxes first; longitude is not unwrapped here.
     inline bool contains(Wgs84<T> const &point) const
     {
         return point.longitude() >= sw_.longitude() &&
@@ -154,8 +159,8 @@ public:
                point.latitude() >= sw_.latitude() && point.latitude() <= sw_.latitude() + size_.y;
     }
 
-    /// Test inclusive interval overlap, including touching edges. Split boxes at the
-    /// anti-meridian before comparing; no longitude wrapping occurs here.
+    /// Determine whether this bounding rect intersects another, including touching edges.
+    /// Split boxes at the anti-meridian before comparing; longitude is not unwrapped here.
     inline bool intersects(Wgs84AABB<T> const &other) const
     {
         // Axis-aligned interval-overlap test on longitude and latitude. The

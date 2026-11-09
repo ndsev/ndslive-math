@@ -95,7 +95,7 @@ class Polygon:
         return len(self._vertices) > 0
 
     def vertices(self) -> list[Wgs84]:
-        """Return the stored mutable list; edits directly change this polygon."""
+        """Get the (mutable) list of vertices."""
         return self._vertices
 
     def orientation(self) -> Orientation:

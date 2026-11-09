@@ -133,9 +133,10 @@ export class PackedTileId {
    * Create a PackedTileId that contains the point encoded by a MortonCode.
    *
    * Finds the tile at the specified level that contains the full-precision NDS
-   * coordinates encoded in the MortonCode. Coordinate precision is reduced to
-   * a tile-grid index. Use {@link PackedTileId.fromTileIndex} when the input
-   * already is a tile Morton number.
+   * coordinates encoded in the MortonCode. The resulting `mortonNumber()` is
+   * a tile-grid index, so do not expect it to preserve the full-precision
+   * input `mortonCode.value()`. Use {@link PackedTileId.fromTileIndex} to
+   * build a tile with a specific Morton number.
    *
    * @param mortonCode A MortonCode representing full-precision NDS coordinates.
    * @param level Tile level (0-15).
@@ -392,7 +393,8 @@ function floorDiv(a: number, b: number): number {
 }
 
 /**
- * Enumerate tiles intersecting ordered, inclusive NDS bounds, row by row (Y then X).
+ * Get all tile IDs that intersect with a bounding box defined by NDS coordinates.
+ * Bounds must be ordered and are inclusive. Tiles are returned row by row (Y then X).
  * Split dateline-crossing bounds first. There is no result cap; callers must bound
  * the area and level before allocating the complete array.
  *

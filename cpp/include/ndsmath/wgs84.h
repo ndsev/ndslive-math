@@ -17,8 +17,9 @@ namespace ndsmath
 {
 class MortonCode;
 
-//! WGS84 longitude/latitude in degrees. Construction and arithmetic normalize
-//! coordinates; use raw vectors for extents that must not wrap or reflect.
+//! Template class representing WGS84 coordinates (longitude/latitude in degrees).
+//! Construction and arithmetic normalize coordinates; use raw vectors for extents
+//! that must not wrap or reflect.
 template <typename T> class Wgs84 : public glm::vec<2, T, glm::highp>
 {
 public:
@@ -84,7 +85,8 @@ public:
         yOut = static_cast<int32_t>(std::floor((y / 180.0) * std::ldexp(1.0, 31)));
     }
 
-    //! Great-circle distance in meters using a sphere of EARTH_RADIUS_IN_METERS.
+    //! Distance to another WGS84 coordinate in meters.
+    //! Uses great-circle distance on a sphere of EARTH_RADIUS_IN_METERS.
     T distanceTo(const Wgs84 &other) const
     {
         const double dLat = glm::radians(other.latitude() - y);
@@ -159,7 +161,8 @@ public:
         return Wgs84(static_cast<T>(x) * bitScaling, static_cast<T>(y) * bitScaling);
     }
 
-    //! Approximate degree extents in meters with 111320 m/degree and a longitude cosine factor.
+    //! Convert degree distances to meters at a given latitude.
+    //! Approximates 111320 m/degree, with a cosine factor for longitude distances.
     //! @param lonDegrees Longitude distance in degrees
     //! @param latDegrees Latitude distance in degrees
     //! @param atLatitude The latitude where measurement is taken (affects longitude distance)

@@ -66,7 +66,9 @@ class NdsBoundingBox:
 
     @classmethod
     def from_tile(cls, tile: "PackedTileId | int") -> "NdsBoundingBox":
-        """Copy the tile's SW and exclusive NE coordinates without subtracting one.
+        """Create a bounding box from a tile ID.
+
+        Uses the tile's south-west and exclusive north-east coordinates without subtracting one.
 
         Use bounding_box_from_tile_ids for inclusive interior bounds that
         enumerate exactly one tile at the same level.
