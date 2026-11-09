@@ -38,14 +38,19 @@ struct HighPrecWgs84Polygon : public Polygon<std::vector<HighPrecWgs84>>
     {
     }
 
+    //! Construct the normalized four-corner sentinel that collides with every polygon.
     static HighPrecWgs84Polygon earthWrappingPoly()
     {
         return {{HighPrecWgs84{-180., -90.}, HighPrecWgs84{-180., 90.}, HighPrecWgs84{180., -90.},
                  HighPrecWgs84{180., 90.}}};
     }
 
+    //! Check only the vertex count, not winding, topology or polygon type.
     bool isValid() const override { return vertices_.size() >= 3; }
 
+    //! Apply planar separating-axis tests to convex polygons with at least three vertices.
+    //! Edges may touch. Split dateline crossings first; concave polygons are not validated
+    //! or decomposed. The earth-wrapping sentinel bypasses these tests.
     bool collidesWith(const HighPrecWgs84Polygon &other) const
     {
         static const auto earthWrapper = earthWrappingPoly();
@@ -58,8 +63,9 @@ struct HighPrecWgs84Polygon : public Polygon<std::vector<HighPrecWgs84>>
         return true;
     }
 
-    // Returns axis-aligned bounding box top-left, bottom-right,
-    // empty vector if this polygon is invalid
+    //! Bound raw longitude/latitude extrema with a south-west corner and size.
+    //! Fewer than three vertices yield the default zero-size box. Dateline-crossing
+    //! polygons are not unwrapped, so their bounds may span most of the world.
     Wgs84AABB<typename HighPrecWgs84::prec> aaBb() const
     {
         if (isValid())
@@ -84,6 +90,7 @@ struct HighPrecWgs84Polygon : public Polygon<std::vector<HighPrecWgs84>>
         return {};
     }
 
+    //! Compare vertices in order using Wgs84 equality; polygon type is ignored.
     bool operator==(const HighPrecWgs84Polygon &other) const
     {
         const auto &v = vertices_;
@@ -99,6 +106,8 @@ struct HighPrecWgs84Polygon : public Polygon<std::vector<HighPrecWgs84>>
         return true;
     }
 
+    //! Return the arithmetic mean of vertex longitude/latitude, or (0, 0) when empty.
+    //! This is not an area-weighted centroid and does not unwrap dateline crossings.
     HighPrecWgs84 median() const
     {
         auto addLat = [this](double s, const HighPrecWgs84 &p)
@@ -111,9 +120,10 @@ struct HighPrecWgs84Polygon : public Polygon<std::vector<HighPrecWgs84>>
     }
 
 private:
-    // TODO: HighPrecWgs84 are already glm::dvec2 :)
+    // Use raw vectors for projections: coordinate normalization would change the axes.
     using Vec2 = glm::dvec2;
 
+    //! Project edge endpoints onto one unnormalized axis and return the extrema.
     Vec2 projectOnAxis(const HighPrecWgs84Polygon &poly, const Vec2 &axis) const
     {
         auto min = std::numeric_limits<double>::max();
@@ -147,6 +157,7 @@ private:
                (minMax1.x > minMax2.y && minMax1.y > minMax2.y);
     }
 
+    //! Look for a separating normal among refForAxis's edges, projecting both polygons.
     bool areSeparate(const HighPrecWgs84Polygon &other,
                      const HighPrecWgs84Polygon &refForAxis) const
     {

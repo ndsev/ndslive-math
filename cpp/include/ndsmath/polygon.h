@@ -55,7 +55,7 @@ public:
     {
     }
 
-    //! Add a vertice.
+    //! Append one vertex.
     void addVertex(const Position &position) { vertices_.push_back(position); }
 
     //! Add a list of vertices.
@@ -79,18 +79,19 @@ public:
     //! Set the polygon type.
     void setType(PolygonType polygonType) { polygonType_ = polygonType; }
 
-    //! Is this a valid polygon?
+    //! Base container check: at least one vertex, without topology validation.
     virtual bool isValid() const { return !vertices_.empty(); }
 
-    //! Get the list of vertices.
+    //! Borrow the stored vertices; references/iterators follow the container's invalidation rules.
     const Vector &vertices() const { return vertices_; }
 
-    //! Get the list of vertices.
+    //! Borrow the mutable vertex container; edits directly change the polygon.
     Vector &vertices() { return vertices_; }
 
     //! Get the orientation of the polygon. Only works for simple polygons
     //! and triangle lists with a single element. For all other polygons,
-    //! INVALID_ORIENTATION will be returned.
+    //! INVALID_ORIENTATION will be returned. Uses planar shoelace area without
+    //! dateline correction; zero area also yields INVALID_ORIENTATION.
     Orientation orientation() const
     {
         if (polygonType_ != SIMPLE_POLYGON &&

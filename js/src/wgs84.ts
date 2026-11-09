@@ -13,36 +13,40 @@ import { MortonCode } from './morton.js';
 export class Wgs84 {
   /** Approximate radius of Earth in meters. */
   static readonly EARTH_RADIUS_IN_METERS = 6371000.8;
+
   /** Longitude quantization step of the NDS coordinate grid (degrees). */
   static readonly LON_NDS_DELTA = 360 / (2 ** 32 - 1);
+
   /** Latitude quantization step of the NDS coordinate grid (degrees). */
   static readonly LAT_NDS_DELTA = 180 / (2 ** 31 - 1);
 
-  // Geometry-layer constants mirroring the C++ `Wgs84<double>` static members
-  // (`cpp/include/ndsmath/wgs84.h`). These intentionally use a power-of-two
-  // denominator (`2^32` / `2^31`) rather than the `LON_NDS_DELTA` /
-  // `LAT_NDS_DELTA` above (which use `2^32 - 1` / `2^31 - 1`). The difference
-  // shows up in the 13th significant digit, but it is load-bearing for the
-  // geometry layer: `Wgs84Aabb` antimeridian handling and tile-from-index
-  // construction must match the C++ reference bit-for-bit. Do NOT reuse
-  // `LON_NDS_DELTA` / `LAT_NDS_DELTA` in the geometry layer.
+  // Geometry uses power-of-two NDS units and the C++ world-edge maxima.
+  // normalize() retains separate (2^n - 1) steps for its boundary snap;
+  // keep those compatibility values distinct from the geometry grid.
   /** Longitude quantization step using a power-of-two denominator. */
   static readonly LON_NDS_DELTA_POW2 = 360.0 / 2 ** 32; // == 8.381903171539307e-08
+
   /** Latitude quantization step using a power-of-two denominator. */
   static readonly LAT_NDS_DELTA_POW2 = 180.0 / 2 ** 31; // == 8.381903171539307e-08 (equal)
+
   /** Minimum representable longitude. */
   static readonly LON_MIN = -180.0;
+
   /** Maximum representable longitude (`180 - LON_NDS_DELTA_POW2`). */
   static readonly LON_MAX = 180.0 - Wgs84.LON_NDS_DELTA_POW2; // == 179.99999991618097
+
   /** Minimum representable latitude. */
   static readonly LAT_MIN = -90.0;
+
   /** Maximum representable latitude (`90 - LAT_NDS_DELTA_POW2`). */
   static readonly LAT_MAX = 90.0 - Wgs84.LAT_NDS_DELTA_POW2;
 
   /** Longitude in degrees, wrapped into `[-180, 180)`. */
   x: number;
+
   /** Latitude in degrees, clamped to `[-90, 90 - LAT_NDS_DELTA]`. */
   y: number;
+
   /** Altitude in meters above the WGS84 ellipsoid. */
   z: number;
 
@@ -151,13 +155,9 @@ export class Wgs84 {
   /**
    * Construct a {@link Wgs84} point from a {@link MortonCode}.
    *
-   * Mirrors the C++ `Wgs84<double>::fromMortonCode`
-   * (`cpp/include/ndsmath/wgs84.h`). Note that this scales **both** the NDS x
-   * (longitude) and the NDS y (latitude) by the same factor `360 / 2^32` —
-   * unlike {@link Wgs84.fromNdsCoordinates}, which scales latitude by
-   * `180 / 2^31`. This difference is intentional in the reference and is relied
-   * upon by the geometry layer (e.g. the `Wgs84Aabb` tile-from-index
-   * constructor); do not "fix" it.
+   * Decode the NDS integer pair, then use the common angular scale
+   * `360 / 2^32 = 180 / 2^31`. This is the same scale as
+   * {@link Wgs84.fromNdsCoordinates}, followed by constructor normalization.
    *
    * @param mortonCode A MortonCode encoding NDS integer coordinates.
    * @returns Wgs84 point with longitude / latitude in degrees and `alt = 0`.
@@ -169,7 +169,7 @@ export class Wgs84 {
   }
 
   /**
-   * Convert degree distances to meters at a given latitude.
+   * Approximate degree extents using 111320 m/degree and a longitude cosine factor.
    *
    * Longitude distance varies by latitude (shrinks toward poles); latitude
    * distance is constant.
@@ -248,10 +248,11 @@ export class Wgs84 {
   }
 
   /**
-   * Initial bearing (forward azimuth) from `other` toward this point.
+   * Initial bearing (forward azimuth) from this point toward `other`.
    *
-   * @param other Another {@link Wgs84} point — the starting point.
+   * @param other The destination {@link Wgs84} point.
    * @returns Bearing in radians, measured clockwise from true north.
+   * For example, (0, 0) toward (90, 0) returns +pi/2 (east).
    */
   bearingFrom(other: Wgs84): number {
     const lat1 = toRadians(this.y);
@@ -264,27 +265,27 @@ export class Wgs84 {
     return Math.atan2(y, x);
   }
 
-  /** Component-wise equality within a small relative tolerance (1e-12). */
+  /** Compare longitude/latitude with relative tolerance 1e-12; altitude is ignored. */
   equals(other: Wgs84): boolean {
     return isClose(this.x, other.x) && isClose(this.y, other.y);
   }
 
-  /** Component-wise addition of longitude/latitude (returns a new point). */
+  /** Add longitude/latitude, normalizing the new point and resetting altitude to zero. */
   add(other: Wgs84): Wgs84 {
     return new Wgs84(this.x + other.x, this.y + other.y);
   }
 
-  /** Component-wise subtraction of longitude/latitude (returns a new point). */
+  /** Subtract longitude/latitude, normalizing the new point and resetting altitude to zero. */
   sub(other: Wgs84): Wgs84 {
     return new Wgs84(this.x - other.x, this.y - other.y);
   }
 
-  /** Component-wise multiplication of longitude/latitude (returns a new point). */
+  /** Multiply longitude/latitude, normalizing the new point and resetting altitude to zero. */
   mul(other: Wgs84): Wgs84 {
     return new Wgs84(this.x * other.x, this.y * other.y);
   }
 
-  /** Component-wise division of longitude/latitude (returns a new point). */
+  /** Divide longitude/latitude, normalizing the new point and resetting altitude to zero. */
   div(other: Wgs84): Wgs84 {
     return new Wgs84(this.x / other.x, this.y / other.y);
   }

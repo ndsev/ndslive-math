@@ -16,10 +16,13 @@ import { Wgs84 } from './wgs84.js';
 export class NdsBoundingBox {
   /** SW corner longitude (NDS coords). */
   minX: number;
+
   /** SW corner latitude (NDS coords). */
   minY: number;
+
   /** NE corner longitude (NDS coords). */
   maxX: number;
+
   /** NE corner latitude (NDS coords). */
   maxY: number;
 
@@ -33,7 +36,8 @@ export class NdsBoundingBox {
   /**
    * Check if this bbox intersects (overlaps) with another.
    *
-   * Two bounding boxes intersect if they share any area.
+   * Closed intervals include contact at an edge or point. Bounds must be
+   * ordered in each coordinate; longitude wrapping is not handled here.
    */
   intersects(other: NdsBoundingBox): boolean {
     return !(
@@ -55,7 +59,9 @@ export class NdsBoundingBox {
   }
 
   /**
-   * Create a bounding box from a tile ID.
+   * Copy the tile's SW and exclusive NE coordinates without subtracting one.
+   * Use boundingBoxFromTileIds for inclusive interior bounds that enumerate
+   * exactly one tile at the same level.
    *
    * @param tile PackedTileId object or integer tile ID.
    */

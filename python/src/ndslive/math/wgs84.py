@@ -12,20 +12,17 @@ class Wgs84:
     """
     Represents a point on the Earth's surface using the WGS84 coordinate system.
     Provides methods for coordinate conversion, normalization, and distance calculations.
+    Arithmetic returns normalized longitude/latitude with altitude reset to zero;
+    equality compares only longitude/latitude with relative tolerance 1e-12.
     """
 
     EARTH_RADIUS_IN_METERS = 6371000.8  # Approximate radius of Earth in meters
     LON_NDS_DELTA = 360 / (2**32 - 1)
     LAT_NDS_DELTA = 180 / (2**31 - 1)
 
-    # Geometry-layer constants mirroring the C++ ``Wgs84<double>`` static members
-    # (``cpp/include/ndsmath/wgs84.h``). These intentionally use a power-of-two
-    # denominator (``2^32`` / ``2^31``) rather than the ``LON_NDS_DELTA`` /
-    # ``LAT_NDS_DELTA`` above (which use ``2^32 - 1`` / ``2^31 - 1``). The
-    # difference shows up in the 13th significant digit, but it is load-bearing
-    # for the geometry layer: ``Wgs84AABB`` antimeridian handling and tile-from-
-    # index construction must match the C++ reference bit-for-bit. Do NOT reuse
-    # ``LON_NDS_DELTA`` / ``LAT_NDS_DELTA`` in the geometry layer.
+    # Geometry uses power-of-two NDS units and the C++ world-edge maxima.
+    # normalize() retains separate (2^n - 1) steps for its boundary snap;
+    # keep those compatibility values distinct from the geometry grid.
     LON_NDS_DELTA_POW2 = 360.0 / 2**32  # == 8.381903171539307e-08
     LAT_NDS_DELTA_POW2 = 180.0 / 2**31  # == 8.381903171539307e-08 (numerically equal)
     LON_MIN = -180.0
@@ -68,35 +65,21 @@ class Wgs84:
         Called automatically by ``__init__``; call explicitly after mutating
         ``x`` (longitude) or ``y`` (latitude) directly.
         """
-        # Normalize the coordinates
-        # Use math.fmod to preserve the sign, matching C++ std::fmod behavior
+        # Preserve the input sign before snapping and wrapping the world boundary.
         self.x = math.fmod(self.x, 360.0)
 
-        # Ensure longitude is within [-180, 180)
-        # The C++ version uses lonMin and lonMax constants derived from NDS deltas.
-        # Python original logic handles boundaries slightly differently.
-        # Let's align closer to the C++ logic's intent for the [-180, 180) range.
-
-        # Handle the wrap-around explicitly:
-        # Values > 180 - delta should wrap to negative
-        # Values < -180 should wrap to positive
-        # Note: C++ lonMax is 180 - lonNdsDelta
-
-        # This check handles values very close to +180, snapping them down slightly
-        # This is consistent with C++ 's check against lonMax
+        # Snap values within one normalization step of the positive edge to its
+        # last representable coordinate before ordinary longitude wrapping.
         if abs(self.x - (180.0 - self.LON_NDS_DELTA)) < self.LON_NDS_DELTA:
             self.x = 180.0 - self.LON_NDS_DELTA
 
-        # Wrap values outside [-180, 180 - delta]
-        if (
-            self.x >= 180.0
-        ):  # If exactly 180 or more after fmod (shouldn't happen with fmod(-180, 360))
+        # Wrap the remaining longitude values into [-180, 180).
+        if self.x >= 180.0:
             self.x -= 360.0
-        elif self.x < -180.0:  # Handles values less than -180
+        elif self.x < -180.0:
             self.x += 360.0
-        # Now self.x should be in [-180, 180)
 
-        # Latitude normalization remains the same for now
+        # Latitude uses a clamp after the analogous positive-edge snap.
         if abs(self.y - (90.0 - self.LAT_NDS_DELTA)) < self.LAT_NDS_DELTA:
             self.y = 90.0 - self.LAT_NDS_DELTA
 
@@ -144,13 +127,9 @@ class Wgs84:
     def from_morton_code(morton_code: MortonCode) -> Wgs84:
         """Construct a :class:`Wgs84` point from a Morton code.
 
-        Mirrors the C++ ``Wgs84<double>::fromMortonCode``
-        (``cpp/include/ndsmath/wgs84.h``). Note that this scales **both** the
-        NDS x (longitude) and the NDS y (latitude) by the same factor
-        ``360 / 2^32`` — unlike :meth:`from_nds_coordinates`, which scales
-        latitude by ``180 / 2^31``. This difference is intentional in the
-        reference and is relied upon by the geometry layer (e.g. the
-        ``Wgs84Aabb`` tile-from-index constructor); do not "fix" it.
+        Decode the NDS integer pair, then use the common angular scale
+        ``360 / 2^32 = 180 / 2^31``. This is the same scale as
+        :meth:`from_nds_coordinates`, followed by constructor normalization.
 
         Args:
             morton_code: A :class:`MortonCode` encoding NDS integer coordinates.
@@ -167,7 +146,7 @@ class Wgs84:
         lon_degrees: float, lat_degrees: float, at_latitude: float
     ) -> tuple[float, float]:
         """
-        Convert degree distances to meters at a given latitude.
+        Approximate degree extents using 111320 m/degree and a longitude cosine factor.
 
         Args:
             lon_degrees: Longitude distance in degrees
@@ -248,16 +227,17 @@ class Wgs84:
         return self.EARTH_RADIUS_IN_METERS * c
 
     def bearing_from(self, other: Wgs84) -> float:
-        """Initial bearing (forward azimuth) from ``other`` toward this point.
+        """Initial bearing (forward azimuth) from this point toward ``other``.
 
         Args:
-            other: Another :class:`Wgs84` point — the starting point.
+            other: The destination :class:`Wgs84` point.
 
         Returns:
             Bearing in radians, measured clockwise from true north.
             Use ``math.degrees(...)`` to convert to degrees.
+            For example, (0, 0) toward (90, 0) returns +pi/2 (east).
         """
-        # Calculate bearing from another Wgs84 coordinate
+        # Keep the current point as the origin in the forward-azimuth formula.
         lat1, lon1, lat2, lon2 = map(math.radians, [self.y, self.x, other.y, other.x])
         y = math.sin(lon2 - lon1) * math.cos(lat2)
         x = math.cos(lat1) * math.sin(lat2) - math.sin(lat1) * math.cos(lat2) * math.cos(

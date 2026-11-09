@@ -55,7 +55,8 @@ public:
         // which is a magnitude that must be sign-extended above).
     }
 
-    //! Convert NDS coordinates to morton Code.
+    //! Wrap X to signed 32 bits and Y to signed 31 bits, then interleave them.
+    //! The encoded value uses 63 bits; bit 63 is cleared.
     static MortonCode fromNdsCoordinates(int64_t x, int64_t y)
     {
         const int64_t xBase = (1ULL << 31);
@@ -96,8 +97,9 @@ public:
         return MortonCode(mortonCode);
     }
 
-    //! Get the morton code from wgs84 coordinates. Implemented outside
-    //! class declaration to avoid circular dependencies.
+    //! Convert WGS84 degrees by truncating NDS coordinates toward zero.
+    //! For floor-based conversion, call Wgs84::toNdsCoordinates followed by
+    //! fromNdsCoordinates. This overload is defined out of line to avoid a cycle.
     static MortonCode fromWgs84Coordinates(const Wgs84<double> &wgs84);
 
 private:

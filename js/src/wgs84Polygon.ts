@@ -13,8 +13,7 @@ import { Wgs84Aabb } from './wgs84Aabb.js';
  * with:
  *
  * - {@link Wgs84Polygon.aaBb} — the axis-aligned bounding box,
- * - {@link Wgs84Polygon.median} — the centroid (with a *deliberately preserved*
- *   lon/lat swap quirk from the C++ reference),
+ * - {@link Wgs84Polygon.median} — the arithmetic mean of vertex coordinates,
  * - {@link Wgs84Polygon.collidesWith} — Separating-Axis-Theorem collision.
  *
  * The collision math runs on raw `(lon, lat)` doubles: no normalization, no
@@ -54,12 +53,12 @@ export class Wgs84Polygon extends Polygon {
     ]);
   }
 
-  /** Whether this is a valid polygon: at least 3 vertices. */
+  /** Check only for at least 3 vertices; topology, winding and type are not validated. */
   override isValid(): boolean {
     return this.verts.length >= 3;
   }
 
-  /** Order-sensitive vertex-wise equality (via {@link Wgs84.equals}). */
+  /** Compare vertices in order via {@link Wgs84.equals}; polygon type is ignored. */
   equals(other: Wgs84Polygon): boolean {
     const v = this.verts;
     const vo = other.verts;
@@ -104,7 +103,8 @@ export class Wgs84Polygon extends Polygon {
   }
 
   /**
-   * The centroid (mean longitude, mean latitude) of the polygon vertices.
+   * Arithmetic mean of vertex longitude/latitude, or `(0, 0)` when empty.
+   * This is not an area-weighted centroid and does not unwrap the antimeridian.
    *
    * The means are accumulated as `sum(coord / n)` (not `sum(coord) / n`) to
    * match the C++ reference's floating-point rounding.
@@ -123,7 +123,9 @@ export class Wgs84Polygon extends Polygon {
   }
 
   /**
-   * Whether this polygon collides with `other` (Separating-Axis Theorem).
+   * Test collision of convex polygons with at least 3 vertices using planar SAT.
+   * Edge contact counts as collision. Concavity and validity are not checked;
+   * split dateline crossings and decompose concave inputs before calling.
    *
    * The earth-wrapping sentinel collides with everything. Otherwise the SAT
    * axis sets are taken from this polygon's edges (first test) and from
@@ -138,8 +140,8 @@ export class Wgs84Polygon extends Polygon {
     if (this.areSeparate(other, this)) {
       return false;
     }
-    // NOTE: the C++ reference passes (other, other) here — axes come from
-    // `other`'s edges, projecting both `this` and `other`. Preserved exactly.
+    // The second axis set comes from the other polygon; each test still
+    // projects both polygons onto that axis.
     if (this.areSeparate(other, other)) {
       return false;
     }

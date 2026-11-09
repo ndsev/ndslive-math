@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased] - 2026-11-07
+
+### C++
+- Clarify coordinate units, tile boundaries, polygon validity and ownership,
+  planar geometry assumptions, and actual conversion/limit behavior. Keep
+  trivial bodies compact and separate logical phases; no algorithm changes.
+
+### Python
+- Correct stale geometry comments and the bounding-box example. Document
+  shared vertex/extent ownership, normalized arithmetic, partial validation,
+  and inclusive tile enumeration without changing runtime behavior.
+
+### JavaScript/TypeScript
+- Correct stale scale-factor and polygon-mean claims. Document mutable geometry
+  ownership, boundary and collision assumptions, and tile enumeration limits;
+  no runtime behavior changes.
+
 ## [v1.1.0] - 2026-07-06
 
 ### Added

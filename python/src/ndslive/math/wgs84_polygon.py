@@ -6,8 +6,7 @@ A :class:`~ndslive.math.polygon.Polygon` of :class:`~ndslive.math.wgs84.Wgs84`
 vertices, defaulting to ``SIMPLE_POLYGON``, with:
 
 * :meth:`aa_bb` — the axis-aligned bounding box,
-* :meth:`median` — the centroid (with a *deliberately preserved* lon/lat swap
-  quirk from the C++ reference),
+* :meth:`median` — the arithmetic mean of vertex coordinates,
 * :meth:`collides_with` — Separating-Axis-Theorem collision detection.
 
 The collision math runs on raw ``(lon, lat)`` doubles: no normalization, no
@@ -64,11 +63,11 @@ class Wgs84Polygon(Polygon):
         )
 
     def is_valid(self) -> bool:
-        """Whether this is a valid polygon: at least 3 vertices."""
+        """Check only for at least 3 vertices, without validating topology, winding or type."""
         return len(self._vertices) >= 3
 
     def __eq__(self, other: object) -> bool:
-        """Order-sensitive vertex-wise equality (via ``Wgs84`` approximate ==)."""
+        """Compare vertices in order via ``Wgs84`` equality; ignore polygon type."""
         if not isinstance(other, Wgs84Polygon):
             return NotImplemented
         v = self._vertices
@@ -98,7 +97,9 @@ class Wgs84Polygon(Polygon):
         return Wgs84Aabb(Wgs84(min_lon, min_lat), Vec2(max_lon - min_lon, max_lat - min_lat))
 
     def median(self) -> Wgs84:
-        """The centroid (mean longitude, mean latitude) of the polygon vertices.
+        """Arithmetic mean of vertex longitude/latitude, or (0, 0) when empty.
+
+        This is not an area-weighted centroid and does not unwrap the antimeridian.
 
         The means are accumulated as ``sum(coord / n)`` (not ``sum(coord) / n``)
         to match the C++ reference's floating-point rounding.
@@ -113,7 +114,10 @@ class Wgs84Polygon(Polygon):
         return Wgs84(med_lon, med_lat)
 
     def collides_with(self, other: Wgs84Polygon) -> bool:
-        """Whether this polygon collides with ``other`` (Separating-Axis Theorem).
+        """Test collision of convex polygons with at least 3 vertices using planar SAT.
+
+        Edge contact counts as collision. Concavity and validity are not checked;
+        split dateline crossings and decompose concave inputs before calling.
 
         The earth-wrapping sentinel collides with everything. Otherwise the SAT
         axis sets are taken from this polygon's edges (first test) and from
@@ -125,8 +129,8 @@ class Wgs84Polygon(Polygon):
             return True
         if self._are_separate(other, self):
             return False
-        # NOTE: the C++ reference passes (other, other) here — axes come from
-        # `other`'s edges, projecting both `self` and `other`. Preserved exactly.
+        # The second axis set comes from the other polygon; each test still
+        # projects both polygons onto that axis.
         if self._are_separate(other, other):
             return False
         return True
