@@ -4,9 +4,44 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased] - 2026-11-07
+## [Unreleased]
+
+Nothing here changes the library code in any language; it goes out with the
+next release that does.
+
+### Project
+- Dependabot updates `vitest` and `@vitest/*` in one pull request.
+  `@vitest/coverage-v8` requires exactly its own `vitest` version, so separate
+  updates failed to install
+  ([#88](https://github.com/ndsev/ndslive-math/pull/88),
+  [#89](https://github.com/ndsev/ndslive-math/pull/89)).
+- npm packages are published with Node 24 and npm's trusted publishing,
+  without the extra npm upgrade step.
+- Dependabot updates, all for building, testing or CI, so none of them reaches
+  users of the packages:
+  - GitHub Actions: `setup-go`, `setup-node` and `setup-python` 7,
+    `setup-java` 6
+    ([#59](https://github.com/ndsev/ndslive-math/pull/59),
+    [#61](https://github.com/ndsev/ndslive-math/pull/61),
+    [#65](https://github.com/ndsev/ndslive-math/pull/65),
+    [#71](https://github.com/ndsev/ndslive-math/pull/71))
+  - Java: Gradle wrapper 9.8.2, Spotless 8.10.4, and for the tests JUnit 6.1.3
+    and `org.json` 20260814
+    ([#79](https://github.com/ndsev/ndslive-math/pull/79),
+    [#86](https://github.com/ndsev/ndslive-math/pull/86),
+    [#80](https://github.com/ndsev/ndslive-math/pull/80),
+    [#67](https://github.com/ndsev/ndslive-math/pull/67),
+    [#69](https://github.com/ndsev/ndslive-math/pull/69))
+  - JavaScript: eslint 10.13.0, typescript-eslint 8.72.0, prettier 3.9.10
+    ([#84](https://github.com/ndsev/ndslive-math/pull/84),
+    [#85](https://github.com/ndsev/ndslive-math/pull/85),
+    [#81](https://github.com/ndsev/ndslive-math/pull/81),
+    [#87](https://github.com/ndsev/ndslive-math/pull/87),
+    [#82](https://github.com/ndsev/ndslive-math/pull/82))
 
 ### C++
+- The CMake project and the vcpkg port already say 1.1.1, the next release's
+  number; the port's `SHA512` stays the placeholder until that archive exists.
 - Clarify coordinate units, tile boundaries, polygon validity and ownership,
   planar geometry assumptions, and actual conversion/limit behavior. Keep
   trivial bodies compact and separate logical phases; no algorithm changes.
@@ -20,6 +55,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Correct stale scale-factor and polygon-mean claims. Document mutable geometry
   ownership, boundary and collision assumptions, and tile enumeration limits;
   no runtime behavior changes.
+
+### JavaScript, Rust
+- `package.json` and `Cargo.toml` already say 1.1.1, the next release's number.
 
 ## [v1.1.0] - 2026-07-06
 
