@@ -33,7 +33,7 @@ Bounding-box utilities::
         sw=Wgs84(11.5, 48.1), ne=Wgs84(11.7, 48.2)
     )
     tile_ids = get_tile_ids_for_bounding_box(
-        bbox.sw_x, bbox.sw_y, bbox.ne_x, bbox.ne_y, level=13
+        bbox.min_x, bbox.min_y, bbox.max_x, bbox.max_y, level=13
     )
 
 What's in this package
@@ -60,7 +60,7 @@ Geometry layer
     :class:`Polygon` — generic vertex container with ``orientation``
     (with :class:`Orientation` / :class:`PolygonType` enums).
     :class:`Wgs84Polygon` — WGS84 polygon with bounding box (``aa_bb``),
-    centroid (``median``) and SAT collision (``collides_with``).
+    vertex mean (``median``) and SAT collision (``collides_with``).
     :class:`Wgs84Aabb` — WGS84 axis-aligned bounding box with corner /
     center accessors, ``contains`` / ``intersects`` and antimeridian
     handling.

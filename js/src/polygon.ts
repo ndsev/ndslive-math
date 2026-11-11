@@ -50,7 +50,7 @@ export class Polygon {
    * Construct a polygon.
    *
    * @param polygonType The polygon topology. Defaults to `UNKNOWN`.
-   * @param vertices Optional initial vertices (copied).
+   * @param vertices Optional initial list (shallow-copied; Wgs84 objects remain shared).
    */
   constructor(polygonType: PolygonType = PolygonType.UNKNOWN, vertices?: readonly Wgs84[]) {
     this.polygonType = polygonType;
@@ -67,7 +67,7 @@ export class Polygon {
     this.verts.push(...vertices);
   }
 
-  /** Array subscript access to a vertex (no bounds check, like C++). */
+  /** Read a vertex; callers must supply a valid index (out-of-range access yields undefined). */
   get(index: number): Wgs84 {
     return this.verts[index];
   }

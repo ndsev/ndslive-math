@@ -32,8 +32,9 @@ export class PackedTileId {
    * NDS.Live standard, level 15 tiles have negative values
    * (`-2147483648` to `-1`), while levels 0-14 have positive values.
    *
-   * @param value Tile ID as signed int32 (negative for level 15) or unsigned int32.
-   * @throws {Error} If the resulting tile ID is invalid.
+   * @param value Integer tile ID as signed int32 (negative for level 15) or unsigned int32.
+   *   Positive values above 32 bits are masked before validation. The default zero throws.
+   * @throws {Error} If the packed level marker or Morton-range checks fail.
    */
   constructor(value = 0) {
     let v: number;
@@ -132,10 +133,10 @@ export class PackedTileId {
    * Create a PackedTileId that contains the point encoded by a MortonCode.
    *
    * Finds the tile at the specified level that contains the full-precision NDS
-   * coordinates encoded in the MortonCode. The resulting `mortonNumber()` will
-   * NOT equal the input `mortonCode.value()` unless the point happens to fall
-   * in that specific tile. Use {@link PackedTileId.fromTileIndex} to build a
-   * tile with a specific morton number.
+   * coordinates encoded in the MortonCode. The resulting `mortonNumber()` is
+   * a tile-grid index, so do not expect it to preserve the full-precision
+   * input `mortonCode.value()`. Use {@link PackedTileId.fromTileIndex} to
+   * build a tile with a specific Morton number.
    *
    * @param mortonCode A MortonCode representing full-precision NDS coordinates.
    * @param level Tile level (0-15).
@@ -392,8 +393,10 @@ function floorDiv(a: number, b: number): number {
 }
 
 /**
- * Get all tile IDs that intersect with a bounding box defined by NDS
- * coordinates.
+ * Get all tile IDs that intersect with a bounding box defined by NDS coordinates.
+ * Bounds must be ordered and are inclusive. Tiles are returned row by row (Y then X).
+ * Split dateline-crossing bounds first. There is no result cap; callers must bound
+ * the area and level before allocating the complete array.
  *
  * @param swX South-west corner X coordinate (longitude) in NDS coordinates.
  * @param swY South-west corner Y coordinate (latitude) in NDS coordinates.

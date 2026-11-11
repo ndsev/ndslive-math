@@ -23,7 +23,9 @@ public:
     Wgs84AABB() = default;
     Wgs84AABB(Wgs84AABB const &other) = default;
 
-    /// Construct an AABB from a position and a size.
+    /// Construct an AABB from a south-west position and a size in degrees.
+    /// For a valid box, clamp the height at the north pole. Invalid sizes are
+    /// retained so that valid() can report them.
     Wgs84AABB(Wgs84<T> const &sw, vec2_t size) : sw_(sw), size_(size)
     {
         if (!valid())
@@ -43,11 +45,13 @@ public:
     {
     }
 
-    /// Construct the AABB from a center position, a tile count limit, and a tile level
+    /// Construct an AABB from a center position, a soft tile-count limit and a tile level.
+    /// The target area is softLimit times one tile's area at a level in [0, 15].
+    /// Actual tile coverage may be larger; the pole clamp can also move the final center.
     static Wgs84AABB<T> fromCenterAndTileLimit(Wgs84<T> const &center, uint32_t softLimit,
                                                uint16_t level)
     {
-        constexpr auto targetAspectRatio = .7; // approx. height / width
+        constexpr auto targetAspectRatio = .7; // height/width is this factor squared
         auto tileWidth = 180. / static_cast<double>(1u << level);
         auto targetSize = glm::sqrt(softLimit) * tileWidth;
         auto targetSizeVec = typename Wgs84<T>::vec2_t{targetSize / targetAspectRatio,
@@ -55,7 +59,7 @@ public:
         return Wgs84AABB<T>(center - targetSizeVec * .5, targetSizeVec);
     }
 
-    /// Determine, whether the AABBs size is within reasonable bounds.
+    /// Check angular size only: width in [0, 360] and height in [0, 180] degrees.
     inline bool valid() const
     {
         return size_.x >= 0 && size_.y >= 0 && size_.x <= 360. && size_.y <= 180.;
@@ -106,7 +110,8 @@ public:
         return {};
     }
 
-    /// Calculate the mercator-projection vertical stretch factor.
+    /// Calculate the Mercator-projection vertical stretch factor, averaged across
+    /// the box's latitude span. Requires nonzero height and finite projected latitudes.
     inline double avgMercatorStretch()
     {
         T const latTop = glm::radians(sw_.latitude() + size_.y);
@@ -118,16 +123,18 @@ public:
 
     /// Obtain the number of tiles for the given level contained in this AABB.
     ///  Note: The number returned is approximate; the actual tile count returned
-    ///  by tileIdsWithPriority might still be a bit higher if the viewport is slightly
-    ///  shifted (one additional row/column + 1 corner).
+    ///  by an actual tile enumeration may be higher when the viewport is shifted
+    ///  (one additional row/column + 1 corner).
     inline uint32_t numTileIds(uint32_t lv) const
     {
         T const tileWidth = 180. / static_cast<float>(1u << lv);
         auto const tilesPerDim = glm::ceil(size_ / tileWidth);
         auto const count = tilesPerDim.x * tilesPerDim.y;
-        // A negative-size (invalid) box yields a negative product; casting that
-        // to uint32_t is undefined behaviour — clang clamps to 0 while gcc/MSVC
-        // wrap to a huge value, which also corrupts tileLevel(). Treat it as 0.
+        // A negative-size box can yield a negative count. Converting that to
+        // uint32_t is undefined behaviour: previous compiler-dependent results
+        // included zero and huge wrapped values, also corrupting tileLevel().
+        // Treat nonpositive counts as zero. This does not
+        // validate the box: two negative extents can still give a positive product.
         return count > 0 ? static_cast<uint32_t>(count) : 0u;
     }
 
@@ -143,7 +150,8 @@ public:
         return 15;
     }
 
-    /// Determine whether this bounding rect contains the given point
+    /// Determine whether this bounding rect contains the given point, including its edges.
+    /// Split anti-meridian boxes first; longitude is not unwrapped here.
     inline bool contains(Wgs84<T> const &point) const
     {
         return point.longitude() >= sw_.longitude() &&
@@ -151,7 +159,8 @@ public:
                point.latitude() >= sw_.latitude() && point.latitude() <= sw_.latitude() + size_.y;
     }
 
-    /// Determine whether this bounding rect has an intersection with another bounding rect.
+    /// Determine whether this bounding rect intersects another, including touching edges.
+    /// Split boxes at the anti-meridian before comparing; longitude is not unwrapped here.
     inline bool intersects(Wgs84AABB<T> const &other) const
     {
         // Axis-aligned interval-overlap test on longitude and latitude. The

@@ -4,10 +4,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [v1.1.1] - 2026-11-11
 
-Nothing here changes the library code in any language; it goes out with the
-next release that does.
+This patch updates documentation and build tooling without changing library
+behavior.
 
 ### Project
 - Dependabot updates `vitest` and `@vitest/*` in one pull request.
@@ -42,6 +42,19 @@ next release that does.
 ### C++
 - The CMake project and the vcpkg port already say 1.1.1, the next release's
   number; the port's `SHA512` stays the placeholder until that archive exists.
+- Clarify coordinate units, tile boundaries, polygon validity and ownership,
+  planar geometry assumptions, and actual conversion/limit behavior. Keep
+  trivial bodies compact and separate logical phases; no algorithm changes.
+
+### Python
+- Correct stale geometry comments and the bounding-box example. Document
+  shared vertex/extent ownership, normalized arithmetic, partial validation,
+  and inclusive tile enumeration without changing runtime behavior.
+
+### JavaScript/TypeScript
+- Correct stale scale-factor and polygon-mean claims. Document mutable geometry
+  ownership, boundary and collision assumptions, and tile enumeration limits;
+  no runtime behavior changes.
 
 ### JavaScript, Rust
 - `package.json` and `Cargo.toml` already say 1.1.1, the next release's number.

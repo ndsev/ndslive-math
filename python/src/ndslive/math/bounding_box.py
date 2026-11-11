@@ -32,7 +32,8 @@ class NdsBoundingBox:
     def intersects(self, other: "NdsBoundingBox") -> bool:
         """Check if this bbox intersects (overlaps) with another.
 
-        Two bounding boxes intersect if they share any area.
+        Closed intervals include contact at an edge or point. Bounds must be
+        ordered in each coordinate; longitude wrapping is not handled here.
 
         Args:
             other: Another bounding box to check against
@@ -65,13 +66,18 @@ class NdsBoundingBox:
 
     @classmethod
     def from_tile(cls, tile: "PackedTileId | int") -> "NdsBoundingBox":
-        """Create bounding box from a tile ID.
+        """Create a bounding box from a tile ID.
+
+        Uses the tile's south-west and exclusive north-east coordinates without subtracting one.
+
+        Use bounding_box_from_tile_ids for inclusive interior bounds that
+        enumerate exactly one tile at the same level.
 
         Args:
             tile: PackedTileId object or integer tile ID
 
         Returns:
-            NdsBoundingBox covering the tile's area
+            NdsBoundingBox retaining the tile's exclusive NE coordinates
         """
         from .tileid import PackedTileId
 

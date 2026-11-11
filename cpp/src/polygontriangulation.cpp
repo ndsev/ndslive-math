@@ -77,7 +77,7 @@ PolygonTriangulation::triangulateByEarClipping(const HighPrecWgs84Polygon &polyg
 
     auto numVertices = polygon.vertices().size();
 
-    // Nothing to do for three triangles.
+    // Nothing to do for a single triangle.
     if (numVertices == 3)
     {
         result.addVertices(polygon.vertices());
@@ -102,7 +102,7 @@ PolygonTriangulation::triangulateByEarClipping(const HighPrecWgs84Polygon &polyg
     {
         bool earFound = false;
 
-        // Find the most extruded ear.
+        // Find the most extruded ear (largest cosine angle score; first wins ties).
         for (auto j = 0; j < numVertices; j++)
         {
             if (!vertices[j].isActive || !vertices[j].isEar)
@@ -134,6 +134,8 @@ PolygonTriangulation::triangulateByEarClipping(const HighPrecWgs84Polygon &polyg
         result.addVertex(ear->p);
         result.addVertex(ear->next->p);
 
+        // Unlink the emitted ear. Only its neighbours acquire different turns,
+        // so the remaining ring can reuse its cached scores.
         ear->isActive = false;
         ear->previous->next = ear->next;
         ear->next->previous = ear->previous;

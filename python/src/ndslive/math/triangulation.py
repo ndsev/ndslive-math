@@ -7,14 +7,11 @@ pointer-linked ring of partition vertices; this port uses an index-linked
 ``list`` of :class:`_PartitionVertex` (``prev`` / ``next`` integer indices)
 to avoid manual memory management while reproducing the same traversal.
 
-.. note::
-
-    The *set* of output triangles is deterministic, but the ordering of
-    triangles and the rotation of each triangle's three vertices are
-    implementation-specific (driven by the "most extruded ear" tie-break and
-    floating-point ``angle`` comparisons). Triangulation output is therefore
-    **not** part of the cross-language parity vectors; tests assert structure
-    (type and vertex count) only.
+The ordering of triangles and the rotation of each triangle's three vertices
+are implementation-specific (driven by the "most extruded ear" tie-break
+and floating-point ``angle`` comparisons). Triangulation output is therefore
+not part of the cross-language parity vectors. Tests check the resulting
+geometry and structure rather than requiring identical triangle ordering.
 """
 
 from __future__ import annotations
@@ -48,7 +45,9 @@ class PolygonTriangulation:
 
         Args:
             polygon: A ``SIMPLE_POLYGON`` with at least 3 vertices, in
-                counter-clockwise order.
+                counter-clockwise order, without holes or dateline crossings.
+                Three vertices are copied without a winding check. Output reuses
+                the input Wgs84 objects; their coordinates are not modified here.
 
         Returns:
             A :class:`Wgs84Polygon` of type ``TRIANGLE_LIST`` on success
@@ -88,7 +87,7 @@ class PolygonTriangulation:
         for i in range(num_vertices - 3):
             ear_found = False
 
-            # Find the most extruded ear (largest angle; first wins ties).
+            # Find the most extruded ear (largest cosine angle score; first wins ties).
             for j in range(num_vertices):
                 if not vertices[j].is_active or not vertices[j].is_ear:
                     continue
@@ -144,7 +143,7 @@ class PolygonTriangulation:
         return (p3.y - p1.y) * (p2.x - p1.x) - (p3.x - p1.x) * (p2.y - p1.y) > 0.0
 
     def _is_inside(self, p1: Wgs84, p2: Wgs84, p3: Wgs84, p: Wgs84) -> bool:
-        """Whether point ``p`` lies inside triangle ``(p1, p2, p3)``."""
+        """Whether point ``p`` lies inside triangle ``(p1, p2, p3)``, including its boundary (CCW winding)."""
         return (
             not self._is_convex(p1, p, p2)
             and not self._is_convex(p2, p, p3)
