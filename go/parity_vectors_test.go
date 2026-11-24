@@ -13,8 +13,26 @@ import (
 )
 
 // parityData is the decoded form of test-vectors/parity_vectors.json.
+type polygonAreaVector struct {
+	Name          string         `json:"name"`
+	Exterior      [][2]float64   `json:"exterior"`
+	Holes         [][][2]float64 `json:"holes"`
+	Valid         bool           `json:"valid"`
+	Intersections []struct {
+		Exterior   [][2]float64   `json:"exterior"`
+		Holes      [][][2]float64 `json:"holes"`
+		Intersects bool           `json:"intersects"`
+	} `json:"intersections"`
+	Queries []struct {
+		Minimum  [2]float64          `json:"minimum"`
+		Maximum  [2]float64          `json:"maximum"`
+		Relation PolygonAreaRelation `json:"relation"`
+	} `json:"queries"`
+}
+
 type parityData struct {
-	Meta struct {
+	PolygonArea []polygonAreaVector `json:"polygon_area"`
+	Meta        struct {
 		FloatTolerance float64 `json:"float_tolerance"`
 	} `json:"_meta"`
 
@@ -680,5 +698,44 @@ func TestParityWgs84PolygonCollision(t *testing.T) {
 		if got := b.CollidesWith(a); got != c.BCollidesA {
 			t.Errorf("case %d (%s vs %s): b.collidesWith(a) = %v, want %v", i, c.A, c.B, got, c.BCollidesA)
 		}
+	}
+}
+
+// TestParityPolygonArea verifies shared topology and closed-boundary query semantics.
+func TestParityPolygonArea(t *testing.T) {
+	ring := func(points [][2]float64) []Vec2 {
+		result := make([]Vec2, len(points))
+		for i, p := range points {
+			result[i] = Vec2{X: p[0], Y: p[1]}
+		}
+		return result
+	}
+	for _, row := range loadParity(t).PolygonArea {
+		exterior := ring(row.Exterior)
+		holes := make([][]Vec2, len(row.Holes))
+		for i, h := range row.Holes {
+			holes[i] = ring(h)
+		}
+		if ValidPolygonArea(exterior, holes) != row.Valid {
+			t.Fatalf("validity: %s", row.Name)
+		}
+		for _, other := range row.Intersections {
+			inner := make([][]Vec2, len(other.Holes))
+			for i, h := range other.Holes {
+				inner[i] = ring(h)
+			}
+			if PolygonAreasIntersect(exterior, holes, ring(other.Exterior), inner) != other.Intersects {
+				t.Fatalf("intersection: %s", row.Name)
+			}
+		}
+		for _, q := range row.Queries {
+			actual := ClassifyPolygonRectangle(exterior, holes, Vec2{X: q.Minimum[0], Y: q.Minimum[1]}, Vec2{X: q.Maximum[0], Y: q.Maximum[1]})
+			if actual != q.Relation {
+				t.Fatalf("query %s: got %d want %d", row.Name, actual, q.Relation)
+			}
+		}
+	}
+	if ValidPolygonArea([]Vec2{{X: 0, Y: 0}, {X: 1, Y: 0}, {X: math.NaN(), Y: 1}}, nil) {
+		t.Fatal("nonfinite ring")
 	}
 }

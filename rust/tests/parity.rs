@@ -20,6 +20,7 @@ const FLOAT_TOLERANCE: f64 = 1e-6;
 struct Vectors {
     #[serde(rename = "_meta")]
     meta: Meta,
+    polygon_area: Vec<PolygonAreaVector>,
     wgs84_to_nds: Vec<Wgs84ToNds>,
     nds_to_wgs84: Vec<NdsToWgs84>,
     morton: Vec<MortonVec>,
@@ -932,4 +933,82 @@ fn geometry_wgs84_polygon_collision() {
             row.b_vertices
         );
     }
+}
+
+/// Raw polygon/hole vectors shared with every public language port.
+#[derive(Debug, Deserialize)]
+struct PolygonAreaVector {
+    name: String,
+    exterior: Vec<[f64; 2]>,
+    holes: Vec<Vec<[f64; 2]>>,
+    valid: bool,
+    queries: Vec<PolygonAreaQuery>,
+    intersections: Vec<PolygonAreaIntersection>,
+}
+#[derive(Debug, Deserialize)]
+struct PolygonAreaIntersection {
+    exterior: Vec<[f64; 2]>,
+    holes: Vec<Vec<[f64; 2]>>,
+    intersects: bool,
+}
+#[derive(Debug, Deserialize)]
+struct PolygonAreaQuery {
+    minimum: [f64; 2],
+    maximum: [f64; 2],
+    relation: u8,
+}
+
+#[test]
+fn polygon_areas() {
+    use ndslive_math::{classify_polygon_rectangle, valid_polygon_area, PolygonAreaRelation};
+    let point = |p: &[f64; 2]| Vec2::new(p[0], p[1]);
+    for row in load().polygon_area {
+        let exterior: Vec<_> = row.exterior.iter().map(point).collect();
+        let holes: Vec<Vec<_>> = row
+            .holes
+            .iter()
+            .map(|r| r.iter().map(point).collect())
+            .collect();
+        assert_eq!(
+            valid_polygon_area(&exterior, &holes),
+            row.valid,
+            "{}",
+            row.name
+        );
+        for q in row.queries {
+            assert_eq!(
+                classify_polygon_rectangle(&exterior, &holes, point(&q.minimum), point(&q.maximum))
+                    as u8,
+                q.relation,
+                "{}",
+                row.name
+            );
+        }
+        for other in row.intersections {
+            let outer: Vec<_> = other.exterior.iter().map(point).collect();
+            let inner: Vec<Vec<_>> = other
+                .holes
+                .iter()
+                .map(|r| r.iter().map(point).collect())
+                .collect();
+            assert_eq!(
+                ndslive_math::polygon_areas_intersect(&exterior, &holes, &outer, &inner),
+                other.intersects,
+                "{}",
+                row.name
+            );
+        }
+    }
+    assert!(!valid_polygon_area(
+        &[
+            Vec2::new(0., 0.),
+            Vec2::new(1., 0.),
+            Vec2::new(f64::NAN, 1.)
+        ],
+        &[]
+    ));
+    assert_eq!(
+        classify_polygon_rectangle(&[], &[], Vec2::default(), Vec2::default()),
+        PolygonAreaRelation::Outside
+    );
 }

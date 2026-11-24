@@ -89,6 +89,10 @@ except ImportError:
 
 
 __all__ = [
+    "PolygonAreaRelation",
+    "valid_polygon_area",
+    "polygon_areas_intersect",
+    "classify_polygon_rectangle",
     # Coordinate systems
     "Wgs84",
     # Tile IDs
@@ -109,3 +113,10 @@ __all__ = [
     # Version info
     "__version__",
 ]
+
+from .polygon_area import (
+    PolygonAreaRelation,
+    classify_polygon_rectangle,
+    polygon_areas_intersect,
+    valid_polygon_area,
+)

@@ -612,6 +612,113 @@ def main():
         )
     data["wgs84_polygon_collision"] = rows
 
+    # Closed polygon area queries, including non-convex exteriors and open holes.
+    from ndslive.math.polygon_area import (
+        classify_polygon_rectangle,
+        polygon_areas_intersect,
+        valid_polygon_area,
+    )
+
+    square = [[0, 0], [10, 0], [10, 10], [0, 10]]
+    hole = [[3, 3], [3, 7], [7, 7], [7, 3]]
+    fixtures = [
+        ("square", square, []),
+        ("closed-reverse", [*reversed(square), square[-1]], []),
+        ("hole", square, [hole]),
+        ("inside-hole", [[4, 4], [6, 4], [6, 6], [4, 6]], []),
+        ("contact-hole", [[3, 4], [5, 4], [5, 6], [3, 6]], []),
+        ("two-holes", square, [hole, [[1, 1], [2, 1], [2, 2], [1, 2]]]),
+        ("concave", [[0, 0], [10, 0], [10, 3], [3, 3], [3, 10], [0, 10]], []),
+        ("unwrapped", [[170, 0], [190, 0], [190, 10], [170, 10]], []),
+        ("empty", [], []),
+        ("self-cross", [[0, 0], [10, 10], [0, 10], [10, 0]], []),
+        ("backtrack", [[0, 0], [5, 0], [3, 0], [10, 10], [0, 10]], []),
+        ("duplicate", [[0, 0], [10, 0], [10, 0], [0, 10]], []),
+        ("collinear", [[0, 0], [5, 0], [10, 0]], []),
+        ("empty-hole", square, [[]]),
+        ("outside-hole", square, [[[20, 20], [21, 20], [21, 21], [20, 21]]]),
+        ("touching-hole", square, [[[0, 1], [2, 1], [2, 2], [0, 2]]]),
+        ("nested-holes", square, [hole, [[4, 4], [5, 4], [5, 5], [4, 5]]]),
+        ("overlap-holes", square, [hole, [[6, 6], [8, 6], [8, 8], [6, 8]]]),
+    ]
+    # Analytically nondegenerate one-NDS-unit rings, independently of the
+    # floating-point algorithm used to generate rectangle classifications.
+    step = 180 / 2**31
+    for lon, lat in [(0, 0), (22.5, 45), (-100, -70), (180, 80), (540, 45)]:
+        tiny = [[lon, lat], [lon + step, lat], [lon + step, lat + step], [lon, lat + step]]
+        fixtures.append((f"nds-unit-{lon}-{lat}", tiny, []))
+        fixtures.append((f"nds-unit-reverse-{lon}-{lat}", list(reversed(tiny)), []))
+        large = [[lon - 1, lat - 1], [lon + 1, lat - 1], [lon + 1, lat + 1], [lon - 1, lat + 1]]
+        fixtures.append((f"nds-unit-hole-{lon}-{lat}", large, [tiny]))
+    # Determinant is exactly one in this integer frame, although the rounded
+    # products cancel. Coordinates remain exact dyadic WGS84 values.
+    thin = [[0, 0], [(2**30 - 1) * step, (2**30 - 2) * step], [2**30 * step, (2**30 - 1) * step]]
+    fixtures.append(("nds-near-collinear", thin, []))
+    rectangles = [
+        ([-1, -1], [0, 0]),
+        ([1, 1], [2, 2]),
+        ([4, 4], [6, 6]),
+        ([2, 4], [3, 5]),
+        ([0, 0], [10, 10]),
+        ([-1, -1], [11, 11]),
+        ([12, 12], [15, 15]),
+        ([1, 1], [9, 2]),
+        ([2, 2], [8, 8]),
+        ([3, 4], [3, 4]),
+        ([1, 1], [0, 0]),
+        ([175, 1], [185, 9]),
+        ([190, 2], [191, 3]),
+        ([0, 2], [10, 2]),
+        ([1, 1], [1, 1]),
+    ]
+    rows = []
+    for name, exterior, holes in fixtures:
+        outer = [Vec2(*point) for point in exterior]
+        inner = [[Vec2(*point) for point in ring] for ring in holes]
+        valid = valid_polygon_area(outer, inner)
+        if name.startswith("nds-"):
+            assert valid, f"Full-resolution regression: {name}"
+        rows.append(
+            {
+                "name": name,
+                "exterior": exterior,
+                "holes": holes,
+                "valid": valid,
+                "intersections": [
+                    {
+                        "exterior": other,
+                        "holes": other_holes,
+                        "intersects": polygon_areas_intersect(
+                            outer,
+                            inner,
+                            [Vec2(*p) for p in other],
+                            [[Vec2(*p) for p in h] for h in other_holes],
+                        ),
+                    }
+                    for other, other_holes in [
+                        (square, []),
+                        (square, [hole]),
+                        ([[10, 0], [12, 0], [12, 2], [10, 2]], []),
+                    ]
+                ]
+                if valid
+                else [],
+                "queries": [
+                    {
+                        "minimum": minimum,
+                        "maximum": maximum,
+                        "relation": int(
+                            classify_polygon_rectangle(outer, inner, Vec2(*minimum), Vec2(*maximum))
+                        ),
+                    }
+                    for minimum, maximum in rectangles
+                ]
+                if valid
+                else [],
+            }
+        )
+    data["polygon_area"] = rows
+
     out_path = os.path.join(REPO_ROOT, "test-vectors", "parity_vectors.json")
     with open(out_path, "w") as f:
         json.dump(data, f, indent=2)

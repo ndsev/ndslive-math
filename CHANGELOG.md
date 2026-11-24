@@ -4,6 +4,32 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## Unreleased - 2026-11-23
+
+### C++
+- Preserve full-resolution tiny polygons and holes with adaptive exact orientation; add `polygonAreasIntersect` for hole-aware polygon intersection including touching boundaries.
+- Add `validPolygonArea`, `classifyPolygonRectangle`, and `PolygonAreaRelation` in `<ndsmath/polygonarea.h>` for closed polygon areas with holes, with shared parity vectors.
+
+### Python
+- Preserve full-resolution tiny polygons and holes with adaptive exact orientation; add `polygon_areas_intersect` for hole-aware polygon intersection including touching boundaries.
+- Add `valid_polygon_area`, `classify_polygon_rectangle`, and `PolygonAreaRelation` for closed polygon areas with holes, with shared parity vectors.
+
+### Java
+- Preserve full-resolution tiny polygons and holes with adaptive exact orientation; add `PolygonArea.polygonAreasIntersect` for hole-aware polygon intersection including touching boundaries.
+- Add `PolygonArea.validPolygonArea`, `PolygonArea.classifyPolygonRectangle`, and `PolygonArea.Relation` for closed polygon areas with holes, with shared parity vectors.
+
+### JavaScript
+- Preserve full-resolution tiny polygons and holes with adaptive exact orientation; add `polygonAreasIntersect` for hole-aware polygon intersection including touching boundaries.
+- Add `validPolygonArea`, `classifyPolygonRectangle`, and `PolygonAreaRelation` for closed polygon areas with holes, with shared parity vectors.
+
+### Go
+- Preserve full-resolution tiny polygons and holes with adaptive exact orientation; add `PolygonAreasIntersect` for hole-aware polygon intersection including touching boundaries.
+- Add `ValidPolygonArea`, `ClassifyPolygonRectangle`, and `PolygonAreaRelation` for closed polygon areas with holes, with shared parity vectors.
+
+### Rust
+- Preserve full-resolution tiny polygons and holes with adaptive exact orientation; add `polygon_areas_intersect` for hole-aware polygon intersection including touching boundaries.
+- Add `valid_polygon_area`, `classify_polygon_rectangle`, and `PolygonAreaRelation` for closed polygon areas with holes, with shared parity vectors.
+
 ## [v1.1.1] - 2026-11-11
 
 This patch updates documentation and build tooling without changing library

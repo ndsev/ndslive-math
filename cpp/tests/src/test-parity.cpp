@@ -11,12 +11,17 @@
 //   * the exclusive NE corner of world-edge low-level tiles (reaches 2^31/2^30,
 //     outside the int32 NDS coordinate range).
 #include "test_harness.h"
+#include <limits>
 
 #include "ndsmath/wgs84.h"
 #include "ndsmath/mortoncode.h"
 #include "ndsmath/packedtileid.h"
 #include "ndsmath/ndsboundingbox.h"
 #include "ndsmath/polygon.h"
+#include "ndsmath/polygonarea.h"
+using ndsmath::classifyPolygonRectangle;
+using ndsmath::PlanarRing;
+using ndsmath::validPolygonArea;
 #include "ndsmath/wgs84aabb.h"
 #include "ndsmath/wgs84polygon.h"
 
@@ -434,6 +439,40 @@ int main()
         CHECK_EQ(a.collidesWith(b), r["a_collides_b"].get<bool>());
         CHECK_EQ(b.collidesWith(a), r["b_collides_a"].get<bool>());
     }
+
+    // All ports consume the same raw polygon/hole topology and closed rectangle cases.
+    auto ring = [](auto const &json)
+    {
+        PlanarRing result;
+        for (auto const &p : json)
+            result.emplace_back(p[0].template get<double>(), p[1].template get<double>());
+        return result;
+    };
+    for (auto const &row : data["polygon_area"])
+    {
+        auto exterior = ring(row["exterior"]);
+        std::vector<PlanarRing> holes;
+        for (auto const &hole : row["holes"])
+            holes.push_back(ring(hole));
+        CHECK_EQ(validPolygonArea(exterior, holes), row["valid"].get<bool>());
+        for (auto const &other : row["intersections"])
+        {
+            std::vector<PlanarRing> inner;
+            for (auto const &h : other["holes"])
+                inner.push_back(ring(h));
+            CHECK_EQ(
+                ndsmath::polygonAreasIntersect(exterior, holes, ring(other["exterior"]), inner),
+                other["intersects"].get<bool>());
+        }
+        for (auto const &q : row["queries"])
+            CHECK_EQ(
+                static_cast<int>(classifyPolygonRectangle(
+                    exterior, holes, {q["minimum"][0].get<double>(), q["minimum"][1].get<double>()},
+                    {q["maximum"][0].get<double>(), q["maximum"][1].get<double>()})),
+                q["relation"].get<int>());
+    }
+    CHECK_EQ(validPolygonArea({{0, 0}, {1, 0}, {std::numeric_limits<double>::quiet_NaN(), 1}}),
+             false);
 
     return TEST_SUMMARY();
 }

@@ -55,3 +55,7 @@ pub use wgs84::{
 };
 pub use wgs84_aabb::Wgs84Aabb;
 pub use wgs84_polygon::Wgs84Polygon;
+pub mod polygon_area;
+pub use polygon_area::{
+    classify_polygon_rectangle, polygon_areas_intersect, valid_polygon_area, PolygonAreaRelation,
+};

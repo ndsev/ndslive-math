@@ -121,3 +121,17 @@ requests; changes are implemented by the NDS team. For security reports, see
 ## License
 
 BSD-3-Clause. See [`LICENSE`](LICENSE).
+
+## Polygon areas with holes
+
+All six ports expose equivalent polygon validation and closed-rectangle classification.
+
+Validate an exterior ring and all holes once, then classify closed rectangles as
+outside (0), inside (1), or boundary (2). Inputs use raw planar coordinates; callers
+must unwrap antimeridian geometry consistently. Either winding and an optional
+repeated closing vertex are supported. Rings must be finite, simple and nondegenerate;
+holes must lie strictly inside the exterior without touching, intersecting or nesting.
+Exterior and hole edges are included in the covered area. Rectangle classification
+requires validated rings and returns outside for nonfinite or inverted rectangles.
+
+Polygon-area validity and contact preserve full NDS coordinate resolution with adaptive exact-sign predicates. All six ports also expose area-to-area intersection (including holes and boundary contact) for producer-specific composition validation. Callers supply one compatible unwrapped coordinate frame.

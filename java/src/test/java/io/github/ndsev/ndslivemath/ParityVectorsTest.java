@@ -395,6 +395,53 @@ class ParityVectorsTest {
 		}
 	}
 
+	/** Verify every shared ring topology and closed rectangle query. */
+	@Test
+	void polygonAreas() {
+		JSONArray rows = data.getJSONArray("polygon_area");
+		for (int i = 0; i < rows.length(); ++i) {
+			JSONObject row = rows.getJSONObject(i);
+			List<Vec2> exterior = areaRing(row.getJSONArray("exterior"));
+			List<List<Vec2>> holes = new ArrayList<>();
+			JSONArray inner = row.getJSONArray("holes");
+			for (int j = 0; j < inner.length(); ++j)
+				holes.add(areaRing(inner.getJSONArray(j)));
+			assertEquals(row.getBoolean("valid"), PolygonArea.validPolygonArea(exterior, holes), row.getString("name"));
+			JSONArray pairs = row.getJSONArray("intersections");
+			for (int j = 0; j < pairs.length(); ++j) {
+				JSONObject other = pairs.getJSONObject(j);
+				List<List<Vec2>> otherHoles = new ArrayList<>();
+				JSONArray otherInner = other.getJSONArray("holes");
+				for (int k = 0; k < otherInner.length(); ++k)
+					otherHoles.add(areaRing(otherInner.getJSONArray(k)));
+				assertEquals(other.getBoolean("intersects"), PolygonArea.polygonAreasIntersect(exterior, holes,
+						areaRing(other.getJSONArray("exterior")), otherHoles), row.getString("name"));
+			}
+			JSONArray queries = row.getJSONArray("queries");
+			for (int j = 0; j < queries.length(); ++j) {
+				JSONObject query = queries.getJSONObject(j);
+				JSONArray min = query.getJSONArray("minimum"), max = query.getJSONArray("maximum");
+				assertEquals(query.getInt("relation"),
+						PolygonArea.classifyPolygonRectangle(exterior, holes,
+								new Vec2(min.getDouble(0), min.getDouble(1)),
+								new Vec2(max.getDouble(0), max.getDouble(1))).value,
+						row.getString("name"));
+			}
+		}
+		assertFalse(PolygonArea.validPolygonArea(List.of(new Vec2(0, 0), new Vec2(1, 0), new Vec2(Double.NaN, 1)),
+				List.of()));
+	}
+
+	/** Decode raw vectors without geographic normalization. */
+	private static List<Vec2> areaRing(JSONArray array) {
+		List<Vec2> ring = new ArrayList<>();
+		for (int i = 0; i < array.length(); ++i) {
+			JSONArray p = array.getJSONArray(i);
+			ring.add(new Vec2(p.getDouble(0), p.getDouble(1)));
+		}
+		return ring;
+	}
+
 	// --- helpers ---
 
 	private static Polygon.PolygonType polygonTypeOf(int value) {

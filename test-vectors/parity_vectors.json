@@ -3271,5 +3271,7161 @@
       "a_collides_b": true,
       "b_collides_a": true
     }
+  ],
+  "polygon_area": [
+    {
+      "name": "square",
+      "exterior": [
+        [
+          0,
+          0
+        ],
+        [
+          10,
+          0
+        ],
+        [
+          10,
+          10
+        ],
+        [
+          0,
+          10
+        ]
+      ],
+      "holes": [],
+      "valid": true,
+      "intersections": [
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [],
+          "intersects": true
+        },
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [
+            [
+              [
+                3,
+                3
+              ],
+              [
+                3,
+                7
+              ],
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                3
+              ]
+            ]
+          ],
+          "intersects": true
+        },
+        {
+          "exterior": [
+            [
+              10,
+              0
+            ],
+            [
+              12,
+              0
+            ],
+            [
+              12,
+              2
+            ],
+            [
+              10,
+              2
+            ]
+          ],
+          "holes": [],
+          "intersects": true
+        }
+      ],
+      "queries": [
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            2,
+            2
+          ],
+          "relation": 1
+        },
+        {
+          "minimum": [
+            4,
+            4
+          ],
+          "maximum": [
+            6,
+            6
+          ],
+          "relation": 1
+        },
+        {
+          "minimum": [
+            2,
+            4
+          ],
+          "maximum": [
+            3,
+            5
+          ],
+          "relation": 1
+        },
+        {
+          "minimum": [
+            0,
+            0
+          ],
+          "maximum": [
+            10,
+            10
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            11,
+            11
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            12,
+            12
+          ],
+          "maximum": [
+            15,
+            15
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            9,
+            2
+          ],
+          "relation": 1
+        },
+        {
+          "minimum": [
+            2,
+            2
+          ],
+          "maximum": [
+            8,
+            8
+          ],
+          "relation": 1
+        },
+        {
+          "minimum": [
+            3,
+            4
+          ],
+          "maximum": [
+            3,
+            4
+          ],
+          "relation": 1
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            175,
+            1
+          ],
+          "maximum": [
+            185,
+            9
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            190,
+            2
+          ],
+          "maximum": [
+            191,
+            3
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            2
+          ],
+          "maximum": [
+            10,
+            2
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            1,
+            1
+          ],
+          "relation": 1
+        }
+      ]
+    },
+    {
+      "name": "closed-reverse",
+      "exterior": [
+        [
+          0,
+          10
+        ],
+        [
+          10,
+          10
+        ],
+        [
+          10,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          10
+        ]
+      ],
+      "holes": [],
+      "valid": true,
+      "intersections": [
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [],
+          "intersects": true
+        },
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [
+            [
+              [
+                3,
+                3
+              ],
+              [
+                3,
+                7
+              ],
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                3
+              ]
+            ]
+          ],
+          "intersects": true
+        },
+        {
+          "exterior": [
+            [
+              10,
+              0
+            ],
+            [
+              12,
+              0
+            ],
+            [
+              12,
+              2
+            ],
+            [
+              10,
+              2
+            ]
+          ],
+          "holes": [],
+          "intersects": true
+        }
+      ],
+      "queries": [
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            2,
+            2
+          ],
+          "relation": 1
+        },
+        {
+          "minimum": [
+            4,
+            4
+          ],
+          "maximum": [
+            6,
+            6
+          ],
+          "relation": 1
+        },
+        {
+          "minimum": [
+            2,
+            4
+          ],
+          "maximum": [
+            3,
+            5
+          ],
+          "relation": 1
+        },
+        {
+          "minimum": [
+            0,
+            0
+          ],
+          "maximum": [
+            10,
+            10
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            11,
+            11
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            12,
+            12
+          ],
+          "maximum": [
+            15,
+            15
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            9,
+            2
+          ],
+          "relation": 1
+        },
+        {
+          "minimum": [
+            2,
+            2
+          ],
+          "maximum": [
+            8,
+            8
+          ],
+          "relation": 1
+        },
+        {
+          "minimum": [
+            3,
+            4
+          ],
+          "maximum": [
+            3,
+            4
+          ],
+          "relation": 1
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            175,
+            1
+          ],
+          "maximum": [
+            185,
+            9
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            190,
+            2
+          ],
+          "maximum": [
+            191,
+            3
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            2
+          ],
+          "maximum": [
+            10,
+            2
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            1,
+            1
+          ],
+          "relation": 1
+        }
+      ]
+    },
+    {
+      "name": "hole",
+      "exterior": [
+        [
+          0,
+          0
+        ],
+        [
+          10,
+          0
+        ],
+        [
+          10,
+          10
+        ],
+        [
+          0,
+          10
+        ]
+      ],
+      "holes": [
+        [
+          [
+            3,
+            3
+          ],
+          [
+            3,
+            7
+          ],
+          [
+            7,
+            7
+          ],
+          [
+            7,
+            3
+          ]
+        ]
+      ],
+      "valid": true,
+      "intersections": [
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [],
+          "intersects": true
+        },
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [
+            [
+              [
+                3,
+                3
+              ],
+              [
+                3,
+                7
+              ],
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                3
+              ]
+            ]
+          ],
+          "intersects": true
+        },
+        {
+          "exterior": [
+            [
+              10,
+              0
+            ],
+            [
+              12,
+              0
+            ],
+            [
+              12,
+              2
+            ],
+            [
+              10,
+              2
+            ]
+          ],
+          "holes": [],
+          "intersects": true
+        }
+      ],
+      "queries": [
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            2,
+            2
+          ],
+          "relation": 1
+        },
+        {
+          "minimum": [
+            4,
+            4
+          ],
+          "maximum": [
+            6,
+            6
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            2,
+            4
+          ],
+          "maximum": [
+            3,
+            5
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            0,
+            0
+          ],
+          "maximum": [
+            10,
+            10
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            11,
+            11
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            12,
+            12
+          ],
+          "maximum": [
+            15,
+            15
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            9,
+            2
+          ],
+          "relation": 1
+        },
+        {
+          "minimum": [
+            2,
+            2
+          ],
+          "maximum": [
+            8,
+            8
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            3,
+            4
+          ],
+          "maximum": [
+            3,
+            4
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            175,
+            1
+          ],
+          "maximum": [
+            185,
+            9
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            190,
+            2
+          ],
+          "maximum": [
+            191,
+            3
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            2
+          ],
+          "maximum": [
+            10,
+            2
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            1,
+            1
+          ],
+          "relation": 1
+        }
+      ]
+    },
+    {
+      "name": "inside-hole",
+      "exterior": [
+        [
+          4,
+          4
+        ],
+        [
+          6,
+          4
+        ],
+        [
+          6,
+          6
+        ],
+        [
+          4,
+          6
+        ]
+      ],
+      "holes": [],
+      "valid": true,
+      "intersections": [
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [],
+          "intersects": true
+        },
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [
+            [
+              [
+                3,
+                3
+              ],
+              [
+                3,
+                7
+              ],
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                3
+              ]
+            ]
+          ],
+          "intersects": false
+        },
+        {
+          "exterior": [
+            [
+              10,
+              0
+            ],
+            [
+              12,
+              0
+            ],
+            [
+              12,
+              2
+            ],
+            [
+              10,
+              2
+            ]
+          ],
+          "holes": [],
+          "intersects": false
+        }
+      ],
+      "queries": [
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            2,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            4,
+            4
+          ],
+          "maximum": [
+            6,
+            6
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            2,
+            4
+          ],
+          "maximum": [
+            3,
+            5
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            0
+          ],
+          "maximum": [
+            10,
+            10
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            11,
+            11
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            12,
+            12
+          ],
+          "maximum": [
+            15,
+            15
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            9,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            2,
+            2
+          ],
+          "maximum": [
+            8,
+            8
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            3,
+            4
+          ],
+          "maximum": [
+            3,
+            4
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            175,
+            1
+          ],
+          "maximum": [
+            185,
+            9
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            190,
+            2
+          ],
+          "maximum": [
+            191,
+            3
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            2
+          ],
+          "maximum": [
+            10,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            1,
+            1
+          ],
+          "relation": 0
+        }
+      ]
+    },
+    {
+      "name": "contact-hole",
+      "exterior": [
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          4
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          3,
+          6
+        ]
+      ],
+      "holes": [],
+      "valid": true,
+      "intersections": [
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [],
+          "intersects": true
+        },
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [
+            [
+              [
+                3,
+                3
+              ],
+              [
+                3,
+                7
+              ],
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                3
+              ]
+            ]
+          ],
+          "intersects": true
+        },
+        {
+          "exterior": [
+            [
+              10,
+              0
+            ],
+            [
+              12,
+              0
+            ],
+            [
+              12,
+              2
+            ],
+            [
+              10,
+              2
+            ]
+          ],
+          "holes": [],
+          "intersects": false
+        }
+      ],
+      "queries": [
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            2,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            4,
+            4
+          ],
+          "maximum": [
+            6,
+            6
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            2,
+            4
+          ],
+          "maximum": [
+            3,
+            5
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            0,
+            0
+          ],
+          "maximum": [
+            10,
+            10
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            11,
+            11
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            12,
+            12
+          ],
+          "maximum": [
+            15,
+            15
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            9,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            2,
+            2
+          ],
+          "maximum": [
+            8,
+            8
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            3,
+            4
+          ],
+          "maximum": [
+            3,
+            4
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            175,
+            1
+          ],
+          "maximum": [
+            185,
+            9
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            190,
+            2
+          ],
+          "maximum": [
+            191,
+            3
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            2
+          ],
+          "maximum": [
+            10,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            1,
+            1
+          ],
+          "relation": 0
+        }
+      ]
+    },
+    {
+      "name": "two-holes",
+      "exterior": [
+        [
+          0,
+          0
+        ],
+        [
+          10,
+          0
+        ],
+        [
+          10,
+          10
+        ],
+        [
+          0,
+          10
+        ]
+      ],
+      "holes": [
+        [
+          [
+            3,
+            3
+          ],
+          [
+            3,
+            7
+          ],
+          [
+            7,
+            7
+          ],
+          [
+            7,
+            3
+          ]
+        ],
+        [
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            1,
+            2
+          ]
+        ]
+      ],
+      "valid": true,
+      "intersections": [
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [],
+          "intersects": true
+        },
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [
+            [
+              [
+                3,
+                3
+              ],
+              [
+                3,
+                7
+              ],
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                3
+              ]
+            ]
+          ],
+          "intersects": true
+        },
+        {
+          "exterior": [
+            [
+              10,
+              0
+            ],
+            [
+              12,
+              0
+            ],
+            [
+              12,
+              2
+            ],
+            [
+              10,
+              2
+            ]
+          ],
+          "holes": [],
+          "intersects": true
+        }
+      ],
+      "queries": [
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            2,
+            2
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            4,
+            4
+          ],
+          "maximum": [
+            6,
+            6
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            2,
+            4
+          ],
+          "maximum": [
+            3,
+            5
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            0,
+            0
+          ],
+          "maximum": [
+            10,
+            10
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            11,
+            11
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            12,
+            12
+          ],
+          "maximum": [
+            15,
+            15
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            9,
+            2
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            2,
+            2
+          ],
+          "maximum": [
+            8,
+            8
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            3,
+            4
+          ],
+          "maximum": [
+            3,
+            4
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            175,
+            1
+          ],
+          "maximum": [
+            185,
+            9
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            190,
+            2
+          ],
+          "maximum": [
+            191,
+            3
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            2
+          ],
+          "maximum": [
+            10,
+            2
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            1,
+            1
+          ],
+          "relation": 2
+        }
+      ]
+    },
+    {
+      "name": "concave",
+      "exterior": [
+        [
+          0,
+          0
+        ],
+        [
+          10,
+          0
+        ],
+        [
+          10,
+          3
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          3,
+          10
+        ],
+        [
+          0,
+          10
+        ]
+      ],
+      "holes": [],
+      "valid": true,
+      "intersections": [
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [],
+          "intersects": true
+        },
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [
+            [
+              [
+                3,
+                3
+              ],
+              [
+                3,
+                7
+              ],
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                3
+              ]
+            ]
+          ],
+          "intersects": true
+        },
+        {
+          "exterior": [
+            [
+              10,
+              0
+            ],
+            [
+              12,
+              0
+            ],
+            [
+              12,
+              2
+            ],
+            [
+              10,
+              2
+            ]
+          ],
+          "holes": [],
+          "intersects": true
+        }
+      ],
+      "queries": [
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            2,
+            2
+          ],
+          "relation": 1
+        },
+        {
+          "minimum": [
+            4,
+            4
+          ],
+          "maximum": [
+            6,
+            6
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            2,
+            4
+          ],
+          "maximum": [
+            3,
+            5
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            0,
+            0
+          ],
+          "maximum": [
+            10,
+            10
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            11,
+            11
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            12,
+            12
+          ],
+          "maximum": [
+            15,
+            15
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            9,
+            2
+          ],
+          "relation": 1
+        },
+        {
+          "minimum": [
+            2,
+            2
+          ],
+          "maximum": [
+            8,
+            8
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            3,
+            4
+          ],
+          "maximum": [
+            3,
+            4
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            175,
+            1
+          ],
+          "maximum": [
+            185,
+            9
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            190,
+            2
+          ],
+          "maximum": [
+            191,
+            3
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            2
+          ],
+          "maximum": [
+            10,
+            2
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            1,
+            1
+          ],
+          "relation": 1
+        }
+      ]
+    },
+    {
+      "name": "unwrapped",
+      "exterior": [
+        [
+          170,
+          0
+        ],
+        [
+          190,
+          0
+        ],
+        [
+          190,
+          10
+        ],
+        [
+          170,
+          10
+        ]
+      ],
+      "holes": [],
+      "valid": true,
+      "intersections": [
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [],
+          "intersects": false
+        },
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [
+            [
+              [
+                3,
+                3
+              ],
+              [
+                3,
+                7
+              ],
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                3
+              ]
+            ]
+          ],
+          "intersects": false
+        },
+        {
+          "exterior": [
+            [
+              10,
+              0
+            ],
+            [
+              12,
+              0
+            ],
+            [
+              12,
+              2
+            ],
+            [
+              10,
+              2
+            ]
+          ],
+          "holes": [],
+          "intersects": false
+        }
+      ],
+      "queries": [
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            2,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            4,
+            4
+          ],
+          "maximum": [
+            6,
+            6
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            2,
+            4
+          ],
+          "maximum": [
+            3,
+            5
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            0
+          ],
+          "maximum": [
+            10,
+            10
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            11,
+            11
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            12,
+            12
+          ],
+          "maximum": [
+            15,
+            15
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            9,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            2,
+            2
+          ],
+          "maximum": [
+            8,
+            8
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            3,
+            4
+          ],
+          "maximum": [
+            3,
+            4
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            175,
+            1
+          ],
+          "maximum": [
+            185,
+            9
+          ],
+          "relation": 1
+        },
+        {
+          "minimum": [
+            190,
+            2
+          ],
+          "maximum": [
+            191,
+            3
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            0,
+            2
+          ],
+          "maximum": [
+            10,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            1,
+            1
+          ],
+          "relation": 0
+        }
+      ]
+    },
+    {
+      "name": "empty",
+      "exterior": [],
+      "holes": [],
+      "valid": false,
+      "intersections": [],
+      "queries": []
+    },
+    {
+      "name": "self-cross",
+      "exterior": [
+        [
+          0,
+          0
+        ],
+        [
+          10,
+          10
+        ],
+        [
+          0,
+          10
+        ],
+        [
+          10,
+          0
+        ]
+      ],
+      "holes": [],
+      "valid": false,
+      "intersections": [],
+      "queries": []
+    },
+    {
+      "name": "backtrack",
+      "exterior": [
+        [
+          0,
+          0
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          10,
+          10
+        ],
+        [
+          0,
+          10
+        ]
+      ],
+      "holes": [],
+      "valid": false,
+      "intersections": [],
+      "queries": []
+    },
+    {
+      "name": "duplicate",
+      "exterior": [
+        [
+          0,
+          0
+        ],
+        [
+          10,
+          0
+        ],
+        [
+          10,
+          0
+        ],
+        [
+          0,
+          10
+        ]
+      ],
+      "holes": [],
+      "valid": false,
+      "intersections": [],
+      "queries": []
+    },
+    {
+      "name": "collinear",
+      "exterior": [
+        [
+          0,
+          0
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          10,
+          0
+        ]
+      ],
+      "holes": [],
+      "valid": false,
+      "intersections": [],
+      "queries": []
+    },
+    {
+      "name": "empty-hole",
+      "exterior": [
+        [
+          0,
+          0
+        ],
+        [
+          10,
+          0
+        ],
+        [
+          10,
+          10
+        ],
+        [
+          0,
+          10
+        ]
+      ],
+      "holes": [
+        []
+      ],
+      "valid": false,
+      "intersections": [],
+      "queries": []
+    },
+    {
+      "name": "outside-hole",
+      "exterior": [
+        [
+          0,
+          0
+        ],
+        [
+          10,
+          0
+        ],
+        [
+          10,
+          10
+        ],
+        [
+          0,
+          10
+        ]
+      ],
+      "holes": [
+        [
+          [
+            20,
+            20
+          ],
+          [
+            21,
+            20
+          ],
+          [
+            21,
+            21
+          ],
+          [
+            20,
+            21
+          ]
+        ]
+      ],
+      "valid": false,
+      "intersections": [],
+      "queries": []
+    },
+    {
+      "name": "touching-hole",
+      "exterior": [
+        [
+          0,
+          0
+        ],
+        [
+          10,
+          0
+        ],
+        [
+          10,
+          10
+        ],
+        [
+          0,
+          10
+        ]
+      ],
+      "holes": [
+        [
+          [
+            0,
+            1
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            0,
+            2
+          ]
+        ]
+      ],
+      "valid": false,
+      "intersections": [],
+      "queries": []
+    },
+    {
+      "name": "nested-holes",
+      "exterior": [
+        [
+          0,
+          0
+        ],
+        [
+          10,
+          0
+        ],
+        [
+          10,
+          10
+        ],
+        [
+          0,
+          10
+        ]
+      ],
+      "holes": [
+        [
+          [
+            3,
+            3
+          ],
+          [
+            3,
+            7
+          ],
+          [
+            7,
+            7
+          ],
+          [
+            7,
+            3
+          ]
+        ],
+        [
+          [
+            4,
+            4
+          ],
+          [
+            5,
+            4
+          ],
+          [
+            5,
+            5
+          ],
+          [
+            4,
+            5
+          ]
+        ]
+      ],
+      "valid": false,
+      "intersections": [],
+      "queries": []
+    },
+    {
+      "name": "overlap-holes",
+      "exterior": [
+        [
+          0,
+          0
+        ],
+        [
+          10,
+          0
+        ],
+        [
+          10,
+          10
+        ],
+        [
+          0,
+          10
+        ]
+      ],
+      "holes": [
+        [
+          [
+            3,
+            3
+          ],
+          [
+            3,
+            7
+          ],
+          [
+            7,
+            7
+          ],
+          [
+            7,
+            3
+          ]
+        ],
+        [
+          [
+            6,
+            6
+          ],
+          [
+            8,
+            6
+          ],
+          [
+            8,
+            8
+          ],
+          [
+            6,
+            8
+          ]
+        ]
+      ],
+      "valid": false,
+      "intersections": [],
+      "queries": []
+    },
+    {
+      "name": "nds-unit-0-0",
+      "exterior": [
+        [
+          0,
+          0
+        ],
+        [
+          8.381903171539307e-08,
+          0
+        ],
+        [
+          8.381903171539307e-08,
+          8.381903171539307e-08
+        ],
+        [
+          0,
+          8.381903171539307e-08
+        ]
+      ],
+      "holes": [],
+      "valid": true,
+      "intersections": [
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [],
+          "intersects": true
+        },
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [
+            [
+              [
+                3,
+                3
+              ],
+              [
+                3,
+                7
+              ],
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                3
+              ]
+            ]
+          ],
+          "intersects": true
+        },
+        {
+          "exterior": [
+            [
+              10,
+              0
+            ],
+            [
+              12,
+              0
+            ],
+            [
+              12,
+              2
+            ],
+            [
+              10,
+              2
+            ]
+          ],
+          "holes": [],
+          "intersects": false
+        }
+      ],
+      "queries": [
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            2,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            4,
+            4
+          ],
+          "maximum": [
+            6,
+            6
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            2,
+            4
+          ],
+          "maximum": [
+            3,
+            5
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            0
+          ],
+          "maximum": [
+            10,
+            10
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            11,
+            11
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            12,
+            12
+          ],
+          "maximum": [
+            15,
+            15
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            9,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            2,
+            2
+          ],
+          "maximum": [
+            8,
+            8
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            3,
+            4
+          ],
+          "maximum": [
+            3,
+            4
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            175,
+            1
+          ],
+          "maximum": [
+            185,
+            9
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            190,
+            2
+          ],
+          "maximum": [
+            191,
+            3
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            2
+          ],
+          "maximum": [
+            10,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            1,
+            1
+          ],
+          "relation": 0
+        }
+      ]
+    },
+    {
+      "name": "nds-unit-reverse-0-0",
+      "exterior": [
+        [
+          0,
+          8.381903171539307e-08
+        ],
+        [
+          8.381903171539307e-08,
+          8.381903171539307e-08
+        ],
+        [
+          8.381903171539307e-08,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "holes": [],
+      "valid": true,
+      "intersections": [
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [],
+          "intersects": true
+        },
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [
+            [
+              [
+                3,
+                3
+              ],
+              [
+                3,
+                7
+              ],
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                3
+              ]
+            ]
+          ],
+          "intersects": true
+        },
+        {
+          "exterior": [
+            [
+              10,
+              0
+            ],
+            [
+              12,
+              0
+            ],
+            [
+              12,
+              2
+            ],
+            [
+              10,
+              2
+            ]
+          ],
+          "holes": [],
+          "intersects": false
+        }
+      ],
+      "queries": [
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            2,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            4,
+            4
+          ],
+          "maximum": [
+            6,
+            6
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            2,
+            4
+          ],
+          "maximum": [
+            3,
+            5
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            0
+          ],
+          "maximum": [
+            10,
+            10
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            11,
+            11
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            12,
+            12
+          ],
+          "maximum": [
+            15,
+            15
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            9,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            2,
+            2
+          ],
+          "maximum": [
+            8,
+            8
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            3,
+            4
+          ],
+          "maximum": [
+            3,
+            4
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            175,
+            1
+          ],
+          "maximum": [
+            185,
+            9
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            190,
+            2
+          ],
+          "maximum": [
+            191,
+            3
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            2
+          ],
+          "maximum": [
+            10,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            1,
+            1
+          ],
+          "relation": 0
+        }
+      ]
+    },
+    {
+      "name": "nds-unit-hole-0-0",
+      "exterior": [
+        [
+          -1,
+          -1
+        ],
+        [
+          1,
+          -1
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          -1,
+          1
+        ]
+      ],
+      "holes": [
+        [
+          [
+            0,
+            0
+          ],
+          [
+            8.381903171539307e-08,
+            0
+          ],
+          [
+            8.381903171539307e-08,
+            8.381903171539307e-08
+          ],
+          [
+            0,
+            8.381903171539307e-08
+          ]
+        ]
+      ],
+      "valid": true,
+      "intersections": [
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [],
+          "intersects": true
+        },
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [
+            [
+              [
+                3,
+                3
+              ],
+              [
+                3,
+                7
+              ],
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                3
+              ]
+            ]
+          ],
+          "intersects": true
+        },
+        {
+          "exterior": [
+            [
+              10,
+              0
+            ],
+            [
+              12,
+              0
+            ],
+            [
+              12,
+              2
+            ],
+            [
+              10,
+              2
+            ]
+          ],
+          "holes": [],
+          "intersects": false
+        }
+      ],
+      "queries": [
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            2,
+            2
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            4,
+            4
+          ],
+          "maximum": [
+            6,
+            6
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            2,
+            4
+          ],
+          "maximum": [
+            3,
+            5
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            0
+          ],
+          "maximum": [
+            10,
+            10
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            11,
+            11
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            12,
+            12
+          ],
+          "maximum": [
+            15,
+            15
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            9,
+            2
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            2,
+            2
+          ],
+          "maximum": [
+            8,
+            8
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            3,
+            4
+          ],
+          "maximum": [
+            3,
+            4
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            175,
+            1
+          ],
+          "maximum": [
+            185,
+            9
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            190,
+            2
+          ],
+          "maximum": [
+            191,
+            3
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            2
+          ],
+          "maximum": [
+            10,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            1,
+            1
+          ],
+          "relation": 2
+        }
+      ]
+    },
+    {
+      "name": "nds-unit-22.5-45",
+      "exterior": [
+        [
+          22.5,
+          45
+        ],
+        [
+          22.50000008381903,
+          45
+        ],
+        [
+          22.50000008381903,
+          45.00000008381903
+        ],
+        [
+          22.5,
+          45.00000008381903
+        ]
+      ],
+      "holes": [],
+      "valid": true,
+      "intersections": [
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [],
+          "intersects": false
+        },
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [
+            [
+              [
+                3,
+                3
+              ],
+              [
+                3,
+                7
+              ],
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                3
+              ]
+            ]
+          ],
+          "intersects": false
+        },
+        {
+          "exterior": [
+            [
+              10,
+              0
+            ],
+            [
+              12,
+              0
+            ],
+            [
+              12,
+              2
+            ],
+            [
+              10,
+              2
+            ]
+          ],
+          "holes": [],
+          "intersects": false
+        }
+      ],
+      "queries": [
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            2,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            4,
+            4
+          ],
+          "maximum": [
+            6,
+            6
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            2,
+            4
+          ],
+          "maximum": [
+            3,
+            5
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            0
+          ],
+          "maximum": [
+            10,
+            10
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            11,
+            11
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            12,
+            12
+          ],
+          "maximum": [
+            15,
+            15
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            9,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            2,
+            2
+          ],
+          "maximum": [
+            8,
+            8
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            3,
+            4
+          ],
+          "maximum": [
+            3,
+            4
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            175,
+            1
+          ],
+          "maximum": [
+            185,
+            9
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            190,
+            2
+          ],
+          "maximum": [
+            191,
+            3
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            2
+          ],
+          "maximum": [
+            10,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            1,
+            1
+          ],
+          "relation": 0
+        }
+      ]
+    },
+    {
+      "name": "nds-unit-reverse-22.5-45",
+      "exterior": [
+        [
+          22.5,
+          45.00000008381903
+        ],
+        [
+          22.50000008381903,
+          45.00000008381903
+        ],
+        [
+          22.50000008381903,
+          45
+        ],
+        [
+          22.5,
+          45
+        ]
+      ],
+      "holes": [],
+      "valid": true,
+      "intersections": [
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [],
+          "intersects": false
+        },
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [
+            [
+              [
+                3,
+                3
+              ],
+              [
+                3,
+                7
+              ],
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                3
+              ]
+            ]
+          ],
+          "intersects": false
+        },
+        {
+          "exterior": [
+            [
+              10,
+              0
+            ],
+            [
+              12,
+              0
+            ],
+            [
+              12,
+              2
+            ],
+            [
+              10,
+              2
+            ]
+          ],
+          "holes": [],
+          "intersects": false
+        }
+      ],
+      "queries": [
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            2,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            4,
+            4
+          ],
+          "maximum": [
+            6,
+            6
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            2,
+            4
+          ],
+          "maximum": [
+            3,
+            5
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            0
+          ],
+          "maximum": [
+            10,
+            10
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            11,
+            11
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            12,
+            12
+          ],
+          "maximum": [
+            15,
+            15
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            9,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            2,
+            2
+          ],
+          "maximum": [
+            8,
+            8
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            3,
+            4
+          ],
+          "maximum": [
+            3,
+            4
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            175,
+            1
+          ],
+          "maximum": [
+            185,
+            9
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            190,
+            2
+          ],
+          "maximum": [
+            191,
+            3
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            2
+          ],
+          "maximum": [
+            10,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            1,
+            1
+          ],
+          "relation": 0
+        }
+      ]
+    },
+    {
+      "name": "nds-unit-hole-22.5-45",
+      "exterior": [
+        [
+          21.5,
+          44
+        ],
+        [
+          23.5,
+          44
+        ],
+        [
+          23.5,
+          46
+        ],
+        [
+          21.5,
+          46
+        ]
+      ],
+      "holes": [
+        [
+          [
+            22.5,
+            45
+          ],
+          [
+            22.50000008381903,
+            45
+          ],
+          [
+            22.50000008381903,
+            45.00000008381903
+          ],
+          [
+            22.5,
+            45.00000008381903
+          ]
+        ]
+      ],
+      "valid": true,
+      "intersections": [
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [],
+          "intersects": false
+        },
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [
+            [
+              [
+                3,
+                3
+              ],
+              [
+                3,
+                7
+              ],
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                3
+              ]
+            ]
+          ],
+          "intersects": false
+        },
+        {
+          "exterior": [
+            [
+              10,
+              0
+            ],
+            [
+              12,
+              0
+            ],
+            [
+              12,
+              2
+            ],
+            [
+              10,
+              2
+            ]
+          ],
+          "holes": [],
+          "intersects": false
+        }
+      ],
+      "queries": [
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            2,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            4,
+            4
+          ],
+          "maximum": [
+            6,
+            6
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            2,
+            4
+          ],
+          "maximum": [
+            3,
+            5
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            0
+          ],
+          "maximum": [
+            10,
+            10
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            11,
+            11
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            12,
+            12
+          ],
+          "maximum": [
+            15,
+            15
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            9,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            2,
+            2
+          ],
+          "maximum": [
+            8,
+            8
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            3,
+            4
+          ],
+          "maximum": [
+            3,
+            4
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            175,
+            1
+          ],
+          "maximum": [
+            185,
+            9
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            190,
+            2
+          ],
+          "maximum": [
+            191,
+            3
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            2
+          ],
+          "maximum": [
+            10,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            1,
+            1
+          ],
+          "relation": 0
+        }
+      ]
+    },
+    {
+      "name": "nds-unit--100--70",
+      "exterior": [
+        [
+          -100,
+          -70
+        ],
+        [
+          -99.99999991618097,
+          -70
+        ],
+        [
+          -99.99999991618097,
+          -69.99999991618097
+        ],
+        [
+          -100,
+          -69.99999991618097
+        ]
+      ],
+      "holes": [],
+      "valid": true,
+      "intersections": [
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [],
+          "intersects": false
+        },
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [
+            [
+              [
+                3,
+                3
+              ],
+              [
+                3,
+                7
+              ],
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                3
+              ]
+            ]
+          ],
+          "intersects": false
+        },
+        {
+          "exterior": [
+            [
+              10,
+              0
+            ],
+            [
+              12,
+              0
+            ],
+            [
+              12,
+              2
+            ],
+            [
+              10,
+              2
+            ]
+          ],
+          "holes": [],
+          "intersects": false
+        }
+      ],
+      "queries": [
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            2,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            4,
+            4
+          ],
+          "maximum": [
+            6,
+            6
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            2,
+            4
+          ],
+          "maximum": [
+            3,
+            5
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            0
+          ],
+          "maximum": [
+            10,
+            10
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            11,
+            11
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            12,
+            12
+          ],
+          "maximum": [
+            15,
+            15
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            9,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            2,
+            2
+          ],
+          "maximum": [
+            8,
+            8
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            3,
+            4
+          ],
+          "maximum": [
+            3,
+            4
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            175,
+            1
+          ],
+          "maximum": [
+            185,
+            9
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            190,
+            2
+          ],
+          "maximum": [
+            191,
+            3
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            2
+          ],
+          "maximum": [
+            10,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            1,
+            1
+          ],
+          "relation": 0
+        }
+      ]
+    },
+    {
+      "name": "nds-unit-reverse--100--70",
+      "exterior": [
+        [
+          -100,
+          -69.99999991618097
+        ],
+        [
+          -99.99999991618097,
+          -69.99999991618097
+        ],
+        [
+          -99.99999991618097,
+          -70
+        ],
+        [
+          -100,
+          -70
+        ]
+      ],
+      "holes": [],
+      "valid": true,
+      "intersections": [
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [],
+          "intersects": false
+        },
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [
+            [
+              [
+                3,
+                3
+              ],
+              [
+                3,
+                7
+              ],
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                3
+              ]
+            ]
+          ],
+          "intersects": false
+        },
+        {
+          "exterior": [
+            [
+              10,
+              0
+            ],
+            [
+              12,
+              0
+            ],
+            [
+              12,
+              2
+            ],
+            [
+              10,
+              2
+            ]
+          ],
+          "holes": [],
+          "intersects": false
+        }
+      ],
+      "queries": [
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            2,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            4,
+            4
+          ],
+          "maximum": [
+            6,
+            6
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            2,
+            4
+          ],
+          "maximum": [
+            3,
+            5
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            0
+          ],
+          "maximum": [
+            10,
+            10
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            11,
+            11
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            12,
+            12
+          ],
+          "maximum": [
+            15,
+            15
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            9,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            2,
+            2
+          ],
+          "maximum": [
+            8,
+            8
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            3,
+            4
+          ],
+          "maximum": [
+            3,
+            4
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            175,
+            1
+          ],
+          "maximum": [
+            185,
+            9
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            190,
+            2
+          ],
+          "maximum": [
+            191,
+            3
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            2
+          ],
+          "maximum": [
+            10,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            1,
+            1
+          ],
+          "relation": 0
+        }
+      ]
+    },
+    {
+      "name": "nds-unit-hole--100--70",
+      "exterior": [
+        [
+          -101,
+          -71
+        ],
+        [
+          -99,
+          -71
+        ],
+        [
+          -99,
+          -69
+        ],
+        [
+          -101,
+          -69
+        ]
+      ],
+      "holes": [
+        [
+          [
+            -100,
+            -70
+          ],
+          [
+            -99.99999991618097,
+            -70
+          ],
+          [
+            -99.99999991618097,
+            -69.99999991618097
+          ],
+          [
+            -100,
+            -69.99999991618097
+          ]
+        ]
+      ],
+      "valid": true,
+      "intersections": [
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [],
+          "intersects": false
+        },
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [
+            [
+              [
+                3,
+                3
+              ],
+              [
+                3,
+                7
+              ],
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                3
+              ]
+            ]
+          ],
+          "intersects": false
+        },
+        {
+          "exterior": [
+            [
+              10,
+              0
+            ],
+            [
+              12,
+              0
+            ],
+            [
+              12,
+              2
+            ],
+            [
+              10,
+              2
+            ]
+          ],
+          "holes": [],
+          "intersects": false
+        }
+      ],
+      "queries": [
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            2,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            4,
+            4
+          ],
+          "maximum": [
+            6,
+            6
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            2,
+            4
+          ],
+          "maximum": [
+            3,
+            5
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            0
+          ],
+          "maximum": [
+            10,
+            10
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            11,
+            11
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            12,
+            12
+          ],
+          "maximum": [
+            15,
+            15
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            9,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            2,
+            2
+          ],
+          "maximum": [
+            8,
+            8
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            3,
+            4
+          ],
+          "maximum": [
+            3,
+            4
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            175,
+            1
+          ],
+          "maximum": [
+            185,
+            9
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            190,
+            2
+          ],
+          "maximum": [
+            191,
+            3
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            2
+          ],
+          "maximum": [
+            10,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            1,
+            1
+          ],
+          "relation": 0
+        }
+      ]
+    },
+    {
+      "name": "nds-unit-180-80",
+      "exterior": [
+        [
+          180,
+          80
+        ],
+        [
+          180.00000008381903,
+          80
+        ],
+        [
+          180.00000008381903,
+          80.00000008381903
+        ],
+        [
+          180,
+          80.00000008381903
+        ]
+      ],
+      "holes": [],
+      "valid": true,
+      "intersections": [
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [],
+          "intersects": false
+        },
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [
+            [
+              [
+                3,
+                3
+              ],
+              [
+                3,
+                7
+              ],
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                3
+              ]
+            ]
+          ],
+          "intersects": false
+        },
+        {
+          "exterior": [
+            [
+              10,
+              0
+            ],
+            [
+              12,
+              0
+            ],
+            [
+              12,
+              2
+            ],
+            [
+              10,
+              2
+            ]
+          ],
+          "holes": [],
+          "intersects": false
+        }
+      ],
+      "queries": [
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            2,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            4,
+            4
+          ],
+          "maximum": [
+            6,
+            6
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            2,
+            4
+          ],
+          "maximum": [
+            3,
+            5
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            0
+          ],
+          "maximum": [
+            10,
+            10
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            11,
+            11
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            12,
+            12
+          ],
+          "maximum": [
+            15,
+            15
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            9,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            2,
+            2
+          ],
+          "maximum": [
+            8,
+            8
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            3,
+            4
+          ],
+          "maximum": [
+            3,
+            4
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            175,
+            1
+          ],
+          "maximum": [
+            185,
+            9
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            190,
+            2
+          ],
+          "maximum": [
+            191,
+            3
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            2
+          ],
+          "maximum": [
+            10,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            1,
+            1
+          ],
+          "relation": 0
+        }
+      ]
+    },
+    {
+      "name": "nds-unit-reverse-180-80",
+      "exterior": [
+        [
+          180,
+          80.00000008381903
+        ],
+        [
+          180.00000008381903,
+          80.00000008381903
+        ],
+        [
+          180.00000008381903,
+          80
+        ],
+        [
+          180,
+          80
+        ]
+      ],
+      "holes": [],
+      "valid": true,
+      "intersections": [
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [],
+          "intersects": false
+        },
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [
+            [
+              [
+                3,
+                3
+              ],
+              [
+                3,
+                7
+              ],
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                3
+              ]
+            ]
+          ],
+          "intersects": false
+        },
+        {
+          "exterior": [
+            [
+              10,
+              0
+            ],
+            [
+              12,
+              0
+            ],
+            [
+              12,
+              2
+            ],
+            [
+              10,
+              2
+            ]
+          ],
+          "holes": [],
+          "intersects": false
+        }
+      ],
+      "queries": [
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            2,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            4,
+            4
+          ],
+          "maximum": [
+            6,
+            6
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            2,
+            4
+          ],
+          "maximum": [
+            3,
+            5
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            0
+          ],
+          "maximum": [
+            10,
+            10
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            11,
+            11
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            12,
+            12
+          ],
+          "maximum": [
+            15,
+            15
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            9,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            2,
+            2
+          ],
+          "maximum": [
+            8,
+            8
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            3,
+            4
+          ],
+          "maximum": [
+            3,
+            4
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            175,
+            1
+          ],
+          "maximum": [
+            185,
+            9
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            190,
+            2
+          ],
+          "maximum": [
+            191,
+            3
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            2
+          ],
+          "maximum": [
+            10,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            1,
+            1
+          ],
+          "relation": 0
+        }
+      ]
+    },
+    {
+      "name": "nds-unit-hole-180-80",
+      "exterior": [
+        [
+          179,
+          79
+        ],
+        [
+          181,
+          79
+        ],
+        [
+          181,
+          81
+        ],
+        [
+          179,
+          81
+        ]
+      ],
+      "holes": [
+        [
+          [
+            180,
+            80
+          ],
+          [
+            180.00000008381903,
+            80
+          ],
+          [
+            180.00000008381903,
+            80.00000008381903
+          ],
+          [
+            180,
+            80.00000008381903
+          ]
+        ]
+      ],
+      "valid": true,
+      "intersections": [
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [],
+          "intersects": false
+        },
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [
+            [
+              [
+                3,
+                3
+              ],
+              [
+                3,
+                7
+              ],
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                3
+              ]
+            ]
+          ],
+          "intersects": false
+        },
+        {
+          "exterior": [
+            [
+              10,
+              0
+            ],
+            [
+              12,
+              0
+            ],
+            [
+              12,
+              2
+            ],
+            [
+              10,
+              2
+            ]
+          ],
+          "holes": [],
+          "intersects": false
+        }
+      ],
+      "queries": [
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            2,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            4,
+            4
+          ],
+          "maximum": [
+            6,
+            6
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            2,
+            4
+          ],
+          "maximum": [
+            3,
+            5
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            0
+          ],
+          "maximum": [
+            10,
+            10
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            11,
+            11
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            12,
+            12
+          ],
+          "maximum": [
+            15,
+            15
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            9,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            2,
+            2
+          ],
+          "maximum": [
+            8,
+            8
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            3,
+            4
+          ],
+          "maximum": [
+            3,
+            4
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            175,
+            1
+          ],
+          "maximum": [
+            185,
+            9
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            190,
+            2
+          ],
+          "maximum": [
+            191,
+            3
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            2
+          ],
+          "maximum": [
+            10,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            1,
+            1
+          ],
+          "relation": 0
+        }
+      ]
+    },
+    {
+      "name": "nds-unit-540-45",
+      "exterior": [
+        [
+          540,
+          45
+        ],
+        [
+          540.000000083819,
+          45
+        ],
+        [
+          540.000000083819,
+          45.00000008381903
+        ],
+        [
+          540,
+          45.00000008381903
+        ]
+      ],
+      "holes": [],
+      "valid": true,
+      "intersections": [
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [],
+          "intersects": false
+        },
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [
+            [
+              [
+                3,
+                3
+              ],
+              [
+                3,
+                7
+              ],
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                3
+              ]
+            ]
+          ],
+          "intersects": false
+        },
+        {
+          "exterior": [
+            [
+              10,
+              0
+            ],
+            [
+              12,
+              0
+            ],
+            [
+              12,
+              2
+            ],
+            [
+              10,
+              2
+            ]
+          ],
+          "holes": [],
+          "intersects": false
+        }
+      ],
+      "queries": [
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            2,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            4,
+            4
+          ],
+          "maximum": [
+            6,
+            6
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            2,
+            4
+          ],
+          "maximum": [
+            3,
+            5
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            0
+          ],
+          "maximum": [
+            10,
+            10
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            11,
+            11
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            12,
+            12
+          ],
+          "maximum": [
+            15,
+            15
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            9,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            2,
+            2
+          ],
+          "maximum": [
+            8,
+            8
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            3,
+            4
+          ],
+          "maximum": [
+            3,
+            4
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            175,
+            1
+          ],
+          "maximum": [
+            185,
+            9
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            190,
+            2
+          ],
+          "maximum": [
+            191,
+            3
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            2
+          ],
+          "maximum": [
+            10,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            1,
+            1
+          ],
+          "relation": 0
+        }
+      ]
+    },
+    {
+      "name": "nds-unit-reverse-540-45",
+      "exterior": [
+        [
+          540,
+          45.00000008381903
+        ],
+        [
+          540.000000083819,
+          45.00000008381903
+        ],
+        [
+          540.000000083819,
+          45
+        ],
+        [
+          540,
+          45
+        ]
+      ],
+      "holes": [],
+      "valid": true,
+      "intersections": [
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [],
+          "intersects": false
+        },
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [
+            [
+              [
+                3,
+                3
+              ],
+              [
+                3,
+                7
+              ],
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                3
+              ]
+            ]
+          ],
+          "intersects": false
+        },
+        {
+          "exterior": [
+            [
+              10,
+              0
+            ],
+            [
+              12,
+              0
+            ],
+            [
+              12,
+              2
+            ],
+            [
+              10,
+              2
+            ]
+          ],
+          "holes": [],
+          "intersects": false
+        }
+      ],
+      "queries": [
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            2,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            4,
+            4
+          ],
+          "maximum": [
+            6,
+            6
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            2,
+            4
+          ],
+          "maximum": [
+            3,
+            5
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            0
+          ],
+          "maximum": [
+            10,
+            10
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            11,
+            11
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            12,
+            12
+          ],
+          "maximum": [
+            15,
+            15
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            9,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            2,
+            2
+          ],
+          "maximum": [
+            8,
+            8
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            3,
+            4
+          ],
+          "maximum": [
+            3,
+            4
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            175,
+            1
+          ],
+          "maximum": [
+            185,
+            9
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            190,
+            2
+          ],
+          "maximum": [
+            191,
+            3
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            2
+          ],
+          "maximum": [
+            10,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            1,
+            1
+          ],
+          "relation": 0
+        }
+      ]
+    },
+    {
+      "name": "nds-unit-hole-540-45",
+      "exterior": [
+        [
+          539,
+          44
+        ],
+        [
+          541,
+          44
+        ],
+        [
+          541,
+          46
+        ],
+        [
+          539,
+          46
+        ]
+      ],
+      "holes": [
+        [
+          [
+            540,
+            45
+          ],
+          [
+            540.000000083819,
+            45
+          ],
+          [
+            540.000000083819,
+            45.00000008381903
+          ],
+          [
+            540,
+            45.00000008381903
+          ]
+        ]
+      ],
+      "valid": true,
+      "intersections": [
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [],
+          "intersects": false
+        },
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [
+            [
+              [
+                3,
+                3
+              ],
+              [
+                3,
+                7
+              ],
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                3
+              ]
+            ]
+          ],
+          "intersects": false
+        },
+        {
+          "exterior": [
+            [
+              10,
+              0
+            ],
+            [
+              12,
+              0
+            ],
+            [
+              12,
+              2
+            ],
+            [
+              10,
+              2
+            ]
+          ],
+          "holes": [],
+          "intersects": false
+        }
+      ],
+      "queries": [
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            2,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            4,
+            4
+          ],
+          "maximum": [
+            6,
+            6
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            2,
+            4
+          ],
+          "maximum": [
+            3,
+            5
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            0
+          ],
+          "maximum": [
+            10,
+            10
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            11,
+            11
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            12,
+            12
+          ],
+          "maximum": [
+            15,
+            15
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            9,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            2,
+            2
+          ],
+          "maximum": [
+            8,
+            8
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            3,
+            4
+          ],
+          "maximum": [
+            3,
+            4
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            175,
+            1
+          ],
+          "maximum": [
+            185,
+            9
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            190,
+            2
+          ],
+          "maximum": [
+            191,
+            3
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            2
+          ],
+          "maximum": [
+            10,
+            2
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            1,
+            1
+          ],
+          "relation": 0
+        }
+      ]
+    },
+    {
+      "name": "nds-near-collinear",
+      "exterior": [
+        [
+          0,
+          0
+        ],
+        [
+          89.99999991618097,
+          89.99999983236194
+        ],
+        [
+          90.0,
+          89.99999991618097
+        ]
+      ],
+      "holes": [],
+      "valid": true,
+      "intersections": [
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [],
+          "intersects": true
+        },
+        {
+          "exterior": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              0,
+              10
+            ]
+          ],
+          "holes": [
+            [
+              [
+                3,
+                3
+              ],
+              [
+                3,
+                7
+              ],
+              [
+                7,
+                7
+              ],
+              [
+                7,
+                3
+              ]
+            ]
+          ],
+          "intersects": true
+        },
+        {
+          "exterior": [
+            [
+              10,
+              0
+            ],
+            [
+              12,
+              0
+            ],
+            [
+              12,
+              2
+            ],
+            [
+              10,
+              2
+            ]
+          ],
+          "holes": [],
+          "intersects": false
+        }
+      ],
+      "queries": [
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            2,
+            2
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            4,
+            4
+          ],
+          "maximum": [
+            6,
+            6
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            2,
+            4
+          ],
+          "maximum": [
+            3,
+            5
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            0
+          ],
+          "maximum": [
+            10,
+            10
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            -1,
+            -1
+          ],
+          "maximum": [
+            11,
+            11
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            12,
+            12
+          ],
+          "maximum": [
+            15,
+            15
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            9,
+            2
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            2,
+            2
+          ],
+          "maximum": [
+            8,
+            8
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            3,
+            4
+          ],
+          "maximum": [
+            3,
+            4
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            0,
+            0
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            175,
+            1
+          ],
+          "maximum": [
+            185,
+            9
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            190,
+            2
+          ],
+          "maximum": [
+            191,
+            3
+          ],
+          "relation": 0
+        },
+        {
+          "minimum": [
+            0,
+            2
+          ],
+          "maximum": [
+            10,
+            2
+          ],
+          "relation": 2
+        },
+        {
+          "minimum": [
+            1,
+            1
+          ],
+          "maximum": [
+            1,
+            1
+          ],
+          "relation": 0
+        }
+      ]
+    }
   ]
 }

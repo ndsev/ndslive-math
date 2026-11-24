@@ -104,3 +104,17 @@ The publication version is taken from the `ndslivemathVersion` Gradle property
 ## License
 
 BSD-3-Clause — see [`LICENSE`](LICENSE).
+
+## Polygon areas with holes
+
+`PolygonArea.validPolygonArea`, `PolygonArea.classifyPolygonRectangle`, and `PolygonArea.Relation` provide coverage classification.
+
+Validate an exterior ring and all holes once, then classify closed rectangles as
+outside (0), inside (1), or boundary (2). Inputs use raw planar coordinates; callers
+must unwrap antimeridian geometry consistently. Either winding and an optional
+repeated closing vertex are supported. Rings must be finite, simple and nondegenerate;
+holes must lie strictly inside the exterior without touching, intersecting or nesting.
+Exterior and hole edges are included in the covered area. Rectangle classification
+requires validated rings and returns outside for nonfinite or inverted rectangles.
+
+`PolygonArea.polygonAreasIntersect` checks two validated polygon areas in the same unwrapped plane, including holes and boundary contact. Ring validity and contact use adaptive exact-sign orientation predicates: one-unit NDS polygons and tiny holes remain valid after translation. No coordinate rounding or broad epsilon is used.

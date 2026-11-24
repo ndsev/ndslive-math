@@ -36,3 +36,9 @@ export { Polygon, Orientation, PolygonType } from './polygon.js';
 export { Wgs84Aabb } from './wgs84Aabb.js';
 export { Wgs84Polygon } from './wgs84Polygon.js';
 export { PolygonTriangulation } from './polygonTriangulation.js';
+export {
+  PolygonAreaRelation,
+  validPolygonArea,
+  classifyPolygonRectangle,
+  polygonAreasIntersect,
+} from './polygonArea.js';

@@ -74,3 +74,7 @@ Match the surrounding code in each language. Public API names mirror the Python
 reference, adapted to each language's idioms (e.g. `to_nds_coordinates` in
 Python/Rust, `toNdsCoordinates` in Java/JS/Go). Every source file carries an
 `SPDX-License-Identifier: BSD-3-Clause` header.
+
+The `polygon_area` parity section covers closed rectangles, holes, winding,
+concavity, invalid rings and explicitly unwrapped antimeridian coordinates.
+Validate rings before invoking the hot rectangle-classification path.
