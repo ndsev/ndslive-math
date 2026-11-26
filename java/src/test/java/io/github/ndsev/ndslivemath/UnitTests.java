@@ -467,6 +467,8 @@ class UnitTests {
 		Polygon collinear = new Polygon(Polygon.PolygonType.SIMPLE_POLYGON,
 				Arrays.asList(new Wgs84(0, 0), new Wgs84(1, 1), new Wgs84(2, 2)));
 		assertEquals(Polygon.Orientation.INVALID_ORIENTATION, collinear.orientation());
+		collinear.get(2).x = Double.NaN;
+		assertEquals(Polygon.Orientation.INVALID_ORIENTATION, collinear.orientation());
 
 		// Multi-triangle TRIANGLE_LIST (4 verts) is unsupported.
 		Polygon multi = new Polygon(Polygon.PolygonType.TRIANGLE_LIST,
@@ -605,7 +607,7 @@ class UnitTests {
 	}
 
 	@Test
-	void aabbFromTilePathA() {
+	void aabbFromTile() {
 		// Tile (morton 0, level 10): width = 2^21 * 360/2^32 = 0.17578125 deg.
 		PackedTileId tile = PackedTileId.fromTileIndex(0, 10);
 		Wgs84Aabb box = new Wgs84Aabb(tile);
@@ -627,11 +629,11 @@ class UnitTests {
 	}
 
 	@Test
-	void aabbAvgMercatorStretchIsFinite() {
-		Wgs84Aabb box = new Wgs84Aabb(new Wgs84(0, 10), new Vec2(20, 10));
-		double s = box.avgMercatorStretch();
-		assertTrue(Double.isFinite(s), "mercator stretch must be finite");
-		assertTrue(s > 0, "mercator stretch sign positive for this box");
+	void aabbAvgMercatorStretch() {
+		Wgs84Aabb equator = new Wgs84Aabb(new Wgs84(0, 0), new Vec2(10, 10));
+		Wgs84Aabb highLatitude = new Wgs84Aabb(new Wgs84(0, 60), new Vec2(10, 10));
+		assertEquals(1.005115965663012, equator.avgMercatorStretch(), 1e-12);
+		assertEquals(2.397583523371995, highLatitude.avgMercatorStretch(), 1e-12);
 	}
 
 	// --- Wgs84Polygon ---

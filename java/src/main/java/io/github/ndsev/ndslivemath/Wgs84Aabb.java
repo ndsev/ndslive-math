@@ -60,14 +60,11 @@ public final class Wgs84Aabb {
 	}
 
 	/**
-	 * Construct an AABB covering a tile (Path A: via {@link Wgs84#fromMortonCode}).
+	 * Construct an AABB covering a tile.
 	 *
 	 * <p>
-	 * Mirrors the C++ {@code Wgs84AABB(PackedTileId)} constructor: the SW/NE NDS
-	 * corners are wrapped into a {@link MortonCode} and converted via
-	 * {@link Wgs84#fromMortonCode}, so both axes are scaled by {@code 360 / 2^32}
-	 * (NOT {@link Wgs84#fromNdsCoordinates}, which scales latitude by
-	 * {@code 180 / 2^31} and would diverge from C++).
+	 * The extent comes directly from the tile level rather than subtracting
+	 * normalized corners, so world-edge tiles retain their actual width.
 	 * </p>
 	 *
 	 * @param tileId
@@ -79,15 +76,12 @@ public final class Wgs84Aabb {
 
 	private static Wgs84 swCornerOf(PackedTileId tileId) {
 		long[] sw = tileId.southWestCorner();
-		return Wgs84.fromMortonCode(MortonCode.fromNdsCoordinates(sw[0], sw[1]));
+		return Wgs84.fromNdsCoordinates(sw[0], sw[1]);
 	}
 
 	private static Vec2 sizeOf(PackedTileId tileId) {
-		long[] sw = tileId.southWestCorner();
-		long[] ne = tileId.northEastCorner();
-		Wgs84 swCorner = Wgs84.fromMortonCode(MortonCode.fromNdsCoordinates(sw[0], sw[1]));
-		Wgs84 neCorner = Wgs84.fromMortonCode(MortonCode.fromNdsCoordinates(ne[0], ne[1]));
-		return new Vec2(swCorner.x - neCorner.x, swCorner.y - neCorner.y).abs();
+		double[] size = tileId.wgs84Size();
+		return new Vec2(size[0], size[1]);
 	}
 
 	/**
@@ -203,22 +197,23 @@ public final class Wgs84Aabb {
 	 * The Mercator-projection vertical stretch factor.
 	 *
 	 * <p>
-	 * Transcendental; not part of the cross-language parity vectors (asserted only
-	 * for finiteness in unit tests).
+	 * A positive-height interval touching either pole has infinite stretch.
 	 * </p>
 	 *
 	 * @return the average Mercator vertical stretch over the box's latitude span
 	 */
 	public double avgMercatorStretch() {
-		double latTop = Math.toRadians(this.sw.latitude() + this.size.y);
-		double latBottom = Math.toRadians(this.sw.latitude());
-		return (radToMercatorLat(latTop) - radToMercatorLat(latBottom)) / Math.toRadians(this.size.y);
-	}
-
-	private static double radToMercatorLat(double wgs84Lat) {
-		// atanh(z) = 0.5 * ln((1 + z) / (1 - z)); Java has no Math.atanh.
-		double z = Math.sin(wgs84Lat - Math.PI / 2.0);
-		return 0.5 * Math.log((1.0 + z) / (1.0 - z));
+		double bottom = this.sw.latitude(), height = this.size.y;
+		double halfSpan = Math.toRadians(height) / 2;
+		// The log tangent ratio uses distances from the poles even when sin(latitude)
+		// rounds to 1.
+		double south = Math.sin(Math.toRadians((90 + bottom) / 2));
+		double north = Math.sin(Math.toRadians((90 - bottom - height) / 2));
+		double denominator = south * north;
+		if (height > 0 && halfSpan < Double.MIN_NORMAL) {
+			return 0.5 / denominator;
+		}
+		return Math.log1p(Math.sin(halfSpan) / denominator) / (2 * halfSpan);
 	}
 
 	/**

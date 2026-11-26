@@ -9,7 +9,10 @@ vertex container; here it is specialized directly to a list of
 
 from __future__ import annotations
 
+import math
+import sys
 from enum import IntEnum
+from fractions import Fraction
 
 from .wgs84 import Wgs84
 
@@ -114,17 +117,25 @@ class Polygon:
             return Orientation.INVALID_ORIENTATION
 
         n = len(self._vertices)
-        area = 0.0
-        for i in range(n):
-            j = i + 1
-            if j == n:
-                j = 0
-            area += self._vertices[i].x * self._vertices[j].y
-            area -= self._vertices[i].y * self._vertices[j].x
-
-        if area > 0:
-            return Orientation.COUNTERCLOCKWISE
-        elif area < 0:
-            return Orientation.CLOCKWISE
-        else:
+        if n < 3:
             return Orientation.INVALID_ORIENTATION
+
+        origin_x = self._vertices[0].x
+        origin_y = self._vertices[0].y
+        area = magnitude = 0.0
+        for i in range(1, n - 1):
+            a, b = self._vertices[i], self._vertices[i + 1]
+            left = (a.x - origin_x) * (b.y - origin_y)
+            right = (a.y - origin_y) * (b.x - origin_x)
+            area += left - right
+            magnitude += abs(left) + abs(right)
+
+        # Bound rounding in the products and n additions. Never treat uncertainty as zero.
+        bound = 4 * (n + 4) * sys.float_info.epsilon * (magnitude + sys.float_info.min)
+        if abs(area) > bound:
+            return Orientation.COUNTERCLOCKWISE if area > 0 else Orientation.CLOCKWISE
+        if not all(math.isfinite(v.x) and math.isfinite(v.y) for v in self._vertices):
+            return Orientation.INVALID_ORIENTATION
+        points = [(Fraction(v.x), Fraction(v.y)) for v in self._vertices]
+        exact = sum(points[i - 1][0] * y - points[i - 1][1] * x for i, (x, y) in enumerate(points))
+        return Orientation((exact > 0) - (exact < 0))

@@ -210,7 +210,16 @@ bool PackedTileId::isValid() const
 MortonCode PackedTileId::southWestCorner() const
 {
     const uint64_t tileNum = mortonNumber();
-    return MortonCode(tileNum << (63 - (2 * level() + 1)));
+    const auto tileLevel = level();
+    const MortonCode corner(tileNum << (63 - (2 * tileLevel + 1)));
+    if (tileLevel != 0)
+        return corner;
+
+    // Level 0 has no latitude bit, so zero-filling the Morton suffix would
+    // anchor its only row at the equator instead of the south pole.
+    int32_t x, ignoredY;
+    corner.toNdsCoordinates(x, ignoredY);
+    return MortonCode::fromNdsCoordinates(x, -(int32_t{1} << 30));
 }
 
 MortonCode PackedTileId::northEastCorner() const
@@ -356,9 +365,9 @@ PackedTileIds getTileIdsForBoundingBox(int32_t swX, int32_t swY, int32_t neX, in
     };
 
     const int64_t startTileX = floorDiv(swX, static_cast<int64_t>(tileSize));
-    const int64_t startTileY = floorDiv(swY, static_cast<int64_t>(tileSize));
+    const int64_t startTileY = level == 0 ? 0 : floorDiv(swY, static_cast<int64_t>(tileSize));
     const int64_t endTileX = floorDiv(neX, static_cast<int64_t>(tileSize));
-    const int64_t endTileY = floorDiv(neY, static_cast<int64_t>(tileSize));
+    const int64_t endTileY = level == 0 ? 0 : floorDiv(neY, static_cast<int64_t>(tileSize));
 
     // Iterate through all tiles in the bounding box
     for (int64_t tileY = startTileY; tileY <= endTileY; ++tileY)
@@ -367,7 +376,8 @@ PackedTileIds getTileIdsForBoundingBox(int32_t swX, int32_t swY, int32_t neX, in
         {
             // Calculate the south-west corner of this tile
             const int64_t tileSwX = tileX * static_cast<int64_t>(tileSize);
-            const int64_t tileSwY = tileY * static_cast<int64_t>(tileSize);
+            const int64_t tileSwY =
+                level == 0 ? -(int64_t{1} << 30) : tileY * static_cast<int64_t>(tileSize);
 
             // Create morton code from the tile's south-west corner
             const MortonCode morton = MortonCode::fromNdsCoordinates(static_cast<int32_t>(tileSwX),

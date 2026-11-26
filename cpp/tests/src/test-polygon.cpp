@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 //
-// Unit tests for the C++-only geometry layer that has no cross-language parity
-// vectors: Polygon<>, HighPrecWgs84Polygon, Wgs84AABB, and PolygonTriangulation
-// (ear clipping). Exercised directly here so they are covered.
+// Focused C++ tests for polygon winding, WGS84 bounding boxes and ear clipping.
 #include "test_harness.h"
 
 #include "ndsmath/polygon.h"
@@ -13,6 +11,7 @@
 #include "ndsmath/mortoncode.h"
 
 #include <cmath>
+#include <limits>
 #include <vector>
 
 using ndsmath::HighPrecWgs84;
@@ -62,6 +61,8 @@ int main()
         // Collinear vertices → zero area → INVALID_ORIENTATION.
         Poly flat(Poly::SIMPLE_POLYGON,
                   {HighPrecWgs84(0, 0), HighPrecWgs84(1, 1), HighPrecWgs84(2, 2)});
+        CHECK(flat.orientation() == Poly::INVALID_ORIENTATION);
+        flat[2].x = std::numeric_limits<double>::quiet_NaN();
         CHECK(flat.orientation() == Poly::INVALID_ORIENTATION);
 
         // Unsupported type → early INVALID_ORIENTATION.
@@ -142,9 +143,11 @@ int main()
         CHECK(box.numTileIds(5) > 0u);
         CHECK(box.tileLevel(8) <= 15);
 
-        // avgMercatorStretch is non-const; result must be finite.
-        Wgs84AABB<double> box2 = box;
-        CHECK(std::isfinite(box2.avgMercatorStretch()));
+        // Mercator stretch uses latitude directly and remains finite at the equator.
+        Wgs84AABB<double> equator(HighPrecWgs84(0, 0), Vec2(10.0, 10.0));
+        Wgs84AABB<double> highLatitude(HighPrecWgs84(0, 60), Vec2(10.0, 10.0));
+        CHECK_NEAR(equator.avgMercatorStretch(), 1.005115965663012, 1e-12);
+        CHECK_NEAR(highLatitude.avgMercatorStretch(), 2.397583523371995, 1e-12);
 
         // Overlapping boxes intersect (a corner of `over` lies in `box`).
         Wgs84AABB<double> over(HighPrecWgs84(10, 15), Vec2(20.0, 10.0));

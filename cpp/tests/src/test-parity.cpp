@@ -8,8 +8,6 @@
 // The only intentional skips are representation/edge limits, not bugs:
 //   * WGS84 normalization at the exact +-180 / +-90 boundary (out-of-canonical
 //     inputs); such rows are skipped in the wgs84 sections.
-//   * the exclusive NE corner of world-edge low-level tiles (reaches 2^31/2^30,
-//     outside the int32 NDS coordinate range).
 #include "test_harness.h"
 
 #include "ndsmath/wgs84.h"
@@ -22,6 +20,7 @@
 
 #include <nlohmann/json.hpp>
 
+#include <cmath>
 #include <cstdlib>
 #include <fstream>
 #include <stdexcept>
@@ -126,17 +125,15 @@ int main()
         t.center(cx, cy);
         CHECK_EQ(static_cast<int64_t>(sx), r["sw"][0].get<int64_t>());
         CHECK_EQ(static_cast<int64_t>(sy), r["sw"][1].get<int64_t>());
-        // The exclusive NE corner of low-level (world-edge) tiles reaches 2^31 /
-        // 2^30, outside the int32 NDS coordinate range. C++ wraps it via the
-        // morton round-trip while the Python reference keeps the raw value, so
-        // compare only when the corner is representable.
+        // A Morton corner wraps in 32 signed X bits and 31 signed Y bits. The
+        // bounding box has a full int32 Y field, so it retains the exclusive north pole.
         const int64_t neX = r["ne"][0].get<int64_t>();
         const int64_t neY = r["ne"][1].get<int64_t>();
-        if (neX < (1LL << 31) && neY < (1LL << 30))
-        {
-            CHECK_EQ(static_cast<int64_t>(nx), neX);
-            CHECK_EQ(static_cast<int64_t>(ny), neY);
-        }
+        CHECK_EQ(nx, static_cast<int32_t>(neX));
+        CHECK_EQ(ny, neY == (1LL << 30) ? -(1LL << 30) : neY);
+        const auto bounds = NdsBoundingBox::fromTile(t);
+        CHECK_EQ(bounds.maxX, static_cast<int32_t>(neX));
+        CHECK_EQ(bounds.maxY, neY);
         CHECK_EQ(static_cast<int64_t>(cx), r["center"][0].get<int64_t>());
         CHECK_EQ(static_cast<int64_t>(cy), r["center"][1].get<int64_t>());
         CHECK_EQ(static_cast<int64_t>(PackedTileId::fromValue(r["value"].get<int32_t>()).value()),
@@ -263,8 +260,7 @@ int main()
     }
 
     // -----------------------------------------------------------------------
-    // Geometry layer (deterministic methods only; PolygonTriangulation and the
-    // transcendental avgMercatorStretch are intentionally excluded). Generated
+    // Geometry layer (triangulation order is intentionally excluded). Generated
     // from the Python reference; validated here against the long-standing C++
     // Wgs84AABB / Polygon / HighPrecWgs84Polygon.
     // -----------------------------------------------------------------------
@@ -376,7 +372,28 @@ int main()
         CHECK_EQ(static_cast<int>(box.tileLevel(2)), r["tile_level_min2"].get<int>());
     }
 
-    // 13. Wgs84AABB::contains — each sample point against each named box.
+    // 13. Wgs84AABB construction from packed tiles, including world edges.
+    for (const auto &r : data["wgs84_aabb_from_tile"])
+    {
+        Wgs84AABB<double> box(PackedTileId(static_cast<uint32_t>(r["tile_value"].get<int64_t>())));
+        CHECK_NEAR(box.sw().longitude(), r["sw"][0].get<double>(), tol);
+        CHECK_NEAR(box.sw().latitude(), r["sw"][1].get<double>(), tol);
+        CHECK_NEAR(box.size().x, r["size"][0].get<double>(), tol);
+        CHECK_NEAR(box.size().y, r["size"][1].get<double>(), tol);
+    }
+
+    for (const auto &r : data.at("mercator_stretch"))
+    {
+        Wgs84AABB<double> box(HighPrecWgs84(0, r.at("bottom").get<double>()),
+                              Vec2(1, r.at("height").get<double>()));
+        const double stretch = box.avgMercatorStretch();
+        if (r.at("stretch").is_null())
+            CHECK(std::isinf(stretch) && stretch > 0);
+        else
+            CHECK_NEAR(stretch, r.at("stretch").get<double>(), tol);
+    }
+
+    // 14. Wgs84AABB::contains — each sample point against each named box.
     for (const auto &r : data["wgs84_aabb_contains"])
     {
         auto box = aabbByName(r["box"].get<std::string>());
@@ -384,7 +401,7 @@ int main()
         CHECK_EQ(box.contains(p), r["contains"].get<bool>());
     }
 
-    // 14. Wgs84AABB::intersects — full ordered pairwise matrix (incl. symmetry).
+    // 15. Wgs84AABB::intersects — full ordered pairwise matrix (incl. symmetry).
     for (const auto &r : data["wgs84_aabb_intersects"])
     {
         auto a = aabbByName(r["a"].get<std::string>());
@@ -392,7 +409,7 @@ int main()
         CHECK_EQ(a.intersects(b), r["intersects"].get<bool>());
     }
 
-    // 15. Polygon orientation + validity (base Polygon, raw lon/lat plane).
+    // 16. Polygon orientation + validity (base Polygon, raw lon/lat plane).
     for (const auto &r : data["polygon_orientation"])
     {
         auto ptype = static_cast<Poly::PolygonType>(r["polygon_type"].get<int>());
@@ -404,7 +421,7 @@ int main()
         CHECK_EQ(poly.isValid(), r["is_valid"].get<bool>());
     }
 
-    // 16. HighPrecWgs84Polygon: aaBb, median (lon/lat swap quirk), isValid.
+    // 17. HighPrecWgs84Polygon: aaBb, median (lon/lat swap quirk), isValid.
     for (const auto &r : data["wgs84_polygon"])
     {
         std::vector<HighPrecWgs84> verts;

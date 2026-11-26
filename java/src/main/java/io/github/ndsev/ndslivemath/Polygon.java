@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 package io.github.ndsev.ndslivemath;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -220,19 +221,44 @@ public class Polygon {
 		}
 
 		int n = this.vertices.size();
-		double area = 0.0;
-		for (int i = 0; i < n; i++) {
-			int j = (i + 1 == n) ? 0 : i + 1;
-			area += this.vertices.get(i).dx() * this.vertices.get(j).dy();
-			area -= this.vertices.get(i).dy() * this.vertices.get(j).dx();
-		}
-
-		if (area > 0) {
-			return Orientation.COUNTERCLOCKWISE;
-		} else if (area < 0) {
-			return Orientation.CLOCKWISE;
-		} else {
+		if (n < 3) {
 			return Orientation.INVALID_ORIENTATION;
 		}
+
+		double originX = this.vertices.get(0).dx();
+		double originY = this.vertices.get(0).dy();
+		double area = 0.0, magnitude = 0.0;
+		for (int i = 1; i < n - 1; i++) {
+			Wgs84 a = vertices.get(i), b = vertices.get(i + 1);
+			double left = (a.dx() - originX) * (b.dy() - originY);
+			double right = (a.dy() - originY) * (b.dx() - originX);
+			area += left - right;
+			magnitude += Math.abs(left) + Math.abs(right);
+		}
+		double bound = 4 * (n + 4.0) * Math.ulp(1.0) * (magnitude + Double.MIN_NORMAL);
+		if (Math.abs(area) > bound) {
+			return area > 0 ? Orientation.COUNTERCLOCKWISE : Orientation.CLOCKWISE;
+		}
+		return exactOrientation();
+	}
+
+	private Orientation exactOrientation() {
+		BigDecimal area = BigDecimal.ZERO;
+		Wgs84 prev = vertices.get(vertices.size() - 1);
+		for (Wgs84 v : vertices) {
+			if (!Double.isFinite(prev.dx()) || !Double.isFinite(prev.dy()) || !Double.isFinite(v.dx())
+					|| !Double.isFinite(v.dy())) {
+				return Orientation.INVALID_ORIENTATION;
+			}
+			// The double constructor preserves every binary digit; valueOf rounds to a
+			// decimal string.
+			BigDecimal left = new BigDecimal(prev.dx()).multiply(new BigDecimal(v.dy()));
+			BigDecimal right = new BigDecimal(prev.dy()).multiply(new BigDecimal(v.dx()));
+			area = area.add(left.subtract(right));
+			prev = v;
+		}
+		return area.signum() > 0
+				? Orientation.COUNTERCLOCKWISE
+				: area.signum() < 0 ? Orientation.CLOCKWISE : Orientation.INVALID_ORIENTATION;
 	}
 }

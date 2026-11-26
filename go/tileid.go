@@ -237,8 +237,14 @@ func (t PackedTileId) Wgs84Size() (float64, float64) {
 // fit in int32.
 func (t PackedTileId) SouthWestCorner() (int64, int64) {
 	mortonNumber := uint64(t.MortonNumber())
-	shift := uint(63 - (2*t.Level() + 1))
+	level := t.Level()
+	shift := uint(63 - (2*level + 1))
 	x, y := NewMortonCode(mortonNumber << shift).ToNdsCoordinates()
+	// Level 0 has no latitude bit, so zero-filling the Morton suffix would
+	// anchor its only row at the equator instead of the south pole.
+	if level == 0 {
+		y = -(1 << 30)
+	}
 	return int64(x), int64(y)
 }
 
@@ -396,14 +402,23 @@ func GetTileIdsForBoundingBox(swX, swY, neX, neY int32, level int) []PackedTileI
 	tileSize := int64(1) << (31 - level)
 
 	startTileX := floorDiv(int64(swX), tileSize)
-	startTileY := floorDiv(int64(swY), tileSize)
+	startTileY := int64(0)
+	if level != 0 {
+		startTileY = floorDiv(int64(swY), tileSize)
+	}
 	endTileX := floorDiv(int64(neX), tileSize)
-	endTileY := floorDiv(int64(neY), tileSize)
+	endTileY := int64(0)
+	if level != 0 {
+		endTileY = floorDiv(int64(neY), tileSize)
+	}
 
 	for tileY := startTileY; tileY <= endTileY; tileY++ {
 		for tileX := startTileX; tileX <= endTileX; tileX++ {
 			tileSwX := tileX * tileSize
 			tileSwY := tileY * tileSize
+			if level == 0 {
+				tileSwY = -(1 << 30)
+			}
 
 			morton := MortonFromNdsCoordinates(int32(tileSwX), int32(tileSwY))
 			// from-morton-and-level cannot fail for a valid level; ignore err.

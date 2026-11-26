@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <cmath>
+#include <limits>
 #include <utility>
 #include <list>
 #include <vector>
@@ -38,10 +40,7 @@ public:
 
     /// Construct an AABB from a PackedTileId.
     explicit Wgs84AABB(PackedTileId const &tileId)
-        : Wgs84AABB(Wgs84<T>::fromMortonCode(tileId.southWestCorner()),
-                    glm::abs((Wgs84<T>::fromMortonCode(tileId.southWestCorner()) -
-                              Wgs84<T>::fromMortonCode(tileId.northEastCorner()))
-                                 .vec()))
+        : Wgs84AABB(Wgs84<T>::fromMortonCode(tileId.southWestCorner()), angularSize(tileId))
     {
     }
 
@@ -111,14 +110,19 @@ public:
     }
 
     /// Calculate the Mercator-projection vertical stretch factor, averaged across
-    /// the box's latitude span. Requires nonzero height and finite projected latitudes.
+    /// the box's latitude span. A positive-height interval touching either pole diverges.
     inline double avgMercatorStretch()
     {
-        T const latTop = glm::radians(sw_.latitude() + size_.y);
-        T const latBottom = glm::radians(sw_.latitude());
-        auto radToMercatorLat = [](T wgs84Lat)
-        { return atanh(sin(wgs84Lat - glm::half_pi<double>())); };
-        return (radToMercatorLat(latTop) - radToMercatorLat(latBottom)) / glm::radians(size_.y);
+        const double bottom = sw_.latitude(), height = size_.y;
+        const double halfSpan = glm::radians(height) / 2;
+        // Difference of log(tan(pi/4 + latitude/2)), expressed as one log1p.
+        // Measure from each pole in degrees before converting to radians.
+        const double south = std::sin(glm::radians((90 + bottom) / 2));
+        const double north = std::sin(glm::radians(((90 - bottom) - height) / 2));
+        const double denominator = south * north;
+        if (height > 0 && halfSpan < std::numeric_limits<double>::min())
+            return 0.5 / denominator;
+        return std::log1p(std::sin(halfSpan) / denominator) / (2 * halfSpan);
     }
 
     /// Obtain the number of tiles for the given level contained in this AABB.
@@ -177,6 +181,12 @@ public:
     }
 
 private:
+    static vec2_t angularSize(PackedTileId const &tileId)
+    {
+        const auto size = tileId.wgs84Size();
+        return {static_cast<T>(size.first), static_cast<T>(size.second)};
+    }
+
     Wgs84<T> sw_{.0, .0};
     vec2_t size_{.0, .0};
 };

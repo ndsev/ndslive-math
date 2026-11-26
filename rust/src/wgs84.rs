@@ -84,10 +84,11 @@ impl Wgs84 {
         // math.fmod / C++ std::fmod behavior.
         self.lon %= 360.0;
 
-        // Snap a longitude close enough to +180 down to (180 - delta),
-        // matching the C++ check against lonMax.
-        if (self.lon - (180.0 - LON_NDS_DELTA)).abs() < LON_NDS_DELTA {
-            self.lon = 180.0 - LON_NDS_DELTA;
+        // Snap values at the positive edge down. The lower bound makes this
+        // one-sided so representable values below it retain their NDS code.
+        let lon_max = 180.0 - LON_NDS_DELTA;
+        if self.lon >= lon_max && self.lon - lon_max < LON_NDS_DELTA {
+            self.lon = lon_max;
         }
 
         // Wrap remaining out-of-range values into [-180, 180).
@@ -98,11 +99,12 @@ impl Wgs84 {
         }
 
         // Latitude clamping.
-        if (self.lat - (90.0 - LAT_NDS_DELTA)).abs() < LAT_NDS_DELTA {
-            self.lat = 90.0 - LAT_NDS_DELTA;
+        let lat_max = 90.0 - LAT_NDS_DELTA;
+        if self.lat >= lat_max && self.lat - lat_max < LAT_NDS_DELTA {
+            self.lat = lat_max;
         }
 
-        self.lat = self.lat.clamp(-90.0, 90.0 - LAT_NDS_DELTA);
+        self.lat = self.lat.clamp(-90.0, lat_max);
     }
 
     /// Convert WGS84 coordinates to NDS integer coordinates.

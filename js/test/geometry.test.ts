@@ -121,6 +121,8 @@ describe('Polygon (base)', () => {
       new Wgs84(2, 2),
     ]);
     expect(collinear.orientation()).toBe(Orientation.INVALID_ORIENTATION);
+    collinear.get(2).x = NaN;
+    expect(collinear.orientation()).toBe(Orientation.INVALID_ORIENTATION);
 
     const strip = new Polygon(PolygonType.TRIANGLE_STRIP, [
       new Wgs84(0, 0),
@@ -159,7 +161,7 @@ describe('Wgs84Aabb', () => {
     expect(box.size().y).toBe(10);
   });
 
-  it('fromTile (Path A) covers a level-10 origin tile', () => {
+  it('fromTile covers a level-10 origin tile', () => {
     const tile = PackedTileId.fromTileIndex(0, 10);
     const box = Wgs84Aabb.fromTile(tile);
     expect(box.valid()).toBe(true);
@@ -178,9 +180,11 @@ describe('Wgs84Aabb', () => {
     expect(box.center().y).toBeCloseTo(20, 6);
   });
 
-  it('avgMercatorStretch is finite', () => {
-    const box = new Wgs84Aabb(new Wgs84(0, 10), new Vec2(20, 10));
-    expect(Number.isFinite(box.avgMercatorStretch())).toBe(true);
+  it('avgMercatorStretch uses latitude directly', () => {
+    const equator = new Wgs84Aabb(new Wgs84(0, 0), new Vec2(10, 10));
+    const highLatitude = new Wgs84Aabb(new Wgs84(0, 60), new Vec2(10, 10));
+    expect(equator.avgMercatorStretch()).toBeCloseTo(1.005115965663012, 12);
+    expect(highLatitude.avgMercatorStretch()).toBeCloseTo(2.397583523371995, 12);
   });
 
   it('splitOverAntiMeridian returns null for a non-crossing box', () => {

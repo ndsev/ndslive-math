@@ -275,7 +275,9 @@ impl PackedTileId {
         let level = self.level();
         let shift = 63 - (2 * level + 1);
         let (x, y) = MortonCode::new(morton_number << shift).to_nds_coordinates();
-        (x as i64, y as i64)
+        // Level 0 has no latitude bit, so zero-filling the Morton suffix would
+        // anchor its only row at the equator instead of the south pole.
+        (x as i64, if level == 0 { -(1_i64 << 30) } else { y as i64 })
     }
 
     /// North-east corner of the tile in NDS coordinates `(x, y)`.
@@ -439,16 +441,28 @@ pub fn get_tile_ids_for_bounding_box(
     // Floor division so negative coordinates map to the correct tile, matching
     // Python's `//` (Rust `/` would truncate toward zero).
     let start_tile_x = floor_div(sw_x, tile_size);
-    let start_tile_y = floor_div(sw_y, tile_size);
+    let start_tile_y = if level == 0 {
+        0
+    } else {
+        floor_div(sw_y, tile_size)
+    };
     let end_tile_x = floor_div(ne_x, tile_size);
-    let end_tile_y = floor_div(ne_y, tile_size);
+    let end_tile_y = if level == 0 {
+        0
+    } else {
+        floor_div(ne_y, tile_size)
+    };
 
     let mut tile_y = start_tile_y;
     while tile_y <= end_tile_y {
         let mut tile_x = start_tile_x;
         while tile_x <= end_tile_x {
             let tile_sw_x = tile_x * tile_size;
-            let tile_sw_y = tile_y * tile_size;
+            let tile_sw_y = if level == 0 {
+                -(1_i64 << 30)
+            } else {
+                tile_y * tile_size
+            };
 
             // from_nds_coordinates / morton encoding operate on i32 with
             // wrapping, matching the Python reference's wrapping reduction.
@@ -541,9 +555,9 @@ mod tests {
     fn corners_and_center() {
         let t = PackedTileId::from_tile_index(0, 0).unwrap();
         assert_eq!(t.size(), 2147483648);
-        assert_eq!(t.south_west_corner(), (0, 0));
-        assert_eq!(t.north_east_corner(), (2147483648, 2147483648));
-        assert_eq!(t.center(), (1073741824, 1073741824));
+        assert_eq!(t.south_west_corner(), (0, -1073741824));
+        assert_eq!(t.north_east_corner(), (2147483648, 1073741824));
+        assert_eq!(t.center(), (1073741824, 0));
     }
 
     #[test]

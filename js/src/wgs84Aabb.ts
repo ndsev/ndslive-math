@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
-import { MortonCode } from './morton.js';
 import { PackedTileId } from './tileid.js';
 import { Vec2 } from './vec2.js';
 import { Wgs84 } from './wgs84.js';
@@ -48,26 +47,17 @@ export class Wgs84Aabb {
   }
 
   /**
-   * Construct an AABB from a tile (via {@link Wgs84.fromMortonCode}).
+   * Construct an AABB from a tile.
    *
-   * Like the C++ `Wgs84AABB(PackedTileId)` constructor, this wraps the SW/NE
-   * NDS corners into {@link MortonCode} and converts them to WGS84. Both axes
-   * use the same scale: `360 / 2^32 = 180 / 2^31`.
-   * At the world edge, the NE corner can wrap to the opposite side. Taking
-   * the absolute corner difference then produces an almost-world-wide box
-   * instead of the tile's width.
+   * The extent comes directly from the tile level rather than subtracting
+   * normalized corners, so world-edge tiles retain their actual width.
    *
    * @param tileId The tile whose extent the AABB should cover.
    */
   static fromTile(tileId: PackedTileId): Wgs84Aabb {
     const [swX, swY] = tileId.southWestCorner();
-    const [neX, neY] = tileId.northEastCorner();
-
-    const swCorner = Wgs84.fromMortonCode(MortonCode.fromNdsCoordinates(swX, swY));
-    const neCorner = Wgs84.fromMortonCode(MortonCode.fromNdsCoordinates(neX, neY));
-
-    const size = new Vec2(swCorner.x - neCorner.x, swCorner.y - neCorner.y).abs();
-    return new Wgs84Aabb(swCorner, size);
+    const [width, height] = tileId.wgs84Size();
+    return new Wgs84Aabb(Wgs84.fromNdsCoordinates(swX, swY), new Vec2(width, height));
   }
 
   /**
@@ -165,18 +155,18 @@ export class Wgs84Aabb {
   /**
    * The Mercator-projection vertical stretch factor, averaged over the box.
    *
-   * Transcendental; not part of the cross-language parity vectors (asserted
-   * only for finiteness in unit tests). Requires nonzero height and finite
-   * projected latitudes.
+   * Requires positive height. An interval touching either pole has infinite stretch.
    */
   avgMercatorStretch(): number {
-    const latTop = toRadians(this._sw.latitude() + this._size.y);
-    const latBottom = toRadians(this._sw.latitude());
-
-    const radToMercatorLat = (wgs84Lat: number): number =>
-      Math.atanh(Math.sin(wgs84Lat - Math.PI / 2.0));
-
-    return (radToMercatorLat(latTop) - radToMercatorLat(latBottom)) / toRadians(this._size.y);
+    const bottom = this._sw.latitude();
+    const height = this._size.y;
+    const halfSpan = toRadians(height) / 2;
+    // The log tangent ratio uses distances from the poles, even when sin(latitude) rounds to 1.
+    const south = Math.sin(toRadians((90 + bottom) / 2));
+    const north = Math.sin(toRadians((90 - bottom - height) / 2));
+    const denominator = south * north;
+    if (height > 0 && halfSpan < 2 ** -1022) return 0.5 / denominator;
+    return Math.log1p(Math.sin(halfSpan) / denominator) / (2 * halfSpan);
   }
 
   /**

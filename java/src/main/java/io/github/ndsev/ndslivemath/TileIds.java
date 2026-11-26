@@ -47,14 +47,14 @@ public final class TileIds {
 		long tileSize = 1L << (31 - level);
 
 		long startTileX = Math.floorDiv(swX, tileSize);
-		long startTileY = Math.floorDiv(swY, tileSize);
+		long startTileY = level == 0 ? 0 : Math.floorDiv(swY, tileSize);
 		long endTileX = Math.floorDiv(neX, tileSize);
-		long endTileY = Math.floorDiv(neY, tileSize);
+		long endTileY = level == 0 ? 0 : Math.floorDiv(neY, tileSize);
 
 		for (long tileY = startTileY; tileY <= endTileY; tileY++) {
 			for (long tileX = startTileX; tileX <= endTileX; tileX++) {
 				long tileSwX = tileX * tileSize;
-				long tileSwY = tileY * tileSize;
+				long tileSwY = level == 0 ? -(1L << 30) : tileY * tileSize;
 
 				MortonCode morton = MortonCode.fromNdsCoordinates(tileSwX, tileSwY);
 				tileIds.add(PackedTileId.fromMortonAndLevel(morton, level));

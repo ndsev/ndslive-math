@@ -47,15 +47,16 @@ struct NdsBoundingBox
 
     //! Create a bounding box from a tile ID.
     //! Uses the tile's south-west and exclusive north-east coordinates.
-    //! World-edge wrapping can invert these bounds. Use boundingBoxFromTileIds()
+    //! Only an exclusive longitude of +2^31 wraps in int32. Use boundingBoxFromTileIds()
     //! for inclusive interior bounds suitable for tile enumeration.
     //! @param tile PackedTileId to create bbox from
     static NdsBoundingBox fromTile(const PackedTileId &tile)
     {
-        int32_t swX, swY, neX, neY;
+        int32_t swX, swY;
         tile.southWestCorner().toNdsCoordinates(swX, swY);
-        tile.northEastCorner().toNdsCoordinates(neX, neY);
-        return NdsBoundingBox(swX, swY, neX, neY);
+        // The exclusive north pole (+2^30) fits here, but not in a Morton latitude.
+        const int64_t size = tile.size();
+        return {swX, swY, static_cast<int32_t>(swX + size), static_cast<int32_t>(swY + size)};
     }
 
     //! Check if this bbox intersects (overlaps) with another.

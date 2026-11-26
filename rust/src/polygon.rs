@@ -9,6 +9,57 @@
 
 use crate::wgs84::Wgs84;
 
+// Each binary64 coordinate is an integer of at most 2098 bits in units of 2^-1074.
+// Allow two products per edge and enough carry bits for any Vec length.
+const AREA_DIGITS: usize = (2 * 2098 + usize::BITS as usize + 1 + 15) / 16;
+
+/// Exact signed products for winding decisions too close to call in floating point.
+struct ExactArea([i32; AREA_DIGITS]);
+
+impl ExactArea {
+    fn add_product(&mut self, x: f64, y: f64, subtract: bool) {
+        fn parts(value: f64) -> (u128, usize) {
+            let bits = value.to_bits();
+            let exponent = ((bits >> 52) & 0x7ff) as usize;
+            let fraction = bits & ((1 << 52) - 1);
+            let mantissa = if exponent == 0 {
+                fraction
+            } else {
+                fraction | (1 << 52)
+            };
+            (u128::from(mantissa), exponent.saturating_sub(1))
+        }
+        let (a, ax) = parts(x);
+        let (b, by) = parts(y);
+        let mut product = a * b;
+        let shift = ax + by;
+        let mut index = shift / 16;
+        let negative = subtract ^ x.is_sign_negative() ^ y.is_sign_negative();
+        while product != 0 {
+            let digit = ((product & 0xffff) as i64) << (shift % 16);
+            let mut carry = if negative { -digit } else { digit };
+            let mut i = index;
+            while carry != 0 {
+                carry += i64::from(self.0[i]);
+                self.0[i] = (carry % 65536) as i32;
+                carry /= 65536;
+                i += 1;
+            }
+            product >>= 16;
+            index += 1;
+        }
+    }
+
+    fn orientation(&self) -> Orientation {
+        // Every lower digit has magnitude < 65536, so the highest nonzero digit decides.
+        match self.0.iter().rev().find(|&&d| d != 0) {
+            Some(&d) if d > 0 => Orientation::CounterClockwise,
+            Some(_) => Orientation::Clockwise,
+            None => Orientation::InvalidOrientation,
+        }
+    }
+}
+
 /// Winding order of a polygon. Integer values match the C++ enum.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(i8)]
@@ -140,20 +191,44 @@ impl Polygon {
         }
 
         let n = self.vertices.len();
-        let mut area = 0.0_f64;
-        for i in 0..n {
-            let j = if i + 1 == n { 0 } else { i + 1 };
-            area += self.vertices[i].lon * self.vertices[j].lat;
-            area -= self.vertices[i].lat * self.vertices[j].lon;
+        if n < 3 {
+            return Orientation::InvalidOrientation;
         }
 
-        if area > 0.0 {
-            Orientation::CounterClockwise
-        } else if area < 0.0 {
-            Orientation::Clockwise
-        } else {
-            Orientation::InvalidOrientation
+        let origin_x = self.vertices[0].lon;
+        let origin_y = self.vertices[0].lat;
+        let mut area = 0.0_f64;
+        let mut magnitude = 0.0;
+        for edge in self.vertices[1..].windows(2) {
+            let left = (edge[0].lon - origin_x) * (edge[1].lat - origin_y);
+            let right = (edge[0].lat - origin_y) * (edge[1].lon - origin_x);
+            area += left - right;
+            magnitude += left.abs() + right.abs();
         }
+
+        let bound = 4.0 * (n as f64 + 4.0) * f64::EPSILON * (magnitude + f64::MIN_POSITIVE);
+        if area.abs() > bound {
+            return if area > 0.0 {
+                Orientation::CounterClockwise
+            } else {
+                Orientation::Clockwise
+            };
+        }
+        let mut exact = ExactArea([0; AREA_DIGITS]);
+        let mut prev = &self.vertices[n - 1];
+        for v in &self.vertices {
+            if !v.lon.is_finite()
+                || !v.lat.is_finite()
+                || !prev.lon.is_finite()
+                || !prev.lat.is_finite()
+            {
+                return Orientation::InvalidOrientation;
+            }
+            exact.add_product(prev.lon, v.lat, false);
+            exact.add_product(prev.lat, v.lon, true);
+            prev = v;
+        }
+        exact.orientation()
     }
 }
 
@@ -196,6 +271,16 @@ mod tests {
             PolygonType::SimplePolygon,
             pts(&[(0.0, 0.0), (1.0, 1.0), (2.0, 2.0)]),
         );
+        assert_eq!(p.orientation(), Orientation::InvalidOrientation);
+    }
+
+    #[test]
+    fn nonfinite_raw_vertex_is_invalid() {
+        let mut p = Polygon::with_vertices(
+            PolygonType::SimplePolygon,
+            pts(&[(0., 0.), (1., 0.), (0., 1.)]),
+        );
+        p.vertices_mut()[2].lon = f64::NAN;
         assert_eq!(p.orientation(), Orientation::InvalidOrientation);
     }
 

@@ -232,18 +232,18 @@ func TestPackedTileIdAddedFactoryValidation(t *testing.T) {
 }
 
 func TestNorthEastCornerExclusive(t *testing.T) {
-	// Level 0, morton 0: NE corner is the exclusive 2^31 in both axes.
+	// Level 0, morton 0: the only latitude row spans -2^30 through +2^30.
 	tile, err := PackedTileIdFromTileIndex(0, 0)
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
 	neX, neY := tile.NorthEastCorner()
-	if neX != int64(1)<<31 || neY != int64(1)<<31 {
-		t.Errorf("NE corner = (%d,%d), want (%d,%d)", neX, neY, int64(1)<<31, int64(1)<<31)
+	if neX != int64(1)<<31 || neY != int64(1)<<30 {
+		t.Errorf("NE corner = (%d,%d), want (%d,%d)", neX, neY, int64(1)<<31, int64(1)<<30)
 	}
 	swX, swY := tile.SouthWestCorner()
-	if swX != 0 || swY != 0 {
-		t.Errorf("SW corner = (%d,%d), want (0,0)", swX, swY)
+	if swX != 0 || swY != -(int64(1)<<30) {
+		t.Errorf("SW corner = (%d,%d), want (0,%d)", swX, swY, -(int64(1) << 30))
 	}
 }
 

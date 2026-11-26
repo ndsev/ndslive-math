@@ -57,6 +57,7 @@ WGS84_POINTS = [
     (-179.9, 0.0),
     (180.0, 90.0),  # exercises clamping/wrapping
     (-180.0, -90.0),
+    (179.9999999, 89.9999999),  # below the positive-edge snap threshold
     (179.999999, 89.999999),
     (-0.000001, -0.000001),  # near-origin negatives (floor vs truncate)
     (360.5, 0.0),  # wrap > 360
@@ -140,6 +141,7 @@ FROM_WGS84_LEVEL = [
 
 # (sw_x, sw_y, ne_x, ne_y, level) bounding boxes for tile enumeration.
 TILES_FOR_BBOX = [
+    (0, -100, 100, 100, 0),  # level 0 has one row spanning both hemispheres
     (0, 0, (1 << 28), (1 << 28), 3),
     (1000000, 500000, 2000000, 1500000, 8),
     (0, 0, (1 << 31) - 1, (1 << 30) - 1, 1),
@@ -165,6 +167,21 @@ AABB_CASES = [
     ("invalid_neg_size", 0.0, 85.0, -1.0, 10.0),  # invalid: no clamp
     ("default_box", 0.0, 0.0, 0.0, 0.0),
     ("tiny_box", 0.0, 0.0, 0.0001, 0.0001),  # tile_level falls back to 15
+]
+
+# Packed tile IDs used to verify AABB construction at the world edge and level 0.
+AABB_TILE_VALUES = [559240533, 131073, 65536, 65537]
+
+# Null denotes positive infinity at a pole. Reference values are the integral
+# of sec(latitude) over the binary64 endpoints, divided by the angular span.
+POLAR_HEIGHT = 89.9999999 - 89.0
+MERCATOR_SPANS = [
+    (89.0, POLAR_HEIGHT, 923.5004048065483),
+    (-89.9999999, POLAR_HEIGHT, 923.5004048065483),
+    (0.0, 1e-15, 1.0),
+    (60.0, 1e-320, 2.0),
+    (-90.0, 1.0, None),
+    (89.0, 1.0, None),
 ]
 
 # (name, x_nds, y_nds) sample points for Wgs84Aabb.contains, tested against
@@ -196,7 +213,64 @@ POLYGON_CASES = [
     ("single_vertex", 0, [(0.0, 0.0)]),
     ("two_vertices", 0, [(0.0, 0.0), (1.0, 0.0)]),
     ("empty", 0, []),
+    (
+        "remote_small_triangle",
+        0,
+        [
+            (x * 360.0 / (1 << 32), y * 180.0 / (1 << 31))
+            for x, y in [
+                (2028180913, 954438061),
+                (2028179766, 954438986),
+                (2028181498, 954437589),
+            ]
+        ],
+    ),
 ]
+
+# A single NDS unit of signed double area must survive every cyclic start and reversal.
+_n = 1 << 28
+_ring = [(x * (360 / 2**32), y * (360 / 2**32)) for x, y in [(_n, _n + 1), (0, 0), (1, 1)]]
+for _name, _order in [("ccw", _ring), ("cw", _ring[::-1])]:
+    for _i in range(3):
+        POLYGON_CASES.append((f"unit_determinant_{_name}_{_i}", 0, _order[_i:] + _order[:_i]))
+POLYGON_CASES.extend(
+    [
+        # This concave ring has exact double area +8 in NDS units. The
+        # floating-point fan alone reports a nonzero area with the wrong sign.
+        (
+            "wrong_sign_concave_ring",
+            0,
+            [
+                (-x * (360 / 2**32), -y * (360 / 2**32))
+                for x, y in [
+                    (327011547, 327011551),
+                    (163505773, 163505775),
+                    (245258659, 245258662),
+                    (163505772, 163505774),
+                    (0, 0),
+                    (245258661, 245258664),
+                ]
+            ],
+        ),
+        ("underflow_triangle", 3, [(0.0, 0.0), (2.0**-600, 0.0), (0.0, 2.0**-600)]),
+        ("subnormal_coordinate", 0, [(0.0, 0.0), (0.0, 1.0), (2.0**-1040, 0.0)]),
+        (
+            "cancelling_ring",
+            0,
+            [
+                (1.0, 1.0),
+                (0.0, 0.0),
+                (0.0, 1.0),
+                (1.0, 1.0),
+                (0.0, 0.0),
+                (2.0**-600, 0.0),
+                (0.0, 2.0**-600),
+                (0.0, 0.0),
+                (1.0, 0.0),
+            ],
+        ),
+    ]
+)
 
 # Wgs84Polygon cases (always SIMPLE_POLYGON): (name, vertices).
 WGS84_POLYGON_CASES = [
@@ -382,8 +456,6 @@ def main():
     # 9. bounding_box_from_tile_ids
     rows = []
     for morton_number, level in TILE_INDEX:
-        if level == 0:
-            continue
         t = PackedTileId.from_tile_index(morton_number, level)
         bbox = bounding_box_from_tile_ids([t])
         rows.append(
@@ -478,8 +550,7 @@ def main():
     data["nds_distance_to_meters"] = rows
 
     # -----------------------------------------------------------------------
-    # Geometry layer (deterministic methods only; PolygonTriangulation and the
-    # transcendental avg_mercator_stretch are intentionally excluded).
+    # Geometry layer (triangulation order is intentionally excluded).
     # -----------------------------------------------------------------------
 
     def _pt(w: Wgs84) -> list[float]:
@@ -529,7 +600,24 @@ def main():
         )
     data["wgs84_aabb"] = rows
 
-    # 13. Wgs84Aabb.contains: each point against each AABB case.
+    # 13. Wgs84Aabb construction from packed tiles, including world edges.
+    rows = []
+    for tile_value in AABB_TILE_VALUES:
+        box = Wgs84Aabb.from_tile(PackedTileId(tile_value))
+        rows.append(
+            {
+                "tile_value": tile_value,
+                "sw": _pt(box.sw()),
+                "size": [box.size().x, box.size().y],
+            }
+        )
+    data["wgs84_aabb_from_tile"] = rows
+    data["mercator_stretch"] = [
+        {"bottom": bottom, "height": height, "stretch": stretch}
+        for bottom, height, stretch in MERCATOR_SPANS
+    ]
+
+    # 14. Wgs84Aabb.contains: each point against each AABB case.
     rows = []
     for box_name, sw_lon, sw_lat, size_x, size_y in AABB_CASES:
         box = _make_aabb(sw_lon, sw_lat, size_x, size_y)
@@ -545,7 +633,7 @@ def main():
             )
     data["wgs84_aabb_contains"] = rows
 
-    # 14. Wgs84Aabb.intersects: full ordered pairwise matrix (verifies symmetry).
+    # 15. Wgs84Aabb.intersects: full ordered pairwise matrix (verifies symmetry).
     rows = []
     for a_name, a_sw_lon, a_sw_lat, a_sx, a_sy in AABB_CASES:
         for b_name, b_sw_lon, b_sw_lat, b_sx, b_sy in AABB_CASES:
@@ -560,7 +648,7 @@ def main():
             )
     data["wgs84_aabb_intersects"] = rows
 
-    # 15. Polygon orientation + validity (base Polygon, raw lon/lat plane).
+    # 16. Polygon orientation + validity (base Polygon, raw lon/lat plane).
     rows = []
     for name, ptype_int, verts in POLYGON_CASES:
         ptype = PolygonType(ptype_int)
@@ -576,7 +664,7 @@ def main():
         )
     data["polygon_orientation"] = rows
 
-    # 16. Wgs84Polygon: aaBb, median (centroid), is_valid.
+    # 17. Wgs84Polygon: aaBb, median (centroid), is_valid.
     rows = []
     for name, verts in WGS84_POLYGON_CASES:
         poly = Wgs84Polygon(vertices=[Wgs84(lon, lat) for lon, lat in verts])
@@ -595,7 +683,7 @@ def main():
         )
     data["wgs84_polygon"] = rows
 
-    # 17. Wgs84Polygon.collides_with (SAT), ordered pairs.
+    # 18. Wgs84Polygon.collides_with (SAT), ordered pairs.
     rows = []
     for a_name, a_verts, b_name, b_verts in WGS84_POLYGON_COLLISION_PAIRS:
         a = Wgs84Polygon(vertices=[Wgs84(lon, lat) for lon, lat in a_verts])

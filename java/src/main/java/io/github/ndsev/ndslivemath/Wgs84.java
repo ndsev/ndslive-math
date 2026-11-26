@@ -186,9 +186,11 @@ public final class Wgs84 {
 		// semantics as Python's math.fmod / C++ std::fmod (sign of dividend).
 		this.x = this.x % 360.0;
 
-		// Snap values very close to +180 down slightly (consistent with C++ lonMax).
-		if (Math.abs(this.x - (180.0 - LON_NDS_DELTA)) < LON_NDS_DELTA) {
-			this.x = 180.0 - LON_NDS_DELTA;
+		// Snap values at the positive edge down. The lower bound makes this
+		// one-sided so representable values below it retain their NDS code.
+		double lonMax = 180.0 - LON_NDS_DELTA;
+		if (this.x >= lonMax && this.x - lonMax < LON_NDS_DELTA) {
+			this.x = lonMax;
 		}
 
 		if (this.x >= 180.0) {
@@ -198,12 +200,13 @@ public final class Wgs84 {
 		}
 
 		// Latitude normalization.
-		if (Math.abs(this.y - (90.0 - LAT_NDS_DELTA)) < LAT_NDS_DELTA) {
-			this.y = 90.0 - LAT_NDS_DELTA;
+		double latMax = 90.0 - LAT_NDS_DELTA;
+		if (this.y >= latMax && this.y - latMax < LAT_NDS_DELTA) {
+			this.y = latMax;
 		}
 
-		if (this.y > 90.0 - LAT_NDS_DELTA) {
-			this.y = 90.0 - LAT_NDS_DELTA;
+		if (this.y > latMax) {
+			this.y = latMax;
 		} else if (this.y < -90.0) {
 			this.y = -90.0;
 		}

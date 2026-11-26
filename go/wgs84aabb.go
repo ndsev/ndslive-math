@@ -35,22 +35,16 @@ func NewWgs84AABB(sw Wgs84, size Vec2) Wgs84AABB {
 	return box
 }
 
-// Wgs84AABBFromTile constructs an AABB covering a tile (Path A: via
-// Wgs84FromMortonCode).
-//
-// Mirrors the C++ Wgs84AABB(PackedTileId) constructor: the SW/NE NDS corners
-// are wrapped into a MortonCode and converted via Wgs84FromMortonCode, so both
-// axes are scaled by 360 / 2^32 (NOT Wgs84FromNdsCoordinates, which scales
-// latitude by 180 / 2^31 and would diverge from C++).
+// Wgs84AABBFromTile constructs an AABB covering a tile. The extent comes from
+// the tile level rather than subtracting normalized corners, so world-edge
+// tiles retain their actual width.
 func Wgs84AABBFromTile(tileID PackedTileId) Wgs84AABB {
 	swX, swY := tileID.SouthWestCorner()
-	neX, neY := tileID.NorthEastCorner()
-
-	swCorner := Wgs84FromMortonCode(MortonFromNdsCoordinates(int32(swX), int32(swY)))
-	neCorner := Wgs84FromMortonCode(MortonFromNdsCoordinates(int32(neX), int32(neY)))
-
-	size := Vec2{X: swCorner.Lon - neCorner.Lon, Y: swCorner.Lat - neCorner.Lat}.Abs()
-	return NewWgs84AABB(swCorner, size)
+	width, height := tileID.Wgs84Size()
+	return NewWgs84AABB(
+		Wgs84FromNdsCoordinates(int32(swX), int32(swY)),
+		Vec2{X: width, Y: height},
+	)
 }
 
 // Wgs84AABBFromCenterAndTileLimit constructs an AABB from a center, a soft
@@ -135,15 +129,18 @@ func (b Wgs84AABB) SplitOverAntiMeridian() (left, right Wgs84AABB, ok bool) {
 
 // AvgMercatorStretch returns the Mercator-projection vertical stretch factor.
 //
-// Transcendental; not part of the cross-language parity vectors (asserted only
-// for finiteness in unit tests).
+// A positive-height interval touching either pole has infinite stretch.
 func (b Wgs84AABB) AvgMercatorStretch() float64 {
-	latTop := degToRad(b.sw.Latitude() + b.size.Y)
-	latBottom := degToRad(b.sw.Latitude())
-	radToMercatorLat := func(wgs84Lat float64) float64 {
-		return math.Atanh(math.Sin(wgs84Lat - math.Pi/2.0))
+	bottom, height := b.sw.Latitude(), b.size.Y
+	halfSpan := degToRad(height) / 2
+	// The log tangent ratio uses distances from the poles, even when sin(latitude) rounds to 1.
+	south := math.Sin(degToRad((90 + bottom) / 2))
+	north := math.Sin(degToRad((90 - bottom - height) / 2))
+	denominator := south * north
+	if height > 0 && halfSpan < 0x1p-1022 {
+		return 0.5 / denominator
 	}
-	return (radToMercatorLat(latTop) - radToMercatorLat(latBottom)) / degToRad(b.size.Y)
+	return math.Log1p(math.Sin(halfSpan)/denominator) / (2 * halfSpan)
 }
 
 // NumTileIds returns the approximate number of tiles at level lv contained in

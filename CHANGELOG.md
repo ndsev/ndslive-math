@@ -4,6 +4,32 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [v1.2.0] - 2026-11-26
+
+### Fixed
+- Level-0 tiles now span the full latitude range from -90 to +90 degrees, and
+  bounding-box enumeration returns their single row only once. C++ tile
+  bounds retain the exclusive north pole rather than wrapping it to the south
+  ([#103](https://github.com/ndsev/ndslive-math/issues/103)).
+- WGS84 normalization no longer rounds coordinates immediately below the
+  positive longitude and latitude limits up by one NDS unit
+  ([#104](https://github.com/ndsev/ndslive-math/issues/104)).
+- WGS84 tile bounding boxes derive their extent from the tile level, avoiding
+  almost-world-wide boxes at the antimeridian
+  ([#105](https://github.com/ndsev/ndslive-math/issues/105)).
+- Average Mercator stretch integrates over latitude rather than co-latitude.
+  Nonzero spans strictly inside the poles stay finite, including near the
+  equator; intervals touching a pole diverge
+  ([#106](https://github.com/ndsev/ndslive-math/issues/106)).
+- Polygon orientation preserves the winding of small and nearly collinear
+  rings regardless of their starting vertex, using an exact signed area when
+  floating-point rounding could change the result
+  ([#107](https://github.com/ndsev/ndslive-math/issues/107)).
+
+### Project
+- Extend the shared parity vectors and all six language test suites with the
+  corrected boundary and geometry cases.
+
 ## [v1.1.1] - 2026-11-11
 
 This patch updates documentation and build tooling without changing library

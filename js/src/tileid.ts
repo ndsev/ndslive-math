@@ -230,8 +230,12 @@ export class PackedTileId {
   /** Returns the south-west corner of the tile in NDS coordinates. */
   southWestCorner(): [number, number] {
     const mortonNumber = this.mortonNumber();
-    const shift = BigInt(63 - (2 * this.level() + 1));
-    return new MortonCode(BigInt(mortonNumber) << shift).toNdsCoordinates();
+    const level = this.level();
+    const shift = BigInt(63 - (2 * level + 1));
+    const [x, y] = new MortonCode(BigInt(mortonNumber) << shift).toNdsCoordinates();
+    // Level 0 has no latitude bit, so zero-filling the Morton suffix would
+    // anchor its only row at the equator instead of the south pole.
+    return [x, level === 0 ? -(2 ** 30) : y];
   }
 
   /**
@@ -417,14 +421,14 @@ export function getTileIdsForBoundingBox(
   const tileSize = 2 ** (31 - level);
 
   const startTileX = floorDiv(swX, tileSize);
-  const startTileY = floorDiv(swY, tileSize);
+  const startTileY = level === 0 ? 0 : floorDiv(swY, tileSize);
   const endTileX = floorDiv(neX, tileSize);
-  const endTileY = floorDiv(neY, tileSize);
+  const endTileY = level === 0 ? 0 : floorDiv(neY, tileSize);
 
   for (let tileY = startTileY; tileY <= endTileY; tileY++) {
     for (let tileX = startTileX; tileX <= endTileX; tileX++) {
       const tileSwX = tileX * tileSize;
-      const tileSwY = tileY * tileSize;
+      const tileSwY = level === 0 ? -(2 ** 30) : tileY * tileSize;
 
       const morton = MortonCode.fromNdsCoordinates(tileSwX, tileSwY);
       const tileId = PackedTileId.fromMortonAndLevel(morton, level);

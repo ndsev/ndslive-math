@@ -11,7 +11,6 @@
 //! ([`crate::wgs84::LON_NDS_DELTA_POW2`] etc.) so antimeridian handling and
 //! tile-from-index construction match the C++ reference bit-for-bit.
 
-use crate::morton::MortonCode;
 use crate::tileid::PackedTileId;
 use crate::vec2::Vec2;
 use crate::wgs84::{Wgs84, LON_MAX, LON_MIN, LON_NDS_DELTA_POW2};
@@ -48,22 +47,16 @@ impl Wgs84Aabb {
         aabb
     }
 
-    /// Construct an AABB covering a tile (Path A: via [`Wgs84::from_morton_code`]).
-    ///
-    /// Mirrors the C++ `Wgs84AABB(PackedTileId)` constructor: the SW/NE NDS
-    /// corners are wrapped into a [`MortonCode`] and converted via
-    /// [`Wgs84::from_morton_code`], so both axes are scaled by `360 / 2^32`.
+    /// Construct an AABB covering a tile. The extent comes from the tile level
+    /// rather than subtracting normalized corners, so world-edge tiles retain
+    /// their actual width.
     pub fn from_tile(tile_id: &PackedTileId) -> Self {
         let (sw_x, sw_y) = tile_id.south_west_corner();
-        let (ne_x, ne_y) = tile_id.north_east_corner();
-
-        let sw_corner =
-            Wgs84::from_morton_code(MortonCode::from_nds_coordinates(sw_x as i32, sw_y as i32));
-        let ne_corner =
-            Wgs84::from_morton_code(MortonCode::from_nds_coordinates(ne_x as i32, ne_y as i32));
-
-        let size = Vec2::new(sw_corner.lon - ne_corner.lon, sw_corner.lat - ne_corner.lat).abs();
-        Wgs84Aabb::new(sw_corner, size)
+        let (width, height) = tile_id.wgs84_size();
+        Wgs84Aabb::new(
+            Wgs84::from_nds_coordinates(sw_x as i32, sw_y as i32),
+            Vec2::new(width, height),
+        )
     }
 
     /// Construct an AABB from a center, a soft tile-count limit, and a level.
@@ -148,17 +141,19 @@ impl Wgs84Aabb {
 
     /// The Mercator-projection vertical stretch factor.
     ///
-    /// Transcendental; not part of the cross-language parity vectors (asserted
-    /// only for finiteness in unit tests).
+    /// A positive-height interval touching either pole has infinite stretch.
     pub fn avg_mercator_stretch(&self) -> f64 {
-        let lat_top = (self.sw.lat + self.size.y).to_radians();
-        let lat_bottom = self.sw.lat.to_radians();
-
-        fn rad_to_mercator_lat(wgs84_lat: f64) -> f64 {
-            (wgs84_lat - std::f64::consts::FRAC_PI_2).sin().atanh()
+        let bottom = self.sw.lat;
+        let height = self.size.y;
+        let half_span = height.to_radians() / 2.0;
+        // The log tangent ratio uses distances from the poles even when sin(latitude) rounds to 1.
+        let south = ((90.0 + bottom) / 2.0).to_radians().sin();
+        let north = ((90.0 - bottom - height) / 2.0).to_radians().sin();
+        let denominator = south * north;
+        if height > 0.0 && half_span < f64::MIN_POSITIVE {
+            return 0.5 / denominator;
         }
-
-        (rad_to_mercator_lat(lat_top) - rad_to_mercator_lat(lat_bottom)) / self.size.y.to_radians()
+        (half_span.sin() / denominator).ln_1p() / (2.0 * half_span)
     }
 
     /// Approximate number of tiles at level `lv` contained in this box.
@@ -274,9 +269,11 @@ mod tests {
     }
 
     #[test]
-    fn avg_mercator_stretch_is_finite() {
-        let b = Wgs84Aabb::new(Wgs84::new(0.0, 10.0), Vec2::new(20.0, 10.0));
-        assert!(b.avg_mercator_stretch().is_finite());
+    fn avg_mercator_stretch_uses_latitude() {
+        let equator = Wgs84Aabb::new(Wgs84::new(0.0, 0.0), Vec2::new(10.0, 10.0));
+        let high_latitude = Wgs84Aabb::new(Wgs84::new(0.0, 60.0), Vec2::new(10.0, 10.0));
+        assert!((equator.avg_mercator_stretch() - 1.005115965663012).abs() < 1e-12);
+        assert!((high_latitude.avg_mercator_stretch() - 2.397583523371995).abs() < 1e-12);
     }
 
     #[test]

@@ -34,6 +34,8 @@ struct Vectors {
     distance_bearing: Vec<DistanceBearing>,
     nds_distance_to_meters: Vec<NdsDistanceToMeters>,
     wgs84_aabb: Vec<AabbVec>,
+    wgs84_aabb_from_tile: Vec<AabbFromTileVec>,
+    mercator_stretch: Vec<MercatorSpan>,
     wgs84_aabb_contains: Vec<AabbContainsVec>,
     wgs84_aabb_intersects: Vec<AabbIntersectsVec>,
     polygon_orientation: Vec<PolygonOrientationVec>,
@@ -198,6 +200,20 @@ struct AabbVec {
     num_tile_ids: Vec<i64>,
     tile_level_min8: u8,
     tile_level_min2: u8,
+}
+
+#[derive(Debug, Deserialize)]
+struct MercatorSpan {
+    bottom: f64,
+    height: f64,
+    stretch: Option<f64>,
+}
+
+#[derive(Debug, Deserialize)]
+struct AabbFromTileVec {
+    tile_value: i32,
+    sw: [f64; 2],
+    size: [f64; 2],
 }
 
 #[derive(Debug, Deserialize)]
@@ -787,6 +803,46 @@ fn geometry_wgs84_aabb() {
 
         assert_eq!(b.tile_level(8), row.tile_level_min8, "tile_level(8) {name}");
         assert_eq!(b.tile_level(2), row.tile_level_min2, "tile_level(2) {name}");
+    }
+}
+
+#[test]
+fn geometry_mercator_stretch() {
+    for row in load().mercator_stretch {
+        let b = Wgs84Aabb::new(Wgs84::new(0.0, row.bottom), Vec2::new(1.0, row.height));
+        let got = b.avg_mercator_stretch();
+        match row.stretch {
+            Some(expected) => assert!(approx(got, expected, FLOAT_TOLERANCE), "{row:?}: {got}"),
+            None => assert_eq!(got, f64::INFINITY),
+        }
+    }
+}
+
+#[test]
+fn geometry_wgs84_aabb_from_tile() {
+    let v = load();
+    assert!(!v.wgs84_aabb_from_tile.is_empty());
+    for row in &v.wgs84_aabb_from_tile {
+        let tile = PackedTileId::new(row.tile_value).unwrap();
+        let box_ = Wgs84Aabb::from_tile(&tile);
+        assert!(
+            approx(box_.sw().lon, row.sw[0], FLOAT_TOLERANCE)
+                && approx(box_.sw().lat, row.sw[1], FLOAT_TOLERANCE),
+            "sw for {}: got ({},{}), want {:?}",
+            row.tile_value,
+            box_.sw().lon,
+            box_.sw().lat,
+            row.sw
+        );
+        assert!(
+            approx(box_.size().x, row.size[0], FLOAT_TOLERANCE)
+                && approx(box_.size().y, row.size[1], FLOAT_TOLERANCE),
+            "size for {}: got ({},{}), want {:?}",
+            row.tile_value,
+            box_.size().x,
+            box_.size().y,
+            row.size
+        );
     }
 }
 

@@ -277,8 +277,8 @@ class TestPackedTileId(unittest.TestCase):
         self.assertEqual(PackedTileId.wgs84_from_nds_coordinates(1 << 31, 1 << 30), (180.0, 90.0))
 
         world_edge = PackedTileId.from_tile_xy(1, 0, 0)
-        self.assertEqual(world_edge.center_wgs84(), (-90.0, 90.0))
-        self.assertEqual(world_edge.north_east_wgs84(), (0.0, 180.0))
+        self.assertEqual(world_edge.center_wgs84(), (-90.0, 0.0))
+        self.assertEqual(world_edge.north_east_wgs84(), (0.0, 90.0))
 
     def test_from_tile_index(self):
         """Test creating a tile directly from morton number and level."""
