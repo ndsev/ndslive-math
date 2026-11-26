@@ -20,9 +20,9 @@
 
 #include <nlohmann/json.hpp>
 
+#include <cmath>
 #include <cstdlib>
 #include <fstream>
-#include <limits>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -386,10 +386,11 @@ int main()
     {
         Wgs84AABB<double> box(HighPrecWgs84(0, r.at("bottom").get<double>()),
                               Vec2(1, r.at("height").get<double>()));
+        const double stretch = box.avgMercatorStretch();
         if (r.at("stretch").is_null())
-            CHECK_EQ(box.avgMercatorStretch(), std::numeric_limits<double>::infinity());
+            CHECK(std::isinf(stretch) && stretch > 0);
         else
-            CHECK_NEAR(box.avgMercatorStretch(), r.at("stretch").get<double>(), tol);
+            CHECK_NEAR(stretch, r.at("stretch").get<double>(), tol);
     }
 
     // 14. Wgs84AABB::contains — each sample point against each named box.
