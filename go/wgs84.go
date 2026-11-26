@@ -87,9 +87,11 @@ func (w *Wgs84) Normalize() {
 	// Use math.Mod (fmod) to preserve the sign, matching std::fmod / Python.
 	w.Lon = math.Mod(w.Lon, 360.0)
 
-	// Snap values very close to +180 down to 180 - LonNdsDelta.
-	if math.Abs(w.Lon-(180.0-LonNdsDelta)) < LonNdsDelta {
-		w.Lon = 180.0 - LonNdsDelta
+	// Snap values at the positive edge down. The lower bound makes this
+	// one-sided so representable values below it retain their NDS code.
+	lonMax := 180.0 - LonNdsDelta
+	if w.Lon >= lonMax && w.Lon-lonMax < LonNdsDelta {
+		w.Lon = lonMax
 	}
 
 	// Wrap values outside [-180, 180).
@@ -100,11 +102,12 @@ func (w *Wgs84) Normalize() {
 	}
 
 	// Latitude normalization.
-	if math.Abs(w.Lat-(90.0-LatNdsDelta)) < LatNdsDelta {
-		w.Lat = 90.0 - LatNdsDelta
+	latMax := 90.0 - LatNdsDelta
+	if w.Lat >= latMax && w.Lat-latMax < LatNdsDelta {
+		w.Lat = latMax
 	}
-	if w.Lat > 90.0-LatNdsDelta {
-		w.Lat = 90.0 - LatNdsDelta // clamp to max lat
+	if w.Lat > latMax {
+		w.Lat = latMax // clamp to max lat
 	} else if w.Lat < -90.0 {
 		w.Lat = -90.0 // clamp to min lat
 	}

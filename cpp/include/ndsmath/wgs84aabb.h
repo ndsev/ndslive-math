@@ -38,10 +38,7 @@ public:
 
     /// Construct an AABB from a PackedTileId.
     explicit Wgs84AABB(PackedTileId const &tileId)
-        : Wgs84AABB(Wgs84<T>::fromMortonCode(tileId.southWestCorner()),
-                    glm::abs((Wgs84<T>::fromMortonCode(tileId.southWestCorner()) -
-                              Wgs84<T>::fromMortonCode(tileId.northEastCorner()))
-                                 .vec()))
+        : Wgs84AABB(Wgs84<T>::fromMortonCode(tileId.southWestCorner()), angularSize(tileId))
     {
     }
 
@@ -116,8 +113,7 @@ public:
     {
         T const latTop = glm::radians(sw_.latitude() + size_.y);
         T const latBottom = glm::radians(sw_.latitude());
-        auto radToMercatorLat = [](T wgs84Lat)
-        { return atanh(sin(wgs84Lat - glm::half_pi<double>())); };
+        auto radToMercatorLat = [](T wgs84Lat) { return atanh(sin(wgs84Lat)); };
         return (radToMercatorLat(latTop) - radToMercatorLat(latBottom)) / glm::radians(size_.y);
     }
 
@@ -177,6 +173,12 @@ public:
     }
 
 private:
+    static vec2_t angularSize(PackedTileId const &tileId)
+    {
+        const auto size = tileId.wgs84Size();
+        return {static_cast<T>(size.first), static_cast<T>(size.second)};
+    }
+
     Wgs84<T> sw_{.0, .0};
     vec2_t size_{.0, .0};
 };

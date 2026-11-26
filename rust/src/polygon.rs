@@ -140,11 +140,20 @@ impl Polygon {
         }
 
         let n = self.vertices.len();
+        if n == 0 {
+            return Orientation::InvalidOrientation;
+        }
+
+        let origin_x = self.vertices[0].lon;
+        let origin_y = self.vertices[0].lat;
         let mut area = 0.0_f64;
         for i in 0..n {
             let j = if i + 1 == n { 0 } else { i + 1 };
-            area += self.vertices[i].lon * self.vertices[j].lat;
-            area -= self.vertices[i].lat * self.vertices[j].lon;
+            let x = self.vertices[i].lon - origin_x;
+            let y = self.vertices[i].lat - origin_y;
+            let next_x = self.vertices[j].lon - origin_x;
+            let next_y = self.vertices[j].lat - origin_y;
+            area += x * next_y - y * next_x;
         }
 
         if area > 0.0 {

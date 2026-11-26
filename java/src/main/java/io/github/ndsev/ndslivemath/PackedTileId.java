@@ -283,8 +283,15 @@ public final class PackedTileId {
 	 */
 	public long[] southWestCorner() {
 		long mortonNumber = mortonNumber();
-		long shifted = mortonNumber << (63 - (2 * level() + 1));
-		return new MortonCode(shifted).toNdsCoordinates();
+		int tileLevel = level();
+		long shifted = mortonNumber << (63 - (2 * tileLevel + 1));
+		long[] corner = new MortonCode(shifted).toNdsCoordinates();
+		// Level 0 has no latitude bit, so zero-filling the Morton suffix would
+		// anchor its only row at the equator instead of the south pole.
+		if (tileLevel == 0) {
+			corner[1] = -(1L << 30);
+		}
+		return corner;
 	}
 
 	/**

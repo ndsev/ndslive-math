@@ -16,7 +16,6 @@ from __future__ import annotations
 
 import math
 
-from .morton import MortonCode
 from .tileid import PackedTileId
 from .vec2 import Vec2
 from .wgs84 import Wgs84
@@ -49,14 +48,10 @@ class Wgs84Aabb:
 
     @classmethod
     def from_tile(cls, tile_id: PackedTileId) -> Wgs84Aabb:
-        """Construct an AABB from a tile (via ``from_morton_code``).
+        """Construct an AABB from a tile.
 
-        Like the C++ ``Wgs84AABB(PackedTileId)`` constructor, this wraps the SW/NE
-        NDS corners into :class:`~ndslive.math.morton.MortonCode` and converts
-        them to WGS84. Both axes use the same scale: ``360 / 2^32 = 180 / 2^31``.
-        At the world edge, the NE corner can wrap to the opposite side. Taking
-        the absolute corner difference then produces an almost-world-wide box
-        instead of the tile's width.
+        The extent comes directly from the tile level rather than subtracting
+        normalized corners, so world-edge tiles retain their actual width.
 
         Args:
             tile_id: The tile whose extent the AABB should cover.
@@ -64,14 +59,8 @@ class Wgs84Aabb:
         Returns:
             A new :class:`Wgs84Aabb`.
         """
-        sw_x, sw_y = tile_id.south_west_corner()
-        ne_x, ne_y = tile_id.north_east_corner()
-
-        sw_corner = Wgs84.from_morton_code(MortonCode.from_nds_coordinates(sw_x, sw_y))
-        ne_corner = Wgs84.from_morton_code(MortonCode.from_nds_coordinates(ne_x, ne_y))
-
-        size = Vec2(sw_corner.x - ne_corner.x, sw_corner.y - ne_corner.y).abs()
-        return cls(sw_corner, size)
+        sw_corner = Wgs84.from_nds_coordinates(*tile_id.south_west_corner())
+        return cls(sw_corner, Vec2(*tile_id.wgs84_size()))
 
     @classmethod
     def from_center_and_tile_limit(cls, center: Wgs84, soft_limit: int, level: int) -> Wgs84Aabb:
@@ -170,7 +159,7 @@ class Wgs84Aabb:
         lat_bottom = math.radians(self._sw.latitude())
 
         def rad_to_mercator_lat(wgs84_lat: float) -> float:
-            return math.atanh(math.sin(wgs84_lat - math.pi / 2.0))
+            return math.atanh(math.sin(wgs84_lat))
 
         return (rad_to_mercator_lat(lat_top) - rad_to_mercator_lat(lat_bottom)) / math.radians(
             self._size.y

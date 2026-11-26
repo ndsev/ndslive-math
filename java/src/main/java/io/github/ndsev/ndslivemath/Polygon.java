@@ -220,11 +220,20 @@ public class Polygon {
 		}
 
 		int n = this.vertices.size();
+		if (n == 0) {
+			return Orientation.INVALID_ORIENTATION;
+		}
+
+		double originX = this.vertices.get(0).dx();
+		double originY = this.vertices.get(0).dy();
 		double area = 0.0;
 		for (int i = 0; i < n; i++) {
 			int j = (i + 1 == n) ? 0 : i + 1;
-			area += this.vertices.get(i).dx() * this.vertices.get(j).dy();
-			area -= this.vertices.get(i).dy() * this.vertices.get(j).dx();
+			double x = this.vertices.get(i).dx() - originX;
+			double y = this.vertices.get(i).dy() - originY;
+			double nextX = this.vertices.get(j).dx() - originX;
+			double nextY = this.vertices.get(j).dy() - originY;
+			area += x * nextY - y * nextX;
 		}
 
 		if (area > 0) {

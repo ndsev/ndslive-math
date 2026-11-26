@@ -101,6 +101,13 @@ public:
             return INVALID_ORIENTATION;
         }
 
+        if (vertices_.empty())
+        {
+            return INVALID_ORIENTATION;
+        }
+
+        const T originX = vertices_[0].dx();
+        const T originY = vertices_[0].dy();
         T area = 0;
         for (auto i = 0; i < vertices_.size(); i++)
         {
@@ -110,8 +117,11 @@ public:
                 nextIndex = 0;
             }
 
-            area += vertices_[i].dx() * vertices_[nextIndex].dy() -
-                    vertices_[i].dy() * vertices_[nextIndex].dx();
+            const T x = vertices_[i].dx() - originX;
+            const T y = vertices_[i].dy() - originY;
+            const T nextX = vertices_[nextIndex].dx() - originX;
+            const T nextY = vertices_[nextIndex].dy() - originY;
+            area += x * nextY - y * nextX;
         }
 
         if (area > 0)

@@ -155,6 +155,12 @@ type parityData struct {
 		TileLevelMin2 int   `json:"tile_level_min2"`
 	} `json:"wgs84_aabb"`
 
+	Wgs84AabbFromTile []struct {
+		TileValue int32      `json:"tile_value"`
+		SW        [2]float64 `json:"sw"`
+		Size      [2]float64 `json:"size"`
+	} `json:"wgs84_aabb_from_tile"`
+
 	Wgs84AabbContains []struct {
 		Box      string  `json:"box"`
 		PointLon float64 `json:"point_lon"`
@@ -584,6 +590,24 @@ func TestParityWgs84Aabb(t *testing.T) {
 		}
 		if got := box.TileLevel(2); got != c.TileLevelMin2 {
 			t.Errorf("%s: tileLevel(2) = %d, want %d", c.Name, got, c.TileLevelMin2)
+		}
+	}
+}
+
+func TestParityWgs84AabbFromTile(t *testing.T) {
+	data := loadParity(t)
+	tol := data.Meta.FloatTolerance
+	for i, c := range data.Wgs84AabbFromTile {
+		tile, err := NewPackedTileId(c.TileValue)
+		if err != nil {
+			t.Fatalf("case %d: %v", i, err)
+		}
+		box := Wgs84AABBFromTile(tile)
+		if !floatClose(box.SW().Longitude(), c.SW[0], tol) || !floatClose(box.SW().Latitude(), c.SW[1], tol) {
+			t.Errorf("case %d: sw = (%v,%v), want (%v,%v)", i, box.SW().Longitude(), box.SW().Latitude(), c.SW[0], c.SW[1])
+		}
+		if !floatClose(box.Size().X, c.Size[0], tol) || !floatClose(box.Size().Y, c.Size[1], tol) {
+			t.Errorf("case %d: size = (%v,%v), want (%v,%v)", i, box.Size().X, box.Size().Y, c.Size[0], c.Size[1])
 		}
 	}
 }

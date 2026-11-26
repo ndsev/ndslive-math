@@ -114,13 +114,21 @@ class Polygon:
             return Orientation.INVALID_ORIENTATION
 
         n = len(self._vertices)
+        if n == 0:
+            return Orientation.INVALID_ORIENTATION
+
+        origin_x = self._vertices[0].x
+        origin_y = self._vertices[0].y
         area = 0.0
         for i in range(n):
             j = i + 1
             if j == n:
                 j = 0
-            area += self._vertices[i].x * self._vertices[j].y
-            area -= self._vertices[i].y * self._vertices[j].x
+            ix = self._vertices[i].x - origin_x
+            iy = self._vertices[i].y - origin_y
+            jx = self._vertices[j].x - origin_x
+            jy = self._vertices[j].y - origin_y
+            area += ix * jy - iy * jx
 
         if area > 0:
             return Orientation.COUNTERCLOCKWISE

@@ -74,10 +74,12 @@ class Wgs84:
         # Use math.fmod to preserve the sign, matching C++ std::fmod behavior.
         self.x = math.fmod(self.x, 360.0)
 
-        # Snap values within one normalization step of the positive edge to its
-        # last representable coordinate before ordinary longitude wrapping.
-        if abs(self.x - (180.0 - self.LON_NDS_DELTA)) < self.LON_NDS_DELTA:
-            self.x = 180.0 - self.LON_NDS_DELTA
+        # Snap values at the positive edge down to its last representable
+        # coordinate. The lower bound makes this one-sided: representable
+        # values just below the edge must retain their floor-based NDS code.
+        lon_max = 180.0 - self.LON_NDS_DELTA
+        if self.x >= lon_max and self.x - lon_max < self.LON_NDS_DELTA:
+            self.x = lon_max
 
         # Wrap the remaining longitude values into [-180, 180).
         if self.x >= 180.0:
@@ -86,11 +88,12 @@ class Wgs84:
             self.x += 360.0
 
         # Latitude uses a clamp after the analogous positive-edge snap.
-        if abs(self.y - (90.0 - self.LAT_NDS_DELTA)) < self.LAT_NDS_DELTA:
-            self.y = 90.0 - self.LAT_NDS_DELTA
+        lat_max = 90.0 - self.LAT_NDS_DELTA
+        if self.y >= lat_max and self.y - lat_max < self.LAT_NDS_DELTA:
+            self.y = lat_max
 
-        if self.y > 90.0 - self.LAT_NDS_DELTA:
-            self.y = 90.0 - self.LAT_NDS_DELTA  # Clamp to max lat
+        if self.y > lat_max:
+            self.y = lat_max  # Clamp to max lat
         elif self.y < -90.0:
             self.y = -90.0  # Clamp to min lat
 

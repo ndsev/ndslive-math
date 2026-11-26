@@ -119,14 +119,23 @@ func (p Polygon) Orientation() Orientation {
 	}
 
 	n := len(p.vertices)
+	if n == 0 {
+		return InvalidOrientation
+	}
+
+	originX := p.vertices[0].Dx()
+	originY := p.vertices[0].Dy()
 	area := 0.0
 	for i := 0; i < n; i++ {
 		j := i + 1
 		if j == n {
 			j = 0
 		}
-		area += p.vertices[i].Dx() * p.vertices[j].Dy()
-		area -= p.vertices[i].Dy() * p.vertices[j].Dx()
+		x := p.vertices[i].Dx() - originX
+		y := p.vertices[i].Dy() - originY
+		nextX := p.vertices[j].Dx() - originX
+		nextY := p.vertices[j].Dy() - originY
+		area += x*nextY - y*nextX
 	}
 
 	if area > 0 {

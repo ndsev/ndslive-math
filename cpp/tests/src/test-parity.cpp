@@ -376,7 +376,17 @@ int main()
         CHECK_EQ(static_cast<int>(box.tileLevel(2)), r["tile_level_min2"].get<int>());
     }
 
-    // 13. Wgs84AABB::contains — each sample point against each named box.
+    // 13. Wgs84AABB construction from packed tiles, including world edges.
+    for (const auto &r : data["wgs84_aabb_from_tile"])
+    {
+        Wgs84AABB<double> box(PackedTileId(static_cast<uint32_t>(r["tile_value"].get<int64_t>())));
+        CHECK_NEAR(box.sw().longitude(), r["sw"][0].get<double>(), tol);
+        CHECK_NEAR(box.sw().latitude(), r["sw"][1].get<double>(), tol);
+        CHECK_NEAR(box.size().x, r["size"][0].get<double>(), tol);
+        CHECK_NEAR(box.size().y, r["size"][1].get<double>(), tol);
+    }
+
+    // 14. Wgs84AABB::contains — each sample point against each named box.
     for (const auto &r : data["wgs84_aabb_contains"])
     {
         auto box = aabbByName(r["box"].get<std::string>());
@@ -384,7 +394,7 @@ int main()
         CHECK_EQ(box.contains(p), r["contains"].get<bool>());
     }
 
-    // 14. Wgs84AABB::intersects — full ordered pairwise matrix (incl. symmetry).
+    // 15. Wgs84AABB::intersects — full ordered pairwise matrix (incl. symmetry).
     for (const auto &r : data["wgs84_aabb_intersects"])
     {
         auto a = aabbByName(r["a"].get<std::string>());
@@ -392,7 +402,7 @@ int main()
         CHECK_EQ(a.intersects(b), r["intersects"].get<bool>());
     }
 
-    // 15. Polygon orientation + validity (base Polygon, raw lon/lat plane).
+    // 16. Polygon orientation + validity (base Polygon, raw lon/lat plane).
     for (const auto &r : data["polygon_orientation"])
     {
         auto ptype = static_cast<Poly::PolygonType>(r["polygon_type"].get<int>());
@@ -404,7 +414,7 @@ int main()
         CHECK_EQ(poly.isValid(), r["is_valid"].get<bool>());
     }
 
-    // 16. HighPrecWgs84Polygon: aaBb, median (lon/lat swap quirk), isValid.
+    // 17. HighPrecWgs84Polygon: aaBb, median (lon/lat swap quirk), isValid.
     for (const auto &r : data["wgs84_polygon"])
     {
         std::vector<HighPrecWgs84> verts;

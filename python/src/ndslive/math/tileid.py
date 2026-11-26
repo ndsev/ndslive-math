@@ -321,7 +321,13 @@ class PackedTileId:
         Returns the south-west corner of the tile in NDS coordinates.
         """
         morton_number = self.morton_number()
-        return MortonCode(morton_number << (63 - (2 * self.level() + 1))).to_nds_coordinates()
+        level = self.level()
+        x, y = MortonCode(morton_number << (63 - (2 * level + 1))).to_nds_coordinates()
+        # Level 0 has no latitude bit, so zero-filling the Morton suffix would
+        # anchor its only row at the equator instead of the south pole.
+        if level == 0:
+            y = -(1 << 30)
+        return x, y
 
     def north_east_corner(self) -> tuple[int, int]:
         """
@@ -783,16 +789,16 @@ def get_tile_ids_for_bounding_box(
     # Calculate tile indices for the bounding box corners
     # We need to handle the coordinate system properly
     start_tile_x = sw_x // tile_size
-    start_tile_y = sw_y // tile_size
+    start_tile_y = 0 if level == 0 else sw_y // tile_size
     end_tile_x = ne_x // tile_size
-    end_tile_y = ne_y // tile_size
+    end_tile_y = 0 if level == 0 else ne_y // tile_size
 
     # Iterate through all tiles in the bounding box
     for tile_y in range(start_tile_y, end_tile_y + 1):
         for tile_x in range(start_tile_x, end_tile_x + 1):
             # Calculate the south-west corner of this tile
             tile_sw_x = tile_x * tile_size
-            tile_sw_y = tile_y * tile_size
+            tile_sw_y = -(1 << 30) if level == 0 else tile_y * tile_size
 
             # Create morton code from the tile's south-west corner
             morton = MortonCode.from_nds_coordinates(tile_sw_x, tile_sw_y)

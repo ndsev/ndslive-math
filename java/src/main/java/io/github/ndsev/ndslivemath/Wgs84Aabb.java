@@ -60,14 +60,11 @@ public final class Wgs84Aabb {
 	}
 
 	/**
-	 * Construct an AABB covering a tile (Path A: via {@link Wgs84#fromMortonCode}).
+	 * Construct an AABB covering a tile.
 	 *
 	 * <p>
-	 * Mirrors the C++ {@code Wgs84AABB(PackedTileId)} constructor: the SW/NE NDS
-	 * corners are wrapped into a {@link MortonCode} and converted via
-	 * {@link Wgs84#fromMortonCode}, so both axes are scaled by {@code 360 / 2^32}
-	 * (NOT {@link Wgs84#fromNdsCoordinates}, which scales latitude by
-	 * {@code 180 / 2^31} and would diverge from C++).
+	 * The extent comes directly from the tile level rather than subtracting
+	 * normalized corners, so world-edge tiles retain their actual width.
 	 * </p>
 	 *
 	 * @param tileId
@@ -79,15 +76,12 @@ public final class Wgs84Aabb {
 
 	private static Wgs84 swCornerOf(PackedTileId tileId) {
 		long[] sw = tileId.southWestCorner();
-		return Wgs84.fromMortonCode(MortonCode.fromNdsCoordinates(sw[0], sw[1]));
+		return Wgs84.fromNdsCoordinates(sw[0], sw[1]);
 	}
 
 	private static Vec2 sizeOf(PackedTileId tileId) {
-		long[] sw = tileId.southWestCorner();
-		long[] ne = tileId.northEastCorner();
-		Wgs84 swCorner = Wgs84.fromMortonCode(MortonCode.fromNdsCoordinates(sw[0], sw[1]));
-		Wgs84 neCorner = Wgs84.fromMortonCode(MortonCode.fromNdsCoordinates(ne[0], ne[1]));
-		return new Vec2(swCorner.x - neCorner.x, swCorner.y - neCorner.y).abs();
+		double[] size = tileId.wgs84Size();
+		return new Vec2(size[0], size[1]);
 	}
 
 	/**
@@ -217,7 +211,7 @@ public final class Wgs84Aabb {
 
 	private static double radToMercatorLat(double wgs84Lat) {
 		// atanh(z) = 0.5 * ln((1 + z) / (1 - z)); Java has no Math.atanh.
-		double z = Math.sin(wgs84Lat - Math.PI / 2.0);
+		double z = Math.sin(wgs84Lat);
 		return 0.5 * Math.log((1.0 + z) / (1.0 - z));
 	}
 

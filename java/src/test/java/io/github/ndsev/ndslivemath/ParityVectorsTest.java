@@ -329,6 +329,17 @@ class ParityVectorsTest {
 	}
 
 	@Test
+	void wgs84AabbFromTile() {
+		JSONArray arr = data.getJSONArray("wgs84_aabb_from_tile");
+		for (int i = 0; i < arr.length(); i++) {
+			JSONObject e = arr.getJSONObject(i);
+			Wgs84Aabb box = new Wgs84Aabb(new PackedTileId(e.getLong("tile_value")));
+			assertWgs84(e.getJSONArray("sw"), box.sw(), "sw @" + i);
+			assertVec2(e.getJSONArray("size"), box.size(), "size @" + i);
+		}
+	}
+
+	@Test
 	void wgs84AabbContains() {
 		Map<String, Wgs84Aabb> boxes = namedBoxes();
 		JSONArray arr = data.getJSONArray("wgs84_aabb_contains");

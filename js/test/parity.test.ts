@@ -131,6 +131,11 @@ interface Vectors {
     tile_level_min8: number;
     tile_level_min2: number;
   }>;
+  wgs84_aabb_from_tile: Array<{
+    tile_value: number;
+    sw: [number, number];
+    size: [number, number];
+  }>;
   wgs84_aabb_contains: Array<{
     box: string;
     point: string;
@@ -387,6 +392,15 @@ describe('wgs84_aabb', () => {
     }
     expect(box.tileLevel(8)).toBe(v.tile_level_min8);
     expect(box.tileLevel(2)).toBe(v.tile_level_min2);
+  });
+});
+
+describe('wgs84_aabb_from_tile', () => {
+  it.each(vectors.wgs84_aabb_from_tile)('$tile_value', (v) => {
+    const box = Wgs84Aabb.fromTile(new PackedTileId(v.tile_value));
+    approxPair(box.sw(), v.sw);
+    approx(box.size().x, v.size[0]);
+    approx(box.size().y, v.size[1]);
   });
 });
 

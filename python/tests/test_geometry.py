@@ -83,6 +83,10 @@ class TestPolygon(unittest.TestCase):
         p = Polygon(PolygonType.SIMPLE_POLYGON, [Wgs84(0, 0), Wgs84(1, 1), Wgs84(2, 2)])
         self.assertEqual(p.orientation(), Orientation.INVALID_ORIENTATION)
 
+    def test_orientation_empty(self):
+        p = Polygon(PolygonType.SIMPLE_POLYGON)
+        self.assertEqual(p.orientation(), Orientation.INVALID_ORIENTATION)
+
     def test_orientation_unsupported_type(self):
         p = Polygon(PolygonType.TRIANGLE_STRIP, [Wgs84(0, 0), Wgs84(1, 0), Wgs84(0, 1)])
         self.assertEqual(p.orientation(), Orientation.INVALID_ORIENTATION)
@@ -104,6 +108,18 @@ class TestPolygon(unittest.TestCase):
             PolygonType.SIMPLE_POLYGON,
             [Wgs84(0, 0), Wgs84(4, 0), Wgs84(4, 4), Wgs84(0, 4)],
         )
+        self.assertEqual(p.orientation(), Orientation.COUNTERCLOCKWISE)
+
+    def test_orientation_small_triangle_far_from_origin(self):
+        vertices = [
+            Wgs84.from_nds_coordinates(x, y)
+            for x, y in [
+                (2028180913, 954438061),
+                (2028179766, 954438986),
+                (2028181498, 954437589),
+            ]
+        ]
+        p = Polygon(PolygonType.SIMPLE_POLYGON, vertices)
         self.assertEqual(p.orientation(), Orientation.COUNTERCLOCKWISE)
 
     def test_enum_integer_values(self):
@@ -275,13 +291,23 @@ class TestWgs84Aabb(unittest.TestCase):
         self.assertFalse(bad.valid())
         self.assertAlmostEqual(bad.size().y, 10.0, delta=TOL)
 
-    def test_from_tile_path_a(self):
+    def test_from_tile(self):
         tbox = Wgs84Aabb.from_tile(PackedTileId.from_tile_index(0, 10))
         self.assertTrue(tbox.valid())
         self.assertAlmostEqual(tbox.sw().longitude(), 0.0, delta=TOL)
         self.assertAlmostEqual(tbox.sw().latitude(), 0.0, delta=TOL)
         self.assertAlmostEqual(tbox.size().x, 0.17578125, delta=TOL)
         self.assertAlmostEqual(tbox.size().y, 0.17578125, delta=TOL)
+
+    def test_from_tile_world_edges_and_level_zero(self):
+        eastern = Wgs84Aabb.from_tile(PackedTileId(559240533))
+        self.assertAlmostEqual(eastern.size().x, 0.02197265625, delta=TOL)
+        self.assertAlmostEqual(eastern.size().y, 0.02197265625, delta=TOL)
+
+        level_zero = Wgs84Aabb.from_tile(PackedTileId(65536))
+        self.assertAlmostEqual(level_zero.sw().latitude(), -90.0, delta=TOL)
+        self.assertAlmostEqual(level_zero.size().x, 180.0, delta=TOL)
+        self.assertAlmostEqual(level_zero.size().y, 180.0, delta=TOL)
 
     def test_from_center_and_tile_limit(self):
         cbox = Wgs84Aabb.from_center_and_tile_limit(Wgs84(0, 0), 16, 10)
@@ -356,9 +382,12 @@ class TestWgs84Aabb(unittest.TestCase):
     def test_split_over_anti_meridian_none_when_not_crossing(self):
         self.assertIsNone(self.box.split_over_anti_meridian())
 
-    def test_avg_mercator_stretch_is_finite(self):
-        # Transcendental; only finiteness is asserted (not parity-canonical).
-        self.assertTrue(math.isfinite(self.box.avg_mercator_stretch()))
+    def test_avg_mercator_stretch(self):
+        equator = Wgs84Aabb(Wgs84(0, 0), Vec2(10, 10))
+        high_latitude = Wgs84Aabb(Wgs84(0, 60), Vec2(10, 10))
+        self.assertTrue(math.isfinite(equator.avg_mercator_stretch()))
+        self.assertAlmostEqual(equator.avg_mercator_stretch(), 1.005115965663012, delta=1e-12)
+        self.assertAlmostEqual(high_latitude.avg_mercator_stretch(), 2.397583523371995, delta=1e-12)
 
 
 class TestPolygonTriangulation(unittest.TestCase):

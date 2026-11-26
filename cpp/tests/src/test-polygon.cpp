@@ -142,9 +142,11 @@ int main()
         CHECK(box.numTileIds(5) > 0u);
         CHECK(box.tileLevel(8) <= 15);
 
-        // avgMercatorStretch is non-const; result must be finite.
-        Wgs84AABB<double> box2 = box;
-        CHECK(std::isfinite(box2.avgMercatorStretch()));
+        // Mercator stretch uses latitude directly and remains finite at the equator.
+        Wgs84AABB<double> equator(HighPrecWgs84(0, 0), Vec2(10.0, 10.0));
+        Wgs84AABB<double> highLatitude(HighPrecWgs84(0, 60), Vec2(10.0, 10.0));
+        CHECK_NEAR(equator.avgMercatorStretch(), 1.005115965663012, 1e-12);
+        CHECK_NEAR(highLatitude.avgMercatorStretch(), 2.397583523371995, 1e-12);
 
         // Overlapping boxes intersect (a corner of `over` lies in `box`).
         Wgs84AABB<double> over(HighPrecWgs84(10, 15), Vec2(20.0, 10.0));

@@ -103,9 +103,11 @@ export class Wgs84 {
     // Use a sign-preserving modulo to match Python's math.fmod / C++ std::fmod.
     this.x = fmod(this.x, 360.0);
 
-    // Snap values very close to the maximum representable longitude down.
-    if (Math.abs(this.x - (180.0 - LON_NDS_DELTA)) < LON_NDS_DELTA) {
-      this.x = 180.0 - LON_NDS_DELTA;
+    // Snap values at the positive edge down. The lower bound makes this
+    // one-sided so representable values below it retain their NDS code.
+    const lonMax = 180.0 - LON_NDS_DELTA;
+    if (this.x >= lonMax && this.x - lonMax < LON_NDS_DELTA) {
+      this.x = lonMax;
     }
 
     // Wrap into [-180, 180).
@@ -116,12 +118,13 @@ export class Wgs84 {
     }
 
     // Latitude normalization.
-    if (Math.abs(this.y - (90.0 - LAT_NDS_DELTA)) < LAT_NDS_DELTA) {
-      this.y = 90.0 - LAT_NDS_DELTA;
+    const latMax = 90.0 - LAT_NDS_DELTA;
+    if (this.y >= latMax && this.y - latMax < LAT_NDS_DELTA) {
+      this.y = latMax;
     }
 
-    if (this.y > 90.0 - LAT_NDS_DELTA) {
-      this.y = 90.0 - LAT_NDS_DELTA; // Clamp to max lat
+    if (this.y > latMax) {
+      this.y = latMax; // Clamp to max lat
     } else if (this.y < -90.0) {
       this.y = -90.0; // Clamp to min lat
     }

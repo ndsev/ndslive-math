@@ -126,14 +126,23 @@ export class Polygon {
     }
 
     const n = this.verts.length;
+    if (n === 0) {
+      return Orientation.INVALID_ORIENTATION;
+    }
+
+    const originX = this.verts[0].x;
+    const originY = this.verts[0].y;
     let area = 0.0;
     for (let i = 0; i < n; i++) {
       let j = i + 1;
       if (j === n) {
         j = 0;
       }
-      area += this.verts[i].x * this.verts[j].y;
-      area -= this.verts[i].y * this.verts[j].x;
+      const x = this.verts[i].x - originX;
+      const y = this.verts[i].y - originY;
+      const nextX = this.verts[j].x - originX;
+      const nextY = this.verts[j].y - originY;
+      area += x * nextY - y * nextX;
     }
 
     if (area > 0) {
