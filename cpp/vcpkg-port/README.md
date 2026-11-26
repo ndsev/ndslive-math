@@ -6,9 +6,9 @@ can be used as an **overlay port** today and submitted to the upstream
 [`microsoft/vcpkg`](https://github.com/microsoft/vcpkg) registry once a public
 release tag exists.
 
-> **Prerequisite:** vcpkg fetches sources from a **public GitHub release tag**.
-> The port can only be finalized/submitted after the repository is public and a
-> `vX.Y.Z` tag has been pushed (see the release checklist below).
+The overlay fetches an immutable public GitHub source archive. Before a tag
+exists it can use the versioned source commit, so a release branch can test the
+actual package. Use the release tag and its archive hash for upstream submission.
 
 ## Use as an overlay port (local / pre-submission)
 
@@ -31,11 +31,11 @@ When cutting a release `vX.Y.Z`:
 
 1. Set `version` in `vcpkg.json` to `X.Y.Z` (and keep `cpp/CMakeLists.txt`'s
    `project(... VERSION X.Y.Z)` in sync).
-2. In `portfile.cmake`, `REF` already resolves to `v${VERSION}`; just make sure
-   the tag exists.
-3. Replace the `SHA512 0` placeholder with the real archive hash: set it to `0`,
-   run the overlay install above, and copy the hash vcpkg reports back into
-   `portfile.cmake`.
+2. In `portfile.cmake`, pin `REF` to the tested source commit. Once the release
+   tag exists, change it to `"v${VERSION}"`.
+3. Each time `REF` changes, set `SHA512` to the digest of that specific archive.
+   Setting it to `0` locally makes vcpkg print the expected hash on install.
+   Restore the real hash and verify that the overlay installs before committing.
 4. To publish on the public registry, open a PR to `microsoft/vcpkg` adding
    `ports/ndsmath/` (these files) and the matching `versions/` entry. Their CI
    builds the port on all triplets.

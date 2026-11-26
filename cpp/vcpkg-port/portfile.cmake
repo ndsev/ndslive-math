@@ -2,16 +2,16 @@
 #
 # RELEASE CHECKLIST (see README.md in this directory):
 #   1. Bump "version" in vcpkg.json to match the release tag.
-#   2. Set REF to the release tag (the template uses "v${VERSION}").
-#   3. Replace the SHA512 placeholder with the real archive hash. The easiest
+#   2. Pin the versioned source commit; switch to "v${VERSION}" after tagging.
+#   3. Whenever REF changes, replace SHA512 with the new archive hash. The easiest
 #      way: set it to "0", run `vcpkg install ndsmath --overlay-ports=...`, and
 #      copy the actual hash vcpkg prints back into this file.
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO ndsev/ndslive-math
-    REF "v${VERSION}"
-    SHA512 17ebe5a703f85b2a069919cca780739c4272c2c06726f21d89dacb24e286531f75b9d27c511bf8f2984e822d4593c63fa6ba6ad9c7fefa6c814046264e785001
+    REF a1b60d214e62e561b65e588cf814748cb32d611c
+    SHA512 7a42c4fc9ce5df5c2e9dbc4dcb91c27b3332b5a67f6dcb605245f3cb31964014c11c01535435d5c736a9d3f5ea0a3a5bc80dcc02fbf3a16b0d854666b80a5e9f
     HEAD_REF main
 )
 
@@ -33,3 +33,4 @@ vcpkg_copy_pdbs()
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
 
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/cpp/LICENSE")
+file(INSTALL "${CMAKE_CURRENT_LIST_DIR}/usage" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}")
