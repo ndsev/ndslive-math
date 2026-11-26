@@ -141,17 +141,19 @@ impl Wgs84Aabb {
 
     /// The Mercator-projection vertical stretch factor.
     ///
-    /// Transcendental; not part of the cross-language parity vectors (asserted
-    /// only for finiteness in unit tests).
+    /// A positive-height interval touching either pole has infinite stretch.
     pub fn avg_mercator_stretch(&self) -> f64 {
-        let lat_top = (self.sw.lat + self.size.y).to_radians();
-        let lat_bottom = self.sw.lat.to_radians();
-
-        fn rad_to_mercator_lat(wgs84_lat: f64) -> f64 {
-            wgs84_lat.sin().atanh()
+        let bottom = self.sw.lat;
+        let height = self.size.y;
+        let half_span = height.to_radians() / 2.0;
+        // The log tangent ratio uses distances from the poles even when sin(latitude) rounds to 1.
+        let south = ((90.0 + bottom) / 2.0).to_radians().sin();
+        let north = ((90.0 - bottom - height) / 2.0).to_radians().sin();
+        let denominator = south * north;
+        if height > 0.0 && half_span < f64::MIN_POSITIVE {
+            return 0.5 / denominator;
         }
-
-        (rad_to_mercator_lat(lat_top) - rad_to_mercator_lat(lat_bottom)) / self.size.y.to_radians()
+        (half_span.sin() / denominator).ln_1p() / (2.0 * half_span)
     }
 
     /// Approximate number of tiles at level `lv` contained in this box.

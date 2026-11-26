@@ -467,6 +467,8 @@ class UnitTests {
 		Polygon collinear = new Polygon(Polygon.PolygonType.SIMPLE_POLYGON,
 				Arrays.asList(new Wgs84(0, 0), new Wgs84(1, 1), new Wgs84(2, 2)));
 		assertEquals(Polygon.Orientation.INVALID_ORIENTATION, collinear.orientation());
+		collinear.get(2).x = Double.NaN;
+		assertEquals(Polygon.Orientation.INVALID_ORIENTATION, collinear.orientation());
 
 		// Multi-triangle TRIANGLE_LIST (4 verts) is unsupported.
 		Polygon multi = new Polygon(Polygon.PolygonType.TRIANGLE_LIST,

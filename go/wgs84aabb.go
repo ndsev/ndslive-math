@@ -129,15 +129,18 @@ func (b Wgs84AABB) SplitOverAntiMeridian() (left, right Wgs84AABB, ok bool) {
 
 // AvgMercatorStretch returns the Mercator-projection vertical stretch factor.
 //
-// Transcendental; not part of the cross-language parity vectors (asserted only
-// for finiteness in unit tests).
+// A positive-height interval touching either pole has infinite stretch.
 func (b Wgs84AABB) AvgMercatorStretch() float64 {
-	latTop := degToRad(b.sw.Latitude() + b.size.Y)
-	latBottom := degToRad(b.sw.Latitude())
-	radToMercatorLat := func(wgs84Lat float64) float64 {
-		return math.Atanh(math.Sin(wgs84Lat))
+	bottom, height := b.sw.Latitude(), b.size.Y
+	halfSpan := degToRad(height) / 2
+	// The log tangent ratio uses distances from the poles, even when sin(latitude) rounds to 1.
+	south := math.Sin(degToRad((90 + bottom) / 2))
+	north := math.Sin(degToRad((90 - bottom - height) / 2))
+	denominator := south * north
+	if height > 0 && halfSpan < 0x1p-1022 {
+		return 0.5 / denominator
 	}
-	return (radToMercatorLat(latTop) - radToMercatorLat(latBottom)) / degToRad(b.size.Y)
+	return math.Log1p(math.Sin(halfSpan)/denominator) / (2 * halfSpan)
 }
 
 // NumTileIds returns the approximate number of tiles at level lv contained in

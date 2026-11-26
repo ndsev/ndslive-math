@@ -161,6 +161,12 @@ type parityData struct {
 		Size      [2]float64 `json:"size"`
 	} `json:"wgs84_aabb_from_tile"`
 
+	MercatorStretch []struct {
+		Bottom  float64  `json:"bottom"`
+		Height  float64  `json:"height"`
+		Stretch *float64 `json:"stretch"`
+	} `json:"mercator_stretch"`
+
 	Wgs84AabbContains []struct {
 		Box      string  `json:"box"`
 		PointLon float64 `json:"point_lon"`
@@ -590,6 +596,20 @@ func TestParityWgs84Aabb(t *testing.T) {
 		}
 		if got := box.TileLevel(2); got != c.TileLevelMin2 {
 			t.Errorf("%s: tileLevel(2) = %d, want %d", c.Name, got, c.TileLevelMin2)
+		}
+	}
+}
+
+func TestParityMercatorStretch(t *testing.T) {
+	data := loadParity(t)
+	for _, row := range data.MercatorStretch {
+		got := NewWgs84AABB(NewWgs84(0, row.Bottom, 0), NewVec2(1, row.Height)).AvgMercatorStretch()
+		if row.Stretch == nil {
+			if !math.IsInf(got, 1) {
+				t.Errorf("pole-touching span at %g: got %g, want +Inf", row.Bottom, got)
+			}
+		} else if !floatClose(got, *row.Stretch, data.Meta.FloatTolerance) {
+			t.Errorf("span at %g of height %g: got %g, want %g", row.Bottom, row.Height, got, *row.Stretch)
 		}
 	}
 }

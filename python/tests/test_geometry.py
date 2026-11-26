@@ -83,6 +83,11 @@ class TestPolygon(unittest.TestCase):
         p = Polygon(PolygonType.SIMPLE_POLYGON, [Wgs84(0, 0), Wgs84(1, 1), Wgs84(2, 2)])
         self.assertEqual(p.orientation(), Orientation.INVALID_ORIENTATION)
 
+    def test_orientation_nonfinite_raw_vertex(self):
+        p = Polygon(PolygonType.SIMPLE_POLYGON, [Wgs84(0, 0), Wgs84(1, 0), Wgs84(0, 1)])
+        p[2].x = math.nan
+        self.assertEqual(p.orientation(), Orientation.INVALID_ORIENTATION)
+
     def test_orientation_empty(self):
         p = Polygon(PolygonType.SIMPLE_POLYGON)
         self.assertEqual(p.orientation(), Orientation.INVALID_ORIENTATION)
@@ -121,6 +126,15 @@ class TestPolygon(unittest.TestCase):
         ]
         p = Polygon(PolygonType.SIMPLE_POLYGON, vertices)
         self.assertEqual(p.orientation(), Orientation.COUNTERCLOCKWISE)
+
+    def test_unit_determinant_at_every_start(self):
+        n = 2**28
+        ring = [Wgs84.from_nds_coordinates(x, y) for x, y in [(n, n + 1), (0, 0), (1, 1)]]
+        for expected in (Orientation.COUNTERCLOCKWISE, Orientation.CLOCKWISE):
+            for i in range(3):
+                polygon = Polygon(PolygonType.SIMPLE_POLYGON, ring[i:] + ring[:i])
+                self.assertEqual(polygon.orientation(), expected)
+            ring.reverse()
 
     def test_enum_integer_values(self):
         self.assertEqual(int(Orientation.CLOCKWISE), -1)
@@ -388,6 +402,15 @@ class TestWgs84Aabb(unittest.TestCase):
         self.assertTrue(math.isfinite(equator.avg_mercator_stretch()))
         self.assertAlmostEqual(equator.avg_mercator_stretch(), 1.005115965663012, delta=1e-12)
         self.assertAlmostEqual(high_latitude.avg_mercator_stretch(), 2.397583523371995, delta=1e-12)
+
+    def test_mercator_near_both_poles_and_equator(self):
+        height = 89.9999999 - 89
+        for south in (89.0, -89.9999999):
+            box = Wgs84Aabb(Wgs84(0, south), Vec2(1, height))
+            self.assertAlmostEqual(box.avg_mercator_stretch(), 923.5004048065483, delta=1e-9)
+        for height in (1e-15, 1e-320):
+            box = Wgs84Aabb(Wgs84(0, 0), Vec2(1, height))
+            self.assertAlmostEqual(box.avg_mercator_stretch(), 1.0, delta=1e-15)
 
 
 class TestPolygonTriangulation(unittest.TestCase):

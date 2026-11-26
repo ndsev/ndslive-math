@@ -172,6 +172,18 @@ AABB_CASES = [
 # Packed tile IDs used to verify AABB construction at the world edge and level 0.
 AABB_TILE_VALUES = [559240533, 131073, 65536, 65537]
 
+# Null denotes positive infinity at a pole. Reference values are the integral
+# of sec(latitude) over the binary64 endpoints, divided by the angular span.
+POLAR_HEIGHT = 89.9999999 - 89.0
+MERCATOR_SPANS = [
+    (89.0, POLAR_HEIGHT, 923.5004048065483),
+    (-89.9999999, POLAR_HEIGHT, 923.5004048065483),
+    (0.0, 1e-15, 1.0),
+    (60.0, 1e-320, 2.0),
+    (-90.0, 1.0, None),
+    (89.0, 1.0, None),
+]
+
 # (name, x_nds, y_nds) sample points for Wgs84Aabb.contains, tested against
 # every AABB case above. Includes inclusive-edge corners of origin_box.
 AABB_CONTAINS_POINTS = [
@@ -214,6 +226,51 @@ POLYGON_CASES = [
         ],
     ),
 ]
+
+# A single NDS unit of signed double area must survive every cyclic start and reversal.
+_n = 1 << 28
+_ring = [(x * (360 / 2**32), y * (360 / 2**32)) for x, y in [(_n, _n + 1), (0, 0), (1, 1)]]
+for _name, _order in [("ccw", _ring), ("cw", _ring[::-1])]:
+    for _i in range(3):
+        POLYGON_CASES.append((f"unit_determinant_{_name}_{_i}", 0, _order[_i:] + _order[:_i]))
+POLYGON_CASES.extend(
+    [
+        # This concave ring has exact double area +8 in NDS units. The
+        # floating-point fan alone reports a nonzero area with the wrong sign.
+        (
+            "wrong_sign_concave_ring",
+            0,
+            [
+                (-x * (360 / 2**32), -y * (360 / 2**32))
+                for x, y in [
+                    (327011547, 327011551),
+                    (163505773, 163505775),
+                    (245258659, 245258662),
+                    (163505772, 163505774),
+                    (0, 0),
+                    (245258661, 245258664),
+                ]
+            ],
+        ),
+        ("underflow_triangle", 3, [(0.0, 0.0), (2.0**-600, 0.0), (0.0, 2.0**-600)]),
+        ("subnormal_coordinate", 0, [(0.0, 0.0), (0.0, 1.0), (2.0**-1040, 0.0)]),
+        (
+            "cancelling_ring",
+            0,
+            [
+                (1.0, 1.0),
+                (0.0, 0.0),
+                (0.0, 1.0),
+                (1.0, 1.0),
+                (0.0, 0.0),
+                (2.0**-600, 0.0),
+                (0.0, 2.0**-600),
+                (0.0, 0.0),
+                (1.0, 0.0),
+            ],
+        ),
+    ]
+)
 
 # Wgs84Polygon cases (always SIMPLE_POLYGON): (name, vertices).
 WGS84_POLYGON_CASES = [
@@ -493,8 +550,7 @@ def main():
     data["nds_distance_to_meters"] = rows
 
     # -----------------------------------------------------------------------
-    # Geometry layer (deterministic methods only; PolygonTriangulation and the
-    # transcendental avg_mercator_stretch are intentionally excluded).
+    # Geometry layer (triangulation order is intentionally excluded).
     # -----------------------------------------------------------------------
 
     def _pt(w: Wgs84) -> list[float]:
@@ -556,6 +612,10 @@ def main():
             }
         )
     data["wgs84_aabb_from_tile"] = rows
+    data["mercator_stretch"] = [
+        {"bottom": bottom, "height": height, "stretch": stretch}
+        for bottom, height, stretch in MERCATOR_SPANS
+    ]
 
     # 14. Wgs84Aabb.contains: each point against each AABB case.
     rows = []

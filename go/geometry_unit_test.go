@@ -151,13 +151,20 @@ func TestTriangulateLargerConvex(t *testing.T) {
 	}
 }
 
+func TestNonfinitePolygonOrientation(t *testing.T) {
+	p := NewPolygonWithVertices(SimplePolygon, []Wgs84{{}, {Lon: 1}, {Lat: math.NaN()}})
+	if got := p.Orientation(); got != InvalidOrientation {
+		t.Errorf("nonfinite vertex: got %v, want invalid orientation", got)
+	}
+}
+
 func TestAvgMercatorStretch(t *testing.T) {
 	equator := NewWgs84AABB(NewWgs84(0, 0, 0), Vec2{X: 10, Y: 10})
 	highLatitude := NewWgs84AABB(NewWgs84(0, 60, 0), Vec2{X: 10, Y: 10})
-	if got := equator.AvgMercatorStretch(); math.Abs(got-1.005115965663012) > 1e-12 {
+	if got := equator.AvgMercatorStretch(); !floatClose(got, 1.005115965663012, 1e-12) {
 		t.Errorf("equator stretch = %v", got)
 	}
-	if got := highLatitude.AvgMercatorStretch(); math.Abs(got-2.397583523371995) > 1e-12 {
+	if got := highLatitude.AvgMercatorStretch(); !floatClose(got, 2.397583523371995, 1e-12) {
 		t.Errorf("high-latitude stretch = %v", got)
 	}
 }

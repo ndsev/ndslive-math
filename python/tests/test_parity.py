@@ -16,7 +16,11 @@ from ndslive.math import (
     MortonCode,
     NdsBoundingBox,
     PackedTileId,
+    Polygon,
+    PolygonType,
+    Vec2,
     Wgs84,
+    Wgs84Aabb,
     bounding_box_from_tile_ids,
     get_tile_ids_for_bounding_box,
 )
@@ -46,6 +50,18 @@ TOL = VECTORS["_meta"]["float_tolerance"]
 
 
 class TestParityVectors(unittest.TestCase):
+    def test_mercator_stretch(self):
+        for row in VECTORS["mercator_stretch"]:
+            box = Wgs84Aabb(Wgs84(0, row["bottom"]), Vec2(1, row["height"]))
+            expected = math.inf if row["stretch"] is None else row["stretch"]
+            self.assertClose(box.avg_mercator_stretch(), expected, str(row))
+
+    def test_polygon_orientation(self):
+        for row in VECTORS["polygon_orientation"]:
+            vertices = [Wgs84(x, y) for x, y in row["vertices"]]
+            polygon = Polygon(PolygonType(row["polygon_type"]), vertices)
+            self.assertEqual(polygon.orientation(), row["orientation"], row["name"])
+
     def assertClose(self, a, b, msg=""):
         self.assertTrue(
             math.isclose(a, b, rel_tol=0, abs_tol=TOL) or math.isclose(a, b, rel_tol=1e-9),

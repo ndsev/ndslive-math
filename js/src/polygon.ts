@@ -126,31 +126,52 @@ export class Polygon {
     }
 
     const n = this.verts.length;
-    if (n === 0) {
+    if (n < 3) {
       return Orientation.INVALID_ORIENTATION;
     }
 
     const originX = this.verts[0].x;
     const originY = this.verts[0].y;
     let area = 0.0;
-    for (let i = 0; i < n; i++) {
-      let j = i + 1;
-      if (j === n) {
-        j = 0;
-      }
-      const x = this.verts[i].x - originX;
-      const y = this.verts[i].y - originY;
-      const nextX = this.verts[j].x - originX;
-      const nextY = this.verts[j].y - originY;
-      area += x * nextY - y * nextX;
+    let magnitude = 0.0;
+    for (let i = 1; i < n - 1; i++) {
+      const a = this.verts[i],
+        b = this.verts[i + 1];
+      const left = (a.x - originX) * (b.y - originY);
+      const right = (a.y - originY) * (b.x - originX);
+      area += left - right;
+      magnitude += Math.abs(left) + Math.abs(right);
     }
+    const bound = 4 * (n + 4) * Number.EPSILON * (magnitude + 2 ** -1022);
+    if (Math.abs(area) > bound) {
+      return area > 0 ? Orientation.COUNTERCLOCKWISE : Orientation.CLOCKWISE;
+    }
+    return this.exactOrientation();
+  }
 
-    if (area > 0) {
-      return Orientation.COUNTERCLOCKWISE;
-    } else if (area < 0) {
-      return Orientation.CLOCKWISE;
-    } else {
-      return Orientation.INVALID_ORIENTATION;
+  /** Sum the signed products in integer units of the smallest binary64 coordinate. */
+  private exactOrientation(): Orientation {
+    const view = new DataView(new ArrayBuffer(8));
+    const units = (value: number): bigint => {
+      view.setFloat64(0, value);
+      const bits = view.getBigUint64(0);
+      const exponent = Number((bits >> 52n) & 0x7ffn);
+      const fraction = bits & ((1n << 52n) - 1n);
+      const magnitude =
+        exponent === 0 ? fraction : ((1n << 52n) | fraction) << BigInt(exponent - 1);
+      return value < 0 ? -magnitude : magnitude;
+    };
+    let exact = 0n;
+    let prev = this.verts[this.verts.length - 1];
+    for (const v of this.verts) {
+      if (!Number.isFinite(v.x) || !Number.isFinite(v.y)) return Orientation.INVALID_ORIENTATION;
+      exact += units(prev.x) * units(v.y) - units(prev.y) * units(v.x);
+      prev = v;
     }
+    return exact > 0n
+      ? Orientation.COUNTERCLOCKWISE
+      : exact < 0n
+        ? Orientation.CLOCKWISE
+        : Orientation.INVALID_ORIENTATION;
   }
 }

@@ -24,6 +24,17 @@ int main()
     // Default-constructed id is not a valid tile.
     CHECK(!PackedTileId().isValid());
 
+    // Both root tiles reach the north pole; only the eastern longitude wraps in int32.
+    const auto west = ndsmath::NdsBoundingBox::fromTile(PackedTileId(65537));
+    const auto east = ndsmath::NdsBoundingBox::fromTile(PackedTileId(65536));
+    constexpr int32_t pole = int32_t{1} << 30;
+    CHECK_EQ(west.minY, -pole);
+    CHECK_EQ(west.maxY, pole);
+    CHECK(west.contains({-pole, 0, -pole, 0}));
+    CHECK_EQ(east.minY, -pole);
+    CHECK_EQ(east.maxY, pole);
+    CHECK_EQ(east.maxX, std::numeric_limits<int32_t>::min());
+
     // level() decodes every level 1..15.
     for (int level = 1; level <= 15; ++level)
     {

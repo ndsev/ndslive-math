@@ -3,7 +3,9 @@
 
 #pragma once
 
+#include "detail/exactarea.h"
 #include <type_traits>
+#include <utility>
 
 namespace ndsmath
 {
@@ -101,41 +103,43 @@ public:
             return INVALID_ORIENTATION;
         }
 
-        if (vertices_.empty())
+        const auto n = vertices_.size();
+        if (n < 3)
         {
             return INVALID_ORIENTATION;
         }
 
-        const T originX = vertices_[0].dx();
-        const T originY = vertices_[0].dy();
-        T area = 0;
-        for (auto i = 0; i < vertices_.size(); i++)
+        using F = std::common_type_t<T, double>;
+        const F originX = vertices_[0].dx(), originY = vertices_[0].dy();
+        F area = 0, magnitude = 0;
+        for (std::size_t i = 1; i < n - 1; ++i)
         {
-            auto nextIndex = i + 1;
-            if (nextIndex == vertices_.size())
-            {
-                nextIndex = 0;
-            }
-
-            const T x = vertices_[i].dx() - originX;
-            const T y = vertices_[i].dy() - originY;
-            const T nextX = vertices_[nextIndex].dx() - originX;
-            const T nextY = vertices_[nextIndex].dy() - originY;
-            area += x * nextY - y * nextX;
+            const auto &a = vertices_[i], &b = vertices_[i + 1];
+            const F left = (a.dx() - originX) * (b.dy() - originY);
+            const F right = (a.dy() - originY) * (b.dx() - originX);
+            area += left - right;
+            magnitude += std::abs(left) + std::abs(right);
         }
 
-        if (area > 0)
+        // Bound roundoff in the coordinate differences, products and n additions.
+        // The minimum normal covers absolute rounding errors on subnormal products.
+        using Limits = std::numeric_limits<F>;
+        const F bound =
+            4 * (static_cast<F>(n) + 4) * Limits::epsilon() * (magnitude + Limits::min());
+        if (std::abs(area) > bound)
+            return area > 0 ? COUNTERCLOCKWISE : CLOCKWISE;
+
+        detail::ExactArea<F> exact;
+        for (std::size_t i = 0, prev = n - 1; i < n; prev = i++)
         {
-            return COUNTERCLOCKWISE;
+            const auto &a = vertices_[prev], &b = vertices_[i];
+            if (!std::isfinite(a.dx()) || !std::isfinite(a.dy()) || !std::isfinite(b.dx()) ||
+                !std::isfinite(b.dy()))
+                return INVALID_ORIENTATION;
+            exact.addProduct(a.dx(), b.dy(), 1);
+            exact.addProduct(a.dy(), b.dx(), -1);
         }
-        else if (area < 0)
-        {
-            return CLOCKWISE;
-        }
-        else
-        {
-            return INVALID_ORIENTATION;
-        }
+        return static_cast<Orientation>(exact.sign());
     }
 
 protected:

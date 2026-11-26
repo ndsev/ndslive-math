@@ -155,17 +155,18 @@ export class Wgs84Aabb {
   /**
    * The Mercator-projection vertical stretch factor, averaged over the box.
    *
-   * Transcendental; not part of the cross-language parity vectors (asserted
-   * only for finiteness in unit tests). Requires nonzero height and finite
-   * projected latitudes.
+   * Requires positive height. An interval touching either pole has infinite stretch.
    */
   avgMercatorStretch(): number {
-    const latTop = toRadians(this._sw.latitude() + this._size.y);
-    const latBottom = toRadians(this._sw.latitude());
-
-    const radToMercatorLat = (wgs84Lat: number): number => Math.atanh(Math.sin(wgs84Lat));
-
-    return (radToMercatorLat(latTop) - radToMercatorLat(latBottom)) / toRadians(this._size.y);
+    const bottom = this._sw.latitude();
+    const height = this._size.y;
+    const halfSpan = toRadians(height) / 2;
+    // The log tangent ratio uses distances from the poles, even when sin(latitude) rounds to 1.
+    const south = Math.sin(toRadians((90 + bottom) / 2));
+    const north = Math.sin(toRadians((90 - bottom - height) / 2));
+    const denominator = south * north;
+    if (height > 0 && halfSpan < 2 ** -1022) return 0.5 / denominator;
+    return Math.log1p(Math.sin(halfSpan) / denominator) / (2 * halfSpan);
   }
 
   /**

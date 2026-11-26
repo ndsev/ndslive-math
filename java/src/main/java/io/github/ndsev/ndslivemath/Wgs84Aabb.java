@@ -197,22 +197,23 @@ public final class Wgs84Aabb {
 	 * The Mercator-projection vertical stretch factor.
 	 *
 	 * <p>
-	 * Transcendental; not part of the cross-language parity vectors (asserted only
-	 * for finiteness in unit tests).
+	 * A positive-height interval touching either pole has infinite stretch.
 	 * </p>
 	 *
 	 * @return the average Mercator vertical stretch over the box's latitude span
 	 */
 	public double avgMercatorStretch() {
-		double latTop = Math.toRadians(this.sw.latitude() + this.size.y);
-		double latBottom = Math.toRadians(this.sw.latitude());
-		return (radToMercatorLat(latTop) - radToMercatorLat(latBottom)) / Math.toRadians(this.size.y);
-	}
-
-	private static double radToMercatorLat(double wgs84Lat) {
-		// atanh(z) = 0.5 * ln((1 + z) / (1 - z)); Java has no Math.atanh.
-		double z = Math.sin(wgs84Lat);
-		return 0.5 * Math.log((1.0 + z) / (1.0 - z));
+		double bottom = this.sw.latitude(), height = this.size.y;
+		double halfSpan = Math.toRadians(height) / 2;
+		// The log tangent ratio uses distances from the poles even when sin(latitude)
+		// rounds to 1.
+		double south = Math.sin(Math.toRadians((90 + bottom) / 2));
+		double north = Math.sin(Math.toRadians((90 - bottom - height) / 2));
+		double denominator = south * north;
+		if (height > 0 && halfSpan < Double.MIN_NORMAL) {
+			return 0.5 / denominator;
+		}
+		return Math.log1p(Math.sin(halfSpan) / denominator) / (2 * halfSpan);
 	}
 
 	/**

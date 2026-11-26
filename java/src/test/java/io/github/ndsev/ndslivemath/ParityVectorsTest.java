@@ -329,6 +329,17 @@ class ParityVectorsTest {
 	}
 
 	@Test
+	void mercatorStretch() {
+		JSONArray spans = data.getJSONArray("mercator_stretch");
+		for (int i = 0; i < spans.length(); i++) {
+			JSONObject row = spans.getJSONObject(i);
+			Wgs84Aabb box = new Wgs84Aabb(new Wgs84(0, row.getDouble("bottom")), new Vec2(1, row.getDouble("height")));
+			double expected = row.isNull("stretch") ? Double.POSITIVE_INFINITY : row.getDouble("stretch");
+			assertEquals(expected, box.avgMercatorStretch(), floatTolerance, row::toString);
+		}
+	}
+
+	@Test
 	void wgs84AabbFromTile() {
 		JSONArray arr = data.getJSONArray("wgs84_aabb_from_tile");
 		for (int i = 0; i < arr.length(); i++) {

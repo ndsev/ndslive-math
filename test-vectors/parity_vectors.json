@@ -2157,6 +2157,38 @@
       ]
     }
   ],
+  "mercator_stretch": [
+    {
+      "bottom": 89.0,
+      "height": 0.9999999000000059,
+      "stretch": 923.5004048065483
+    },
+    {
+      "bottom": -89.9999999,
+      "height": 0.9999999000000059,
+      "stretch": 923.5004048065483
+    },
+    {
+      "bottom": 0.0,
+      "height": 1e-15,
+      "stretch": 1.0
+    },
+    {
+      "bottom": 60.0,
+      "height": 1e-320,
+      "stretch": 2.0
+    },
+    {
+      "bottom": -90.0,
+      "height": 1.0,
+      "stretch": null
+    },
+    {
+      "bottom": 89.0,
+      "height": 1.0,
+      "stretch": null
+    }
+  ],
   "wgs84_aabb_contains": [
     {
       "box": "origin_box",
@@ -3080,6 +3112,242 @@
         [
           170.00020930543542,
           80.00003454275429
+        ]
+      ],
+      "orientation": 1,
+      "is_valid": true
+    },
+    {
+      "name": "unit_determinant_ccw_0",
+      "polygon_type": 0,
+      "vertices": [
+        [
+          22.5,
+          22.50000008381903
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          8.381903171539307e-08,
+          8.381903171539307e-08
+        ]
+      ],
+      "orientation": 1,
+      "is_valid": true
+    },
+    {
+      "name": "unit_determinant_ccw_1",
+      "polygon_type": 0,
+      "vertices": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          8.381903171539307e-08,
+          8.381903171539307e-08
+        ],
+        [
+          22.5,
+          22.50000008381903
+        ]
+      ],
+      "orientation": 1,
+      "is_valid": true
+    },
+    {
+      "name": "unit_determinant_ccw_2",
+      "polygon_type": 0,
+      "vertices": [
+        [
+          8.381903171539307e-08,
+          8.381903171539307e-08
+        ],
+        [
+          22.5,
+          22.50000008381903
+        ],
+        [
+          0.0,
+          0.0
+        ]
+      ],
+      "orientation": 1,
+      "is_valid": true
+    },
+    {
+      "name": "unit_determinant_cw_0",
+      "polygon_type": 0,
+      "vertices": [
+        [
+          8.381903171539307e-08,
+          8.381903171539307e-08
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          22.5,
+          22.50000008381903
+        ]
+      ],
+      "orientation": -1,
+      "is_valid": true
+    },
+    {
+      "name": "unit_determinant_cw_1",
+      "polygon_type": 0,
+      "vertices": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          22.5,
+          22.50000008381903
+        ],
+        [
+          8.381903171539307e-08,
+          8.381903171539307e-08
+        ]
+      ],
+      "orientation": -1,
+      "is_valid": true
+    },
+    {
+      "name": "unit_determinant_cw_2",
+      "polygon_type": 0,
+      "vertices": [
+        [
+          22.5,
+          22.50000008381903
+        ],
+        [
+          8.381903171539307e-08,
+          8.381903171539307e-08
+        ],
+        [
+          0.0,
+          0.0
+        ]
+      ],
+      "orientation": -1,
+      "is_valid": true
+    },
+    {
+      "name": "wrong_sign_concave_ring",
+      "polygon_type": 0,
+      "vertices": [
+        [
+          -27.40979122929275,
+          -27.409791564568877
+        ],
+        [
+          -13.70489557273686,
+          -13.704895740374923
+        ],
+        [
+          -20.557343317195773,
+          -20.55734356865287
+        ],
+        [
+          -13.704895488917828,
+          -13.704895656555891
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          -20.557343484833837,
+          -20.55734373629093
+        ]
+      ],
+      "orientation": 1,
+      "is_valid": true
+    },
+    {
+      "name": "underflow_triangle",
+      "polygon_type": 3,
+      "vertices": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          2.409919865102884e-181,
+          0.0
+        ],
+        [
+          0.0,
+          2.409919865102884e-181
+        ]
+      ],
+      "orientation": 1,
+      "is_valid": true
+    },
+    {
+      "name": "subnormal_coordinate",
+      "polygon_type": 0,
+      "vertices": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0
+        ],
+        [
+          8.487983164e-314,
+          0.0
+        ]
+      ],
+      "orientation": -1,
+      "is_valid": true
+    },
+    {
+      "name": "cancelling_ring",
+      "polygon_type": 0,
+      "vertices": [
+        [
+          1.0,
+          1.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0
+        ],
+        [
+          1.0,
+          1.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          2.409919865102884e-181,
+          0.0
+        ],
+        [
+          0.0,
+          2.409919865102884e-181
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          1.0,
+          0.0
         ]
       ],
       "orientation": 1,

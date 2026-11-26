@@ -2,6 +2,11 @@
 
 package ndslivemath
 
+import (
+	"math"
+	"math/big"
+)
+
 // Orientation is the winding order of a polygon. The integer values match the
 // C++ enum (cpp/include/ndsmath/polygon.h) and are part of the parity output.
 type Orientation int
@@ -119,29 +124,45 @@ func (p Polygon) Orientation() Orientation {
 	}
 
 	n := len(p.vertices)
-	if n == 0 {
+	if n < 3 {
 		return InvalidOrientation
 	}
 
 	originX := p.vertices[0].Dx()
 	originY := p.vertices[0].Dy()
-	area := 0.0
-	for i := 0; i < n; i++ {
-		j := i + 1
-		if j == n {
-			j = 0
-		}
-		x := p.vertices[i].Dx() - originX
-		y := p.vertices[i].Dy() - originY
-		nextX := p.vertices[j].Dx() - originX
-		nextY := p.vertices[j].Dy() - originY
-		area += x*nextY - y*nextX
+	area, magnitude := 0.0, 0.0
+	for i := 1; i < n-1; i++ {
+		a, b := p.vertices[i], p.vertices[i+1]
+		left := (a.Dx() - originX) * (b.Dy() - originY)
+		right := (a.Dy() - originY) * (b.Dx() - originX)
+		area += left - right
+		magnitude += math.Abs(left) + math.Abs(right)
 	}
-
-	if area > 0 {
-		return CounterClockwise
-	} else if area < 0 {
+	// Only trust a sign larger than the roundoff bound on the products and sum.
+	bound := 4 * (float64(n) + 4) * 0x1p-52 * (magnitude + 0x1p-1022)
+	if math.Abs(area) > bound {
+		if area > 0 {
+			return CounterClockwise
+		}
 		return Clockwise
 	}
-	return InvalidOrientation
+	return p.exactOrientation()
+}
+
+// exactOrientation sums the signed products of the original binary coordinates.
+func (p Polygon) exactOrientation() Orientation {
+	var area, left, right big.Rat
+	prev := p.vertices[len(p.vertices)-1]
+	for _, v := range p.vertices {
+		var px, py, x, y big.Rat
+		if px.SetFloat64(prev.Dx()) == nil || py.SetFloat64(prev.Dy()) == nil ||
+			x.SetFloat64(v.Dx()) == nil || y.SetFloat64(v.Dy()) == nil {
+			return InvalidOrientation
+		}
+		left.Mul(&px, &y)
+		right.Mul(&py, &x)
+		area.Add(&area, left.Sub(&left, &right))
+		prev = v
+	}
+	return Orientation(area.Sign())
 }

@@ -121,6 +121,8 @@ describe('Polygon (base)', () => {
       new Wgs84(2, 2),
     ]);
     expect(collinear.orientation()).toBe(Orientation.INVALID_ORIENTATION);
+    collinear.get(2).x = NaN;
+    expect(collinear.orientation()).toBe(Orientation.INVALID_ORIENTATION);
 
     const strip = new Polygon(PolygonType.TRIANGLE_STRIP, [
       new Wgs84(0, 0),

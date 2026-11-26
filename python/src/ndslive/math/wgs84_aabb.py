@@ -15,6 +15,7 @@ this port's Wgs84, so the shared constants alone do not ensure parity.
 from __future__ import annotations
 
 import math
+import sys
 
 from .tileid import PackedTileId
 from .vec2 import Vec2
@@ -151,19 +152,20 @@ class Wgs84Aabb:
     def avg_mercator_stretch(self) -> float:
         """The Mercator-projection vertical stretch factor, averaged over the box.
 
-        Transcendental; not part of the cross-language parity vectors (asserted
-        only for finiteness in unit tests). Requires nonzero height and finite
-        projected latitudes.
+        Requires positive height. An interval touching either pole has infinite stretch.
         """
-        lat_top = math.radians(self._sw.latitude() + self._size.y)
-        lat_bottom = math.radians(self._sw.latitude())
-
-        def rad_to_mercator_lat(wgs84_lat: float) -> float:
-            return math.atanh(math.sin(wgs84_lat))
-
-        return (rad_to_mercator_lat(lat_top) - rad_to_mercator_lat(lat_bottom)) / math.radians(
-            self._size.y
-        )
+        bottom, height = self._sw.latitude(), self._size.y
+        half_span = math.radians(height) / 2
+        # Write the difference of Mercator ordinates as log1p of a tangent ratio.
+        # Half-distances to the poles stay accurate when sin(latitude) rounds to 1.
+        south = math.sin(math.radians((90 + bottom) / 2))
+        north = math.sin(math.radians(((90 - bottom) - height) / 2))
+        denominator = south * north
+        if height > 0 and denominator == 0:
+            return math.inf
+        if height > 0 and half_span < sys.float_info.min:
+            return 0.5 / denominator  # local stretch when radians underflow
+        return math.log1p(math.sin(half_span) / denominator) / (2 * half_span)
 
     def num_tile_ids(self, lv: int) -> int:
         """Approximate number of tiles at level ``lv`` contained in this box.
