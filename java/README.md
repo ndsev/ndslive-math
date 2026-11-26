@@ -31,14 +31,14 @@ The artifact is published under the Maven coordinates
 <dependency>
     <groupId>live.nds</groupId>
     <artifactId>ndslive-math</artifactId>
-    <version>1.1.1</version>
+    <version>1.2.0</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```groovy
-implementation 'live.nds:ndslive-math:1.1.1'
+implementation 'live.nds:ndslive-math:1.2.0'
 ```
 
 ## Usage
